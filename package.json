@@ -1,0 +1,30 @@
+{
+  "name": "node-stratum-portal",
+  "version": "0.0.1",
+  "description": "Node quick start example portal",
+  "main": "init.js",
+  "dependencies": {
+    "stratum-pool": "~0.0.2",
+    "dateformat": "~1.0.7-1.2.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zone117x/node-stratum-portal.git"
+  },
+  "keywords": [
+    "node",
+    "stratum",
+    "pool",
+    "mining"
+  ],
+  "author": "zone117x",
+  "license": "GPL",
+  "bugs": {
+    "url": "https://github.com/zone117x/node-stratum-portal/issues"
+  },
+  "homepage": "https://github.com/zone117x/node-stratum-portal"
+}
