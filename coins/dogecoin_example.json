@@ -1,0 +1,16 @@
+{
+    "name": "Dogecoin",
+    "symbol": "doge",
+    "algorithm": "scrypt",
+    "reward": "POW",
+    "address": "n3s8iDk1onxyY2nuC1k4HoRQFGJ7BhjFcq",
+    "stratumPort": 3334,
+    "difficulty": 8,
+    "blockRefreshInterval": 5,
+    "daemon": {
+        "host": "localhost",
+        "port": 19334,
+        "user": "testnet",
+        "password": "testnet1"
+    }
+}
