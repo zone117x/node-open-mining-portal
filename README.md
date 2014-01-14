@@ -1,4 +1,5 @@
 * git clone https://github.com/zone117x/node-stratum-portal.git
+* cd node-stratum-portal
 * npm install stratum-pool
 * node init.js
 
