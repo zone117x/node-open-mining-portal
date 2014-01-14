@@ -1,10 +1,11 @@
-* git clone https://github.com/zone117x/node-stratum-portal.git
-* cd node-stratum-portal
-* npm install stratum-pool
-* node init.js
 
+Setup for development of stratum-pool
+=====================================
 
-
-For Development of stratum-pool
-===============================
-* symlink node_modules/stratum-pool to development directory
+```
+git clone https://github.com/zone117x/node-stratum-portal.git
+cd node-stratum-portal
+git clone https://github.com/zone117x/node-stratum node_modules/stratum-pool
+npm update
+node init.js
+```
