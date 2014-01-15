@@ -6,9 +6,9 @@ var PoolLogger = require('./libs/logutils.js');
 var loggerInstance = new PoolLogger({
     'default': true,
     'keys': {
-        'client'      : 'warning',
+        //'client'      : 'warning',
         'system'      : true,
-        'submitblock' : true,
+        'submitblock' : true
     }
 });
 
@@ -41,11 +41,20 @@ fs.readdirSync('coins').forEach(function(file){
 
 
     var pool = stratum.createPool(coinOptions, authorizeFN);
-    pool.on('share', function(isValid, data){
-        if (isValid)
-            logDebug(coinOptions.name, 'client',  "A new Valid share from " + data.client.workerName + " has arrived! - " + data.blockHeaderHex);
+    pool.on('share', function(isValidShare, isValidBlock, data){
+
+        var shareData = JSON.stringify(data);
+
+        if (isValidBlock)
+            logDebug(coinOptions.name, 'client', 'Block found, share data: ' + shareData);
+        else if (isValidShare)
+            logDebug(coinOptions.name, 'client', 'Valid share submitted, share data: ' + shareData);
+        else if (data.solution)
+            logDebug(coinOptions.name, 'client', 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
         else
-            logDebug(coinOptions.name, 'client', "Invalid share form " + data.client.workerName + " ErrorCode: " + data.errorCode + " ErrorDescription: " + data.errorDescription);
+            logDebug(coinOptions.name, 'client', 'Invalid share submitted, share data: ' + shareData)
+
+
     }).on('log', function(severity, logKey, logText) {
         if (severity == 'debug') {
             logDebug(coinOptions.name, logKey, logText);

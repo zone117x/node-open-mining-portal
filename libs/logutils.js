@@ -56,7 +56,7 @@ var PoolLogger = function (configuration) {
     var log = function(severity, key, poolName, text) {
         if ( ! shouldLog(key, severity) ) {
             // if this tag is set to not be logged or the default value is false then drop it!
-            //console.log(key+"DROPPED "+text);
+            //console.log(key+"DROPPED "+text + 'SEV' + severity);
             return;
 
         }
