@@ -65,6 +65,7 @@ fs.readdirSync('coins').forEach(function(file){
             logError(coinOptions.name, logKey, logText);
         }
     });
+    pool.start();
 
 });
 
