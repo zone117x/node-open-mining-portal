@@ -5,7 +5,7 @@
     "reward": "POW",
     "address": "nhfNedMmQ1Rjb62znwaiJgFhL3f4NQztSp",
     "stratumPort": 3334,
-    "difficulty": 16,
+    "difficulty": 32,
     "blockRefreshInterval": 1,
     "daemon": {
         "host": "localhost",
@@ -14,12 +14,12 @@
         "password": "testnet"
     },
     "varDiff": {
-        "enabled": true,
-        "minDifficulty": 4,
-        "maxDifficulty": 1000,
-        "daemonDiffUpdateFrequency": 3600,
-        "targetTime": 10,
-        "retargetTime": 120,
-        "variancePercent": 20
+        "enabled": true, //set to false to disable vardiff functionality
+        "minDifficulty": 16, //minimum difficulty. below 16 will cause problems
+        "maxDifficulty": 1000, //network difficulty will be used if it is lower than this
+        "daemonDiffUpdateFrequency": 3600, //get the network difficulty every this many seconds
+        "targetTime": 30, //target time per share (i.e. try to get 1 share per this many seconds)
+        "retargetTime": 120, //check to see if we should retarget every this many seconds
+        "variancePercent": 20 //allow average time to very this % from target without retarget
     }
 }

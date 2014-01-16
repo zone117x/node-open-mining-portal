@@ -4,8 +4,9 @@
     "description": "Node quick start example portal",
     "main": "init.js",
     "dependencies": {
-        "stratum-pool": "~0.0.2",
-        "dateformat": "~1.0.7-1.2.3"
+        "stratum-pool": "*",
+        "dateformat": "*",
+        "node-json-minify": "*"
     },
     "devDependencies": {},
     "scripts": {

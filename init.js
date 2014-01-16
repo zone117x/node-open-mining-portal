@@ -1,7 +1,8 @@
 var fs         = require('fs');
-var dateFormat = require('dateformat');
 var Stratum    = require('stratum-pool');
 var PoolLogger = require('./libs/logutils.js');
+
+JSON.minify = JSON.minify || require("node-json-minify");
 
 var loggerInstance = new PoolLogger({
     'default': true,
@@ -16,7 +17,7 @@ var logDebug   = loggerInstance.logDebug;
 var logWarning = loggerInstance.logWarning;
 var logError   = loggerInstance.logError;
 
-var config = JSON.parse(fs.readFileSync("config.json"));
+var config = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
 
 
 var stratum = new Stratum(config);
@@ -27,7 +28,7 @@ stratum.on('log', function(logText){
 
 fs.readdirSync('coins').forEach(function(file){
 
-    var coinOptions = JSON.parse(fs.readFileSync('coins/' + file, {encoding: 'utf8'}));
+    var coinOptions = JSON.parse(JSON.minify(fs.readFileSync('coins/' + file, {encoding: 'utf8'})));
 
     var authorizeFN = function (ip, workerName, password, callback) {
         // Default implementation just returns true
