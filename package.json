@@ -6,7 +6,8 @@
     "dependencies": {
         "stratum-pool": "zone117x/node-stratum",
         "dateformat": "*",
-        "node-json-minify": "*"
+        "node-json-minify": "*",
+        "posix": "*"
     },
     "devDependencies": {},
     "scripts": {

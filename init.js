@@ -1,8 +1,17 @@
-var fs         = require('fs');
-var Stratum    = require('stratum-pool');
+var fs = require('fs');
+var posix = require('posix');
+var Stratum = require('stratum-pool');
 var PoolLogger = require('./libs/logutils.js');
 
 JSON.minify = JSON.minify || require("node-json-minify");
+
+
+try{
+    posix.setrlimit('nofile', { soft: 100000 });
+}
+catch(e){
+    console.error(e);
+}
 
 var loggerInstance = new PoolLogger({
     'default': true,
