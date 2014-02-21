@@ -7,7 +7,7 @@ JSON.minify = JSON.minify || require("node-json-minify");
 
 
 try{
-    posix.setrlimit('nofile', { soft: 100000 });
+    posix.setrlimit('nofile', { soft: 100000, hard: 100000 });
 }
 catch(e){
     console.error(e);
