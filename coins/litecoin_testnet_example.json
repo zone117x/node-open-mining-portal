@@ -8,12 +8,14 @@
     "stratumPort": 3334,
     "difficulty": 32,
     "blockRefreshInterval": 1,
+
     "daemon": {
         "host": "localhost",
         "port": 19332,
         "user": "litecoinrpc",
         "password": "testnet"
     },
+
     "varDiff": {
         "enabled": true, //set to false to disable vardiff functionality
         "minDifficulty": 16, //minimum difficulty. below 16 will cause problems
@@ -22,5 +24,24 @@
         "targetTime": 30, //target time per share (i.e. try to get 1 share per this many seconds)
         "retargetTime": 120, //check to see if we should retarget every this many seconds
         "variancePercent": 20 //allow average time to very this % from target without retarget
+    },
+
+    "p2p": {
+        "enabled": true,
+        "host": "localhost",
+        "port": 19333,
+
+        /* Found in src as the PROTOCOL_VERSION variable, for example:
+             https://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/version.h#L28
+         */
+        "protocolVersion": 70002,
+
+        /* Magic value is different for main/testnet and for each coin. It is found in the daemon
+          source code as the pchMessageStart variable. For example, litecoin mainnet:
+            http://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/main.cpp#L3059
+          And for litecoin testnet:
+            http://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/main.cpp#L2722-L2725
+         */
+        "magic": "fcc1b7dc"
     }
 }
