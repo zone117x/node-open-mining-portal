@@ -55,12 +55,12 @@ fs.readdirSync('coins').forEach(function(file){
 
         var shareData = JSON.stringify(data);
 
-        if (isValidBlock)
+        if (data.solution && !isValidBlock)
+            logDebug(coinOptions.name, 'client', 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
+        else if (isValidBlock)
             logDebug(coinOptions.name, 'client', 'Block found, share data: ' + shareData);
         else if (isValidShare)
             logDebug(coinOptions.name, 'client', 'Valid share submitted, share data: ' + shareData);
-        else if (data.solution)
-            logDebug(coinOptions.name, 'client', 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
         else
             logDebug(coinOptions.name, 'client', 'Invalid share submitted, share data: ' + shareData)
 
