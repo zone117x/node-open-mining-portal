@@ -1,0 +1,7 @@
+{
+    "name": "Litecoin",
+    "symbol": "ltc",
+    "algorithm": "scrypt",
+    "reward": "POW",
+    "txMessages": false
+}

@@ -1,0 +1,44 @@
+{
+    "disabled": true,
+    "coin": "skeincoin",
+    "pool": {
+        "address": "SUxtDjHYijztRKjbnBkvEbA3mQ5wFeS72H",
+        "stratumPort": 3336,
+        "difficulty": 0.005,
+        "blockRefreshInterval": 1000
+    },
+    "daemons": [
+        {
+            "host": "localhost",
+            "port": 15347,
+            "user": "skeincoinrpc1",
+            "password": "skcpass"
+        }
+    ],
+    "varDiff": {
+        "enabled": false,
+        "minDifficulty": 16,
+        "maxDifficulty": 1000,
+        "targetTime": 30,
+        "retargetTime": 120,
+        "variancePercent": 20
+    },
+    "p2p": {
+        "enabled": false,
+        "host": "localhost",
+        "port": 19333,
+
+        /* Found in src as the PROTOCOL_VERSION variable, for example:
+         https://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/version.h#L28
+         */
+        "protocolVersion": 70002,
+
+        /* Magic value is different for main/testnet and for each coins. It is found in the daemon
+         source code as the pchMessageStart variable. For example, litecoin mainnet:
+         http://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/main.cpp#L3059
+         And for litecoin testnet:
+         http://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/main.cpp#L2722-L2725
+         */
+        "magic": "fcc1b7dc"
+    }
+}

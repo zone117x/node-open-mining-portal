@@ -35,13 +35,30 @@ stratum.on('log', function(logText){
 });
 
 
-fs.readdirSync('coins').forEach(function(file){
+var coinProfiles = (function(){
+    var profiles = {};
+    fs.readdirSync('coins').forEach(function(file){
+        var coinProfile = JSON.parse(JSON.minify(fs.readFileSync('coins/' + file, {encoding: 'utf8'})));
+        profiles[coinProfile.name.toLowerCase()] = coinProfile;
+    });
+    return profiles;
+})();
 
-    var coinOptions = JSON.parse(JSON.minify(fs.readFileSync('coins/' + file, {encoding: 'utf8'})));
+fs.readdirSync('pool_configs').forEach(function(file){
+
+    var poolOptions = JSON.parse(JSON.minify(fs.readFileSync('pool_configs/' + file, {encoding: 'utf8'})));
+    if (poolOptions.disabled) return;
+
+    if (!(poolOptions.coin.toLowerCase() in coinProfiles)){
+        logError(poolOptions.coin, 'system', 'could not find coin profile');
+        return;
+    }
+
+    poolOptions.coin = coinProfiles[poolOptions.coin.toLowerCase()];
 
     var authorizeFN = function (ip, workerName, password, callback) {
         // Default implementation just returns true
-        logDebug(coinOptions.name, 'client', "Authorize ["+ip+"] "+workerName+":"+password);
+        logDebug(poolOptions.coin.name, 'client', "Authorize ["+ip+"] "+workerName+":"+password);
         callback({
             error: null,
             authorized: true,
@@ -50,28 +67,29 @@ fs.readdirSync('coins').forEach(function(file){
     };
 
 
-    var pool = stratum.createPool(coinOptions, authorizeFN);
+
+    var pool = stratum.createPool(poolOptions, authorizeFN);
     pool.on('share', function(isValidShare, isValidBlock, data){
 
         var shareData = JSON.stringify(data);
 
         if (data.solution && !isValidBlock)
-            logDebug(coinOptions.name, 'client', 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
+            logDebug(poolOptions.coin.name, 'client', 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
         else if (isValidBlock)
-            logDebug(coinOptions.name, 'client', 'Block found, share data: ' + shareData);
+            logDebug(poolOptions.coin.name, 'client', 'Block found, share data: ' + shareData);
         else if (isValidShare)
-            logDebug(coinOptions.name, 'client', 'Valid share submitted, share data: ' + shareData);
+            logDebug(poolOptions.coin.name, 'client', 'Valid share submitted, share data: ' + shareData);
         else
-            logDebug(coinOptions.name, 'client', 'Invalid share submitted, share data: ' + shareData)
+            logDebug(poolOptions.coin.name, 'client', 'Invalid share submitted, share data: ' + shareData)
 
 
     }).on('log', function(severity, logKey, logText) {
         if (severity == 'debug') {
-            logDebug(coinOptions.name, logKey, logText);
+            logDebug(poolOptions.coin.name, logKey, logText);
         } else if (severity == 'warning') {
-            logWarning(coinOptions.name, logKey, logText);
+            logWarning(poolOptions.coin.name, logKey, logText);
         } else if (severity == 'error') {
-            logError(coinOptions.name, logKey, logText);
+            logError(poolOptions.coin.name, logKey, logText);
         }
     });
     pool.start();

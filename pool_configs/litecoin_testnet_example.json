@@ -1,0 +1,39 @@
+{
+    "disabled": false,
+    "coin": "litecoin",
+    "pool": {
+        "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc",
+        "stratumPort": 3334,
+        "difficulty": 8,
+        "blockRefreshInterval": 1000
+    },
+    "daemons": [
+        {
+            "host": "localhost",
+            "port": 19332,
+            "user": "litecoinrpc",
+            "password": "testnet"
+        },
+        {
+            "host": "localhost",
+            "port": 19344,
+            "user": "litecoinrpc",
+            "password": "testnet"
+        }
+    ],
+    "varDiff": {
+        "enabled": true,
+        "minDifficulty": 16,
+        "maxDifficulty": 1000,
+        "targetTime": 30,
+        "retargetTime": 120,
+        "variancePercent": 20
+    },
+    "p2p": {
+        "enabled": true,
+        "host": "localhost",
+        "port": 19333,
+        "protocolVersion": 70002,
+        "magic": "fcc1b7dc"
+    }
+}
