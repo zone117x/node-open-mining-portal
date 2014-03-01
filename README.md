@@ -63,6 +63,7 @@ Here is an example of the required fields
     "txMessages": false
 }
 ````
+For more information on these configuration options see the [pool module documentation](https://github.com/zone117x/node-stratum#module-usage)
 
 ##### Pool config
 Create a json file inside the `pool_configs` directory. Take a look at the example json file provided to see
@@ -72,6 +73,7 @@ configuration file (the string is not case sensitive).
 You can create as many of these pool config files as you want (such as one pool per coin you which to operate).
 If you are creating multiple pools, ensure that they have unique stratum ports with the `pool.stratumPort` field.
 
+For more information on these configuration options see the [pool module documentation](https://github.com/zone117x/node-stratum#module-usage)
 
 ##### [Optional, recommended] Setting up blocknotify
   * In `config.json` set the port and password for `blockNotifyListener`
