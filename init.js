@@ -118,15 +118,15 @@ else{
     var poolConfigs = JSON.parse(process.env.pools);
     var fork = process.env.fork;
 
-    var stratum = new Stratum();
+    var pools = [];
 
     //Handle blocknotify message from master process sent via IPC
     process.on('message', function(msg) {
         var message = JSON.parse(msg);
         if (message.blocknotify){
-            for (var i = 0; i < stratum.pools.length; i++){
-                if (stratum.pools[i].options.coin.name.toLowerCase() === message.coin.toLowerCase()){
-                    stratum.pools[i].processBlockNotify(message.blockHash)
+            for (var i = 0; i < pools.length; i++){
+                if (pools[i].options.coin.name.toLowerCase() === message.coin.toLowerCase()){
+                    pools[i].processBlockNotify(message.blockHash)
                     return;
                 }
             }
@@ -151,7 +151,7 @@ else{
         };
 
 
-        var pool = stratum.createPool(poolOptions, authorizeFN);
+        var pool = Stratum.createPool(poolOptions, authorizeFN);
         pool.on('share', function(isValidShare, isValidBlock, data){
 
             var shareData = JSON.stringify(data);
@@ -176,5 +176,6 @@ else{
                 }
             });
         pool.start();
+        pools.push(pool);
     });
 }
