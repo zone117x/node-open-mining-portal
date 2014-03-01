@@ -1,6 +1,10 @@
 {
+    "clustering": {
+        "enabled": true,
+        "forks": "auto"
+    },
     "blockNotifyListener": {
-        "enabled": false,
+        "enabled": true,
         "port": 8117,
         "password": "test"
     }
