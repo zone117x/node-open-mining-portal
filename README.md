@@ -22,7 +22,58 @@ miner to be switched from one pool/coin to another. The switching can be control
 profitability API such as CoinChoose.com or CoinWarz.com.
 
 
-#### [Optional, recommended] Setting up blocknotify
+
+
+Usage
+=====
+
+#### 1) Download
+
+```bash
+git clone https://github.com/zone117x/node-stratum-portal.git
+cd node-stratum-portal
+git clone https://github.com/zone117x/node-stratum node_modules/stratum-pool
+npm update
+```
+
+#### 2) Setup
+
+##### Portal config
+Inside the `config.json` file, ensure the default configuration will work for your environment. The `clustering.forks`
+option is set to `"auto"` by default which will spawn one process/fork/worker for each CPU core in your system.
+Each of these workers will run a separate instance of your pool(s), and the kernel will load balance miners
+using these forks. Optionally, the `clustering.forks` field can be a number for how many forks you wish to spawn.
+
+With `blockNotifyListener` enabled, the master process will start listening on the configured port for messages from
+the `scripts/blockNotify.js` script which your coin daemons can be configured to run when a new block is available.
+When a blocknotify message is received, the master process uses IPC (inter-process communication) to notify each
+worker process about the message. Each worker process then sends the message to the appropriate coin pool.
+See "Setting up blocknotify" below to set up your daemon to use this feature.
+
+
+##### Coin config
+Inside the `coins` directory, ensure a json file exists for your coin. If it does not you will have to create it.
+Here is an example of the required fields
+````json
+{
+    "name": "Litecoin",
+    "symbol": "ltc",
+    "algorithm": "scrypt",
+    "reward": "POW",
+    "txMessages": false
+}
+````
+
+##### Pool config
+Create a json file inside the `pool_configs` directory. Take a look at the example json file provided to see
+which fields are required. The field `coin` __must__ be a string that references the `name` field in your coin's
+configuration file (the string is not case sensitive).
+
+You can create as many of these pool config files as you want (such as one pool per coin you which to operate).
+If you are creating multiple pools, ensure that they have unique stratum ports with the `pool.stratumPort` field.
+
+
+##### [Optional, recommended] Setting up blocknotify
   * In `config.json` set the port and password for `blockNotifyListener`
   * In your daemon conf file set the `blocknotify` command to use:
 
@@ -35,15 +86,8 @@ profitability API such as CoinChoose.com or CoinWarz.com.
 
 
 
-Usage
-=====
+#### 3) Start the portal
 
-### 1) Download
-
-```
-git clone https://github.com/zone117x/node-stratum-portal.git
-cd node-stratum-portal
-git clone https://github.com/zone117x/node-stratum node_modules/stratum-pool
-npm update
+```bash
 node init.js
 ```
