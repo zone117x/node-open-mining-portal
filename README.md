@@ -101,6 +101,7 @@ node init.js
 Donations
 ---------
 To support development of this project feel free to donate :)
+
 BTC: 1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR
 
 License
