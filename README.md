@@ -5,7 +5,7 @@ When ready, this portal will be able to spawn pools for all configured coins/cry
 Each pool will take advantage of clustering to load balance across multiple CPU cores and be
 extremely efficient.
 
-For reward/payment processing, shares will be inserted into a fast NoSQL database such as Redis.
+For reward/payment processing, shares will be inserted into a fast NoSQL key/value database such as Redis.
 Each coin will have a processor that monitors for confirmed submitted blocks then send out payments
 according to shares accumulated in the database.
 
@@ -17,29 +17,28 @@ To reduce variance for pools just starting out which have little to no hashing p
 could be added that connects upstream to a larger pool server. After receiving work from the larger
 pool it would then be redistributed to our connected miners.
 
-Another great feature would be utilizing the multi-pool ability of this portal to do coin
-auto-switching using an coin profitability API such as CoinChoose.com
+Another great feature would be utilizing the multi-pool ability of this portal to allow a connected
+miner to be switched from one pool/coin to another. The switching can be controlled using a coin
+profitability API such as CoinChoose.com or CoinWarz.com.
 
 
 #### [Optional, recommended] Setting up blocknotify
   * In `config.json` set the port and password for `blockNotifyListener`
-  * For the blocknotify arguments in your daemon startup parameters or conf file, use:
+  * In your daemon conf file set the `blocknotify` command to use:
 
     ```
-    [path to blockNotify.js]
-    [pool host]:[pool blockNotifyListener port]
-    [blockNotifyListener password]
-    [coin symbol set in coin's json config]
+    [path to scripts/blockNotify.js] [listener host]:[listener port] [listener password] [coin name in config]
     %s"
     ```
 
-    * Example: `dogecoind -blocknotify="scripts/blockNotify.js localhost:8117 mySuperSecurePassword doge %s"`
-    * If your daemon is on a different host you will have to copy over `scripts/blockNotify.js`
+    * Example: `dogecoin.conf` > `blocknotify="scripts/blockNotify.js localhost:8117 mySuperSecurePassword dogecoin %s"`
 
 
 
-Setup for development of stratum-pool
-=====================================
+Usage
+=====
+
+### 1) Download
 
 ```
 git clone https://github.com/zone117x/node-stratum-portal.git
