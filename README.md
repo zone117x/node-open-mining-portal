@@ -1,25 +1,28 @@
 # Stratum Portal
 
-## Goal of this project
-When ready, this portal will be able to spawn pools for all configured coins/cryptocurrencies.
-Each pool will take advantage of clustering to load balance across multiple CPU cores and be
-extremely efficient.
+## Description
+This portal is an extremely efficient, highly scalable, all-in-one, easy to setup cryptocurrency mining pool written
+entirely in Node.js. It contains a [stratum poolserver](https://github.com/zone117x/node-stratum), reward/payment/share
+processor (*not yet completed*), and front-end website (*not yet completed*).
 
-For reward/payment processing, shares will be inserted into a fast NoSQL key/value database such as Redis.
-Each coin will have a processor that monitors for confirmed submitted blocks then send out payments
-according to shares accumulated in the database.
+It can be used to create a pool for a single coin or for multiple coins at once. The pools use clustering to load
+balance across multiple CPU cores.
 
-For now the plan is to not have user accounts, but rather, have miners use their coin address for
-stratum authentication. This portal will come with a minimalistic HTML5 front-end that displays
-statistics from from each pool such as connected miners, network/pool difficulty/hash rate, etc.
+For reward/payment processing, shares are inserted into a fast NoSQL key/value database (Redis). Each coin has a
+processor that monitors for confirmed submitted blocks then send out payments according to shares accumulated in the
+database.
 
-To reduce variance for pools just starting out which have little to no hashing power a feature
-could be added that connects upstream to a larger pool server. After receiving work from the larger
-pool it would then be redistributed to our connected miners.
+This portal does not have user accounts/logins/registrations. Instead, miners simply use their coin address for stratum
+authentication. A minimalistic HTML5 front-end connects to the portals statistics API to display stats from from each
+pool such as connected miners, network/pool difficulty/hash rate, etc.
 
-Another great feature would be utilizing the multi-pool ability of this portal to allow a connected
-miner to be switched from one pool/coin to another. The switching can be controlled using a coin
-profitability API such as CoinChoose.com or CoinWarz.com.
+To reduce variance for pools just starting out which have little to no hashing power a feature is planned which will
+allow your own pool to connect upstream to a larger pool server. It will request work from the larger pool then
+redistribute the work to our own connected miners.
+
+Automated switching of connected miners to different pools/coins is also easily done due to the multi-pool architecture
+of this software. The switching can be controlled using a coin profitability API such as CoinChoose.com or CoinWarz.com
+(or calculated locally using daemon-reported network difficulties and exchange APIs).
 
 
 
@@ -97,6 +100,7 @@ node init.js
 
 Donations
 ---------
+To support development of this project feel free to donate :)
 BTC: 1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR
 
 License
