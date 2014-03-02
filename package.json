@@ -7,7 +7,8 @@
         "stratum-pool": "zone117x/node-stratum",
         "dateformat": "*",
         "node-json-minify": "*",
-        "posix": "*"
+        "posix": "*",
+        "redis": "*"
     },
     "devDependencies": {},
     "scripts": {

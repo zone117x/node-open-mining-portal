@@ -1,6 +1,16 @@
 {
     "disabled": false,
     "coin": "litecoin",
+    "rewards": {
+        "enabled": true,
+        "blockConfirmations": 20,
+        "daemon":{
+            "host": "localhost",
+            "port": 19332,
+            "user": "litecoinrpc",
+            "password": "testnet"
+        }
+    },
     "pool": {
         "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc",
         "stratumPort": 3334,
