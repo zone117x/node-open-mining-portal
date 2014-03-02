@@ -86,7 +86,7 @@ Description of options:
 
     /* This determines what to do with submitted shares. You have two options: 1) Enable mpos
        and disabled internal which wil allow MPOS to handle all share payments. 2) Disable mpos
-       and enabled internal which will allow this portal to handle all share payments.
+       and enabled internal which will allow this portal to handle all share payments. */
     "shareProcessing": {
         "mpos": { //enabled this and shares will be inserted into share table in a MySql database
             "enabled": false,
@@ -108,6 +108,10 @@ Description of options:
             }
         }
     },
+
+    //All options below this are passed directly to the stratum module:
+     https://github.com/zone117x/node-stratum   - which has some additional documentation.
+
     "pool": {
         //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
         "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //address to where block rewards are given
