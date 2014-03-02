@@ -84,9 +84,11 @@ Description of options:
     "disabled": false, //Set this to true and a pool will not be created from this config file
     "coin": "litecoin", //This MUST be a reference to the 'name' field in your coin's config file
 
-    //This determines what to do with submitted shares
+    /* This determines what to do with submitted shares. You have two options: 1) Enable mpos
+       and disabled internal which wil allow MPOS to handle all share payments. 2) Disable mpos
+       and enabled internal which will allow this portal to handle all share payments.
     "shareProcessing": {
-        "mpos": { //enabled this feature for shares to be inserted into a MPOS share table in a MySql database
+        "mpos": { //enabled this and shares will be inserted into share table in a MySql database
             "enabled": false,
             "host": "localhost",
             "port": 3306,
@@ -107,7 +109,7 @@ Description of options:
         }
     },
     "pool": {
-        //instanceId: 37, //I recommend not to use this option as a crypto-random one will be generated
+        //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
         "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //address to where block rewards are given
         "stratumPort": 3334, //port that youre miners connect to, eg: stratum+tcp://pool.com:3334
         "difficulty": 8, //your pool difficulty
@@ -131,8 +133,8 @@ Description of options:
         }
     ],
 
-    /* Variable difficulty is a feature that will automatically adjust difficulty for individual miners
-       based on their hashrate in order to lower networking overhead */
+    /* Variable difficulty is a feature that will automatically adjust difficulty for individual
+       miners based on their hashrate in order to lower networking overhead */
     "varDiff": {
         "enabled": true, //set to false to disable vardiff functionality
         "minDifficulty": 16, //minimum difficulty
@@ -149,25 +151,22 @@ Description of options:
         //mode: 'fast' //NOT recommended for most miners
     },
 
-    /* This allows the pool to connect to the daemon as a node peer to recieve block updates. It may be the
-       most efficient way to get block updates (faster than polling, less intensive than blocknotify script).
-       However its still under development */
+    /* This allows the pool to connect to the daemon as a node peer to recieve block updates.
+       It may be the most efficient way to get block updates (faster than polling, less
+       intensive than blocknotify script). However its still under development (not yet working). */
     "p2p": {
         "enabled": false,
         "host": "localhost",
         "port": 19333,
 
         /* Magic value is different for main/testnet and for each coin. It is found in the daemon
-           source code as the pchMessageStart variable. For example, litecoin mainnet:
-           http://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/main.cpp#L3059
-           And for litecoin testnet:
-           http://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/main.cpp#L2722-L2725
+           source code as the pchMessageStart variable.
+           For example, litecoin mainnet magic: http://git.io/Bi8YFw
+           And for litecoin testnet magic: http://git.io/NXBYJA
          */
         "magic": "fcc1b7dc",
 
-        /* Found in src as the PROTOCOL_VERSION variable, for example:
-           https://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/version.h#L28
-         */
+        // Found in src as the PROTOCOL_VERSION variable, for example: http://git.io/KjuCrw
         "protocolVersion": 70002,
 
     }
