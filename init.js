@@ -97,7 +97,7 @@ if (cluster.isMaster){
 
 
 
-    var shareProcessor = new ShareProcessor(loggerInstance);
+    var shareProcessor = new ShareProcessor(loggerInstance, poolConfigs);
     shareProcessor.init();
 
 

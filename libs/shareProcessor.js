@@ -3,7 +3,7 @@ var cluster = require('cluster');
 
 var redis = require('redis');
 
-var processor = module.exports = function processor(logger){
+var processor = module.exports = function processor(logger, poolConfigs){
 
     var _this = this;
 

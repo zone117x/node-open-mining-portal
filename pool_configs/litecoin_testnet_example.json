@@ -1,14 +1,22 @@
 {
     "disabled": false,
     "coin": "litecoin",
-    "rewards": {
-        "enabled": true,
-        "blockConfirmations": 20,
-        "daemon":{
+    "shareProcessing": {
+        "mpos": {
+            "enabled": false,
             "host": "localhost",
-            "port": 19332,
-            "user": "litecoinrpc",
-            "password": "testnet"
+            "port": 3306,
+            "name": "doge",
+            "password": "mypass"
+        },
+        "internal": {
+            "enabled": true,
+            "daemon": {
+                "host": "localhost",
+                "port": 19332,
+                "user": "litecoinrpc",
+                "password": "testnet"
+            }
         }
     },
     "pool": {

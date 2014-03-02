@@ -10,7 +10,11 @@ balance across multiple CPU cores.
 
 For reward/payment processing, shares are inserted into a fast NoSQL key/value database (Redis). Each coin has a
 processor that monitors for confirmed submitted blocks then send out payments according to shares accumulated in the
-database.
+database. The payment/reward method used will be PROP (proportional) - where when a block is found, miners are paid
+based on their shares submitted during the round (a round is the process of searching for a single block).
+
+For those that wish to use this project with [MPOS](https://github.com/MPOS/php-mpos), the portal can be configured
+to insert shares into a MySQL database in the format which MPOS uses.
 
 This portal does not have user accounts/logins/registrations. Instead, miners simply use their coin address for stratum
 authentication. A minimalistic HTML5 front-end connects to the portals statistics API to display stats from from each
@@ -59,21 +63,117 @@ Inside the `coins` directory, ensure a json file exists for your coin. If it doe
 Here is an example of the required fields
 ````javascript
 {
-    //test
     "name": "Litecoin",
-    "symbol": "ltc", //testasdf
-    "algorithm": "scrypt",
-    "reward": "POW",
-    /*adsfsdf */
-    "txMessages": false
+    "symbol": "ltc",
+    "algorithm": "scrypt", //or "sha256", "scrypt-jane", "quark", "x11"
+    "reward": "POW", //or "POS"
+    "txMessages": false //or true
 }
 ````
-For more information on these configuration options see the [pool module documentation](https://github.com/zone117x/node-stratum#module-usage)
+
 
 ##### Pool config
-Create a json file inside the `pool_configs` directory. Take a look at the example json file provided to see
-which fields are required. The field `coin` __must__ be a string that references the `name` field in your coin's
+Take a look at the example json file inside the `pool_configs` directory. Rename it to `yourcoin.json` and change the
+example fields to fit your setup. The field `coin` __must__ be a string that references the `name` field in your coin's
 configuration file (the string is not case sensitive).
+
+Description of options:
+
+````javascript
+{
+    "disabled": false, //Set this to true and a pool will not be created from this config file
+    "coin": "litecoin", //This MUST be a reference to the 'name' field in your coin's config file
+
+    //This determines what to do with submitted shares
+    "shareProcessing": {
+        "mpos": { //enabled this feature for shares to be inserted into a MPOS share table in a MySql database
+            "enabled": false,
+            "host": "localhost",
+            "port": 3306,
+            "name": "doge",
+            "password": "mypass"
+        },
+        "internal": { //enabled this options for share payments to be processed and sent locally
+            "enabled": true,
+            /* This daemon is used to send out payments. It MUST be for the daemon that owns the
+               'pool.address' field below, otherwise the daemon will not be able to confirm blocks
+               or sent out payments. */
+            "daemon": {
+                "host": "localhost",
+                "port": 19332,
+                "user": "litecoinrpc",
+                "password": "testnet"
+            }
+        }
+    },
+    "pool": {
+        //instanceId: 37, //I recommend not to use this option as a crypto-random one will be generated
+        "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //address to where block rewards are given
+        "stratumPort": 3334, //port that youre miners connect to, eg: stratum+tcp://pool.com:3334
+        "difficulty": 8, //your pool difficulty
+        "blockRefreshInterval": 1000 //how often to poll RPC daemons for new blocks, in milliseconds
+    },
+
+    /* RPC daemons for block update polling and submitting blocks - recommended to have at least two
+       for redundancy in case one dies or goes out-of-sync */
+    "daemons": [
+        {   //main daemon instance
+            "host": "localhost",
+            "port": 19332,
+            "user": "litecoinrpc",
+            "password": "testnet"
+        },
+        {   //backup daemon instance
+            "host": "localhost",
+            "port": 19344,
+            "user": "litecoinrpc",
+            "password": "testnet"
+        }
+    ],
+
+    /* Variable difficulty is a feature that will automatically adjust difficulty for individual miners
+       based on their hashrate in order to lower networking overhead */
+    "varDiff": {
+        "enabled": true, //set to false to disable vardiff functionality
+        "minDifficulty": 16, //minimum difficulty
+        "maxDifficulty": 1000, //network difficulty will be used if it is lower than this
+        "targetTime": 30, //target time per share (i.e. try to get 1 share per this many seconds)
+        "retargetTime": 120, //check to see if we should retarget every this many seconds
+        "variancePercent": 20 //allow average time to very this % from target without retarget
+
+        /* By default new difficulties will be sent when a new job is available as stratum
+           protocol (http://mining.bitcoin.cz/stratum-mining) states that new difficulties
+           "will be applied to every next job received from the server." Some miner software
+           will almost immediately apply new difficulties. Set mode to fast for difficulty
+           to be sent immediately. */
+        //mode: 'fast' //NOT recommended for most miners
+    },
+
+    /* This allows the pool to connect to the daemon as a node peer to recieve block updates. It may be the
+       most efficient way to get block updates (faster than polling, less intensive than blocknotify script).
+       However its still under development */
+    "p2p": {
+        "enabled": false,
+        "host": "localhost",
+        "port": 19333,
+
+        /* Magic value is different for main/testnet and for each coin. It is found in the daemon
+           source code as the pchMessageStart variable. For example, litecoin mainnet:
+           http://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/main.cpp#L3059
+           And for litecoin testnet:
+           http://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/main.cpp#L2722-L2725
+         */
+        "magic": "fcc1b7dc",
+
+        /* Found in src as the PROTOCOL_VERSION variable, for example:
+           https://github.com/litecoin-project/litecoin/blob/85f303d883ffff35238eaea5174b780c950c0ae4/src/version.h#L28
+         */
+        "protocolVersion": 70002,
+
+    }
+}
+
+````
 
 You can create as many of these pool config files as you want (such as one pool per coin you which to operate).
 If you are creating multiple pools, ensure that they have unique stratum ports with the `pool.stratumPort` field.
