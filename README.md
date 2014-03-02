@@ -59,10 +59,12 @@ Inside the `coins` directory, ensure a json file exists for your coin. If it doe
 Here is an example of the required fields
 ````javascript
 {
+    //test
     "name": "Litecoin",
-    "symbol": "ltc",
+    "symbol": "ltc", //testasdf
     "algorithm": "scrypt",
     "reward": "POW",
+    /*adsfsdf */
     "txMessages": false
 }
 ````
