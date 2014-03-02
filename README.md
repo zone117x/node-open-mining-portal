@@ -57,7 +57,7 @@ See "Setting up blocknotify" below to set up your daemon to use this feature.
 ##### Coin config
 Inside the `coins` directory, ensure a json file exists for your coin. If it does not you will have to create it.
 Here is an example of the required fields
-````json
+````javascript
 {
     "name": "Litecoin",
     "symbol": "ltc",
