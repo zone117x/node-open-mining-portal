@@ -56,7 +56,7 @@ if (cluster.isMaster){
 
     //Read all pool configs from pool_configs and join them with their coin profile
     var poolConfigs = (function(){
-        var configs = [];
+        var configs = {};
         fs.readdirSync('pool_configs').forEach(function(file){
             var poolOptions = JSON.parse(JSON.minify(fs.readFileSync('pool_configs/' + file, {encoding: 'utf8'})));
             if (poolOptions.disabled) return;
@@ -65,7 +65,7 @@ if (cluster.isMaster){
                 return;
             }
             poolOptions.coin = coinProfiles[poolOptions.coin.toLowerCase()];
-            configs.push(poolOptions);
+            configs[poolOptions.coin.name] = poolOptions;
         });
         return configs;
     })();

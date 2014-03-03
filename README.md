@@ -10,11 +10,11 @@ balance across multiple CPU cores.
 
 For reward/payment processing, shares are inserted into a fast NoSQL key/value database (Redis). Each coin has a
 processor that monitors for confirmed submitted blocks then send out payments according to shares accumulated in the
-database. The payment/reward method used will be PROP (proportional) - where when a block is found, miners are paid
-based on their shares submitted during the round (a round is the process of searching for a single block).
+database. The payment/reward method used will be PROP (proportional) - where when a block is submitted and confirmed,
+miners are paid based on their shares submitted during the round (a round is the process of searching for a single block).
 
 For those that wish to use this project with [MPOS](https://github.com/MPOS/php-mpos), the portal can be configured
-to insert shares into a MySQL database in the format which MPOS uses.
+to insert shares into a MySQL database in the format which MPOS expects.
 
 This portal does not have user accounts/logins/registrations. Instead, miners simply use their coin address for stratum
 authentication. A minimalistic HTML5 front-end connects to the portals statistics API to display stats from from each
@@ -92,8 +92,9 @@ Description of options:
             "enabled": false,
             "host": "localhost",
             "port": 3306,
-            "name": "doge",
-            "password": "mypass"
+            "user": "me",
+            "password": "mypass",
+            "database": "ltc"
         },
         "internal": { //enabled this options for share payments to be processed and sent locally
             "enabled": true,
@@ -109,8 +110,8 @@ Description of options:
         }
     },
 
-    //All options below this are passed directly to the stratum module:
-     https://github.com/zone117x/node-stratum   - which has some additional documentation.
+    /* All options below this are passed directly to the stratum module:
+       https://github.com/zone117x/node-stratum   - which has some additional documentation. */
 
     "pool": {
         //instanceId: 37, //Recommend not using this because a crypto-random one will be generated

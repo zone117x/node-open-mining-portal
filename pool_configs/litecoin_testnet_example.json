@@ -6,8 +6,9 @@
             "enabled": false,
             "host": "localhost",
             "port": 3306,
-            "name": "doge",
-            "password": "mypass"
+            "user": "me",
+            "password": "mypass",
+            "database": "ltc"
         },
         "internal": {
             "enabled": true,
