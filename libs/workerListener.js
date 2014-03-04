@@ -36,6 +36,9 @@ var processor = module.exports = function processor(logger, poolConfigs){
                         if (shareProcessing.internal.enabled)
                             shareProcessor.handleBlock(data);
                         break;
+                    case 'mposAuth':
+                        mposCompat.handleAuth(data);
+                        break;
                 }
             });
         });

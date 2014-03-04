@@ -133,7 +133,11 @@ Description of options:
             "port": 3306,
             "user": "me",
             "password": "mypass",
-            "database": "ltc"
+            "database": "ltc",
+            /* For when miner's authenticate: set to "password" for both worker name and password to
+               be checked for in the database, set to "worker" for only work name to be checked, or
+               don't use this option (set to "none") for no auth checks */
+            "stratumAuth": "password"'
         }
     },
 
@@ -180,7 +184,7 @@ Description of options:
 ````
 
 You can create as many of these pool config files as you want (such as one pool per coin you which to operate).
-If you are creating multiple pools, ensure that they have unique stratum ports with the `pool.stratumPort` field.
+If you are creating multiple pools, ensure that they have unique stratum ports.
 
 For more information on these configuration options see the [pool module documentation](https://github.com/zone117x/node-stratum#module-usage)
 

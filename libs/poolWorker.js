@@ -1,3 +1,5 @@
+var cluster = require('cluster');
+
 var Stratum = require('stratum-pool');
 
 module.exports = function(logger){
@@ -13,18 +15,27 @@ module.exports = function(logger){
 
     var pools = [];
 
-    //Handle blocknotify message from master process sent via IPC
+    //Handle messages from master process sent via IPC
     process.on('message', function(message) {
-        if (message.blocknotify){
-            for (var i = 0; i < pools.length; i++){
-                if (pools[i].options.coin.name.toLowerCase() === message.coin.toLowerCase()){
-                    pools[i].processBlockNotify(message.blockHash)
-                    return;
+        switch(message.type){
+            case 'blocknotify':
+                for (var i = 0; i < pools.length; i++){
+                    if (pools[i].options.coin.name.toLowerCase() === message.coin.toLowerCase()){
+                        pools[i].processBlockNotify(message.hash)
+                        return;
+                    }
                 }
-            }
+                break;
+            case 'mposAuth':
+                var callbackId = message.callbackId;
+                if (callbackId in mposAuthCallbacks)
+                    mposAuthCallbacks[callbackId](message.authorized);
+                break;
         }
     });
 
+
+    var mposAuthCallbacks = {};
 
     Object.keys(poolConfigs).forEach(function(coin) {
 
@@ -35,11 +46,49 @@ module.exports = function(logger){
         var authorizeFN = function (ip, workerName, password, callback) {
             // Default implementation just returns true
             logDebug(logIdentify, 'client', "Authorize [" + ip + "] " + workerName + ":" + password);
-            callback({
-                error: null,
-                authorized: true,
-                disconnect: false
-            });
+
+            var mposAuthLevel;
+            if (poolOptions.shareProcessing.mpos.enabled && (
+                (mposAuthLevel = poolOptions.shareProcessing.mpos.stratumAuth) === 'worker' ||
+                    mposAuthLevel === 'password'
+            )){
+                var callbackId = coin + workerName + password + Date.now();
+                var authTimeout = setTimeout(function(){
+                    if (!(callbackId in mposAuthCallbacks))
+                        return;
+                    callback({
+                        error: null,
+                        authorized: false,
+                        disconnect: false
+                    });
+                    delete mposAuthCallbacks[callbackId];
+                }, 30000);
+                mposAuthCallbacks[callbackId] = function(authorized){
+                    callback({
+                        error: null,
+                        authorized: authorized,
+                        disconnect: false
+                    });
+                    delete mposAuthCallbacks[callbackId];
+                    clearTimeout(authTimeout);
+                };
+                process.send({
+                    type: 'mposAuth',
+                    coin: poolOptions.coin.name,
+                    callbackId: callbackId,
+                    workerId: cluster.worker.id,
+                    workerName: workerName,
+                    password: password,
+                    authLevel: mposAuthLevel
+                });
+            }
+            else{
+                callback({
+                    error: null,
+                    authorized: true,
+                    disconnect: false
+                });
+            }
         };
 
 

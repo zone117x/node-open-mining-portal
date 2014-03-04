@@ -22,21 +22,26 @@
 
     "shareProcessing": {
         "internal": {
-            "enabled": true,
+            "enabled": false,
             "daemon": {
                 "host": "localhost",
                 "port": 19332,
                 "user": "litecoinrpc",
                 "password": "testnet"
+            },
+            "redis": {
+                "host": "localhost",
+                "port": 6379
             }
         },
         "mpos": {
-            "enabled": false,
+            "enabled": true,
             "host": "localhost",
             "port": 3306,
             "user": "me",
             "password": "mypass",
-            "database": "ltc"
+            "database": "ltc",
+            "stratumAuth": "password"
         }
     },
 

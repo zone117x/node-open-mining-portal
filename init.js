@@ -110,9 +110,9 @@ if (cluster.isMaster){
     });
     listener.on('hash', function(message){
 
-        var serializedMessage = JSON.stringify({'blocknotify': message.hash});
+        var ipcMessage = {type:'blocknotify', coin: message.coin, hash: message.hash};
         Object.keys(cluster.workers).forEach(function(id) {
-            cluster.workers[id].send(serializedMessage);
+            cluster.workers[id].send(ipcMessage);
         });
 
     });

@@ -3,39 +3,56 @@ var redis = require('redis');
 module.exports = function(logger, poolConfigs){
 
 
-    //TODO: need to add redis config to json. probably do one redis client per pool?
+    var dbConnections = (function(){
+        var connections = {};
+        Object.keys(poolConfigs).forEach(function(coin) {
 
-    var client;
+            var config = poolConfigs[coin];
 
-    client = redis.createClient();
+            if (!config.shareProcessing || !config.shareProcessing.internal || !config.shareProcessing.internal.enabled)
+                return;
 
-    client.on("error", function (err) {
-        logger.logError('shareProcessor', 'redis', 'Redis client had an error: ' + err);
-    });
+            var redisConfig = config.shareProcessing.internal.redis;
+
+            function connect(){
+                var connection = connections[coin] = redis.createClient(redisConfig.port, redisConfig.host);
+                connection.on('error', function(err){
+                    logger.logError('shareProcessor', 'redis', coin +
+                        ' - redis client had an error: ' + JSON.stringify(err))
+                });
+                connection.on('end', function(){
+                    logger.logWarning('shareProcessor', 'redis', coin +
+                        ' - connection to redis database as been ended');
+                    connect();
+                });
+            }
+            connect();
+        });
+    })();
+
 
     this.handleDifficultyUpdate = function(data){
         var coin = data.coin;
         var poolConfig = poolConfigs[coin];
-        if (poolConfig.shareProcessing.mpos && poolConfig.shareProcessing.mpos.enabled){
-            poolMposHandlers[coin].updateDifficulty(data.workerName, data.diff);
-        }
     };
 
     this.handleShare = function(data){
+
+        if ((!data.coin in dbConnections)) return;
+
+        if (!data.isValidShare) return;
+
+        var connection = dbConnections[data.coin];
+
         var shareData = data.share;
         var coin = data.coin;
         var poolConfig = poolConfigs[coin];
 
-        if (poolConfig.shareProcessing.mpos && poolConfig.shareProcessing.mpos.enabled){
-            poolMposHandlers[coin].insertShare(data.isValidShare, data.isValidBlock, shareData);
-        }
+        connection.hincrby([coin + ':' + shareData.height, shareData.worker, shareData.difficulty], function(error, result){
+            if (error)
+                logger.logError('shareProcessor', 'redis', 'could not store worker share')
+        });
 
-        if (poolConfig.shareProcessing.internal && poolConfig.shareProcessing.internal.enable && data.isValidShare){
-            client.hincrby([coin + ':' + shareData.height, shareData.worker, shareData.difficulty], function(error, result){
-                if (error)
-                    logger.logError('shareProcessor', 'redis', 'could not store worker share')
-            });
-        }
     };
 
     this.handleBlock = function(data){
