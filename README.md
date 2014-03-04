@@ -137,7 +137,7 @@ Description of options:
             /* For when miner's authenticate: set to "password" for both worker name and password to
                be checked for in the database, set to "worker" for only work name to be checked, or
                don't use this option (set to "none") for no auth checks */
-            "stratumAuth": "password"'
+            "stratumAuth": "password"
         }
     },
 
