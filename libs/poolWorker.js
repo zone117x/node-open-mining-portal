@@ -74,16 +74,17 @@ module.exports = function(logger){
                     clearTimeout(authTimeout);
                 };
                 process.send({
-                    type: 'mposAuth',
-                    coin: poolOptions.coin.name,
-                    callbackId: callbackId,
-                    workerId: cluster.worker.id,
-                    workerName: workerName,
-                    password: password,
-                    authLevel: mposAuthLevel
+                    type       : 'mposAuth',
+                    coin       : poolOptions.coin.name,
+                    callbackId : callbackId,
+                    workerId   : cluster.worker.id,
+                    workerName : workerName,
+                    password   : password,
+                    authLevel  : mposAuthLevel
                 });
             }
             else{
+                // if we're here than it means we're on stratumAuth: "none" or something unrecognized by the system!
                 callback({
                     error: null,
                     authorized: true,
@@ -107,30 +108,30 @@ module.exports = function(logger){
 
             logDebug(logIdentify, 'client', 'Valid share submitted, share data: ' + shareData);
             process.send({
-                type: 'share',
-                share: data,
-                coin: poolOptions.coin.name,
-                isValidShare: isValidShare,
-                isValidBlock: isValidBlock,
-                solution: blockHex
+                type         : 'share',
+                share        : data,
+                coin         : poolOptions.coin.name,
+                isValidShare : isValidShare,
+                isValidBlock : isValidBlock,
+                solution     : blockHex // blockHex is undefined is this was not a valid block.
             });
 
             if (isValidBlock){
                 logDebug(logIdentify, 'client', 'Block found, solution: ' + shareData.solution);
                 process.send({
-                    type: 'block',
-                    share: data,
-                    coin: poolOptions.coin.name
+                    type  : 'block',
+                    share : data,
+                    coin  : poolOptions.coin.name
                 });
             }
 
         }).on('difficultyUpdate', function(workerName, diff){
             if (poolOptions.shareProcessing.mpos.enabled){
                 process.send({
-                    type: 'difficultyUpdate',
-                    workerName: workerName,
-                    diff: diff,
-                    coin: poolOptions.coin.name
+                    type       : 'difficultyUpdate',
+                    workerName : workerName,
+                    diff       : diff,
+                    coin       : poolOptions.coin.name
                 });
             }
         }).on('log', function(severity, logKey, logText) {

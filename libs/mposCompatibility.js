@@ -63,9 +63,9 @@ module.exports = function(logger, poolConfigs){
 
         var sendResult = function(authorized){
             cluster.workers[data.workerId].send({
-                type: 'mposAuth',
-                callbackId: data.callbackId,
-                authorized: authorized
+                type       : 'mposAuth',
+                callbackId : data.callbackId,
+                authorized : authorized
             });
         };
 
