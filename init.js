@@ -6,7 +6,7 @@ var cluster = require('cluster');
 var posix = require('posix');
 var PoolLogger = require('./libs/logutils.js');
 var BlocknotifyListener = require('./libs/blocknotifyListener.js');
-var ShareProcessor = require('./libs/shareProcessor.js');
+var WorkerListener = require('./libs/workerListener.js');
 var PoolWorker = require('./libs/poolWorker.js');
 
 JSON.minify = JSON.minify || require("node-json-minify");
@@ -97,8 +97,8 @@ if (cluster.isMaster){
 
 
 
-    var shareProcessor = new ShareProcessor(loggerInstance, poolConfigs);
-    shareProcessor.init();
+    var workerListener = new WorkerListener(loggerInstance, poolConfigs);
+    workerListener.init();
 
 
 

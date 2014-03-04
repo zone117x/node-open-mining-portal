@@ -118,7 +118,7 @@ Description of options:
         "internal": { //enabled this options for share payments to be processed and sent locally
             "enabled": true,
             /* This daemon is used to send out payments. It MUST be for the daemon that owns the
-               'pool.address' field below, otherwise the daemon will not be able to confirm blocks
+               'address' field above, otherwise the daemon will not be able to confirm blocks
                or sent out payments. */
             "daemon": {
                 "host": "localhost",

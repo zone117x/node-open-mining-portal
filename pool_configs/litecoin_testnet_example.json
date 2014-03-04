@@ -56,7 +56,7 @@
     ],
 
     "p2p": {
-        "enabled": true,
+        "enabled": false,
         "host": "localhost",
         "port": 19333,
         "protocolVersion": 70002,

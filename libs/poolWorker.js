@@ -73,15 +73,24 @@ module.exports = function(logger){
                 });
             }
 
+        }).on('difficultyUpdate', function(workerName, diff){
+            if (poolOptions.shareProcessing.mpos.enabled){
+                process.send({
+                    type: 'difficultyUpdate',
+                    workerName: workerName,
+                    diff: diff,
+                    coin: poolOptions.coin.name
+                });
+            }
         }).on('log', function(severity, logKey, logText) {
-                if (severity == 'debug') {
-                    logDebug(logIdentify, logKey, logText);
-                } else if (severity == 'warning') {
-                    logWarning(logIdentify, logKey, logText);
-                } else if (severity == 'error') {
-                    logError(logIdentify, logKey, logText);
-                }
-            });
+            if (severity == 'debug') {
+                logDebug(logIdentify, logKey, logText);
+            } else if (severity == 'warning') {
+                logWarning(logIdentify, logKey, logText);
+            } else if (severity == 'error') {
+                logError(logIdentify, logKey, logText);
+            }
+        });
         pool.start();
         pools.push(pool);
     });
