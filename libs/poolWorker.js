@@ -28,8 +28,9 @@ module.exports = function(logger){
                 break;
             case 'mposAuth':
                 var callbackId = message.callbackId;
-                if (callbackId in mposAuthCallbacks)
+                if (callbackId in mposAuthCallbacks) {
                     mposAuthCallbacks[callbackId](message.authorized);
+                }
                 break;
         }
     });
@@ -93,7 +94,7 @@ module.exports = function(logger){
 
 
         var pool = Stratum.createPool(poolOptions, authorizeFN);
-        pool.on('share', function(isValidShare, isValidBlock, data){
+        pool.on('share', function(isValidShare, isValidBlock, data, blockHex){
 
             var shareData = JSON.stringify(data);
 
@@ -107,17 +108,18 @@ module.exports = function(logger){
             logDebug(logIdentify, 'client', 'Valid share submitted, share data: ' + shareData);
             process.send({
                 type: 'share',
-                share: shareData,
+                share: data,
                 coin: poolOptions.coin.name,
                 isValidShare: isValidShare,
-                isValidBlock: isValidBlock
+                isValidBlock: isValidBlock,
+                solution: blockHex
             });
 
             if (isValidBlock){
                 logDebug(logIdentify, 'client', 'Block found, solution: ' + shareData.solution);
                 process.send({
                     type: 'block',
-                    share: shareData,
+                    share: data,
                     coin: poolOptions.coin.name
                 });
             }
