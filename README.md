@@ -83,19 +83,38 @@ Description of options:
 {
     "disabled": false, //Set this to true and a pool will not be created from this config file
     "coin": "litecoin", //This MUST be a reference to the 'name' field in your coin's config file
+    "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //address to where block rewards are given
+    "blockRefreshInterval": 1000 //how often to poll RPC daemons for new blocks, in milliseconds
+    //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
 
-    /* This determines what to do with submitted shares. You have two options: 1) Enable mpos
-       and disabled internal which wil allow MPOS to handle all share payments. 2) Disable mpos
-       and enabled internal which will allow this portal to handle all share payments. */
-    "shareProcessing": {
-        "mpos": { //enabled this and shares will be inserted into share table in a MySql database
-            "enabled": false,
-            "host": "localhost",
-            "port": 3306,
-            "user": "me",
-            "password": "mypass",
-            "database": "ltc"
+
+    /* Each pool can have as many ports for your miners to connect to as you wish. Each port can
+       be configured to use its own pool difficulty and variable difficulty settings. varDiff is
+       optional and will only be used for the ports you configure it for. */
+    "ports": {
+        "3032": { //a port for your miners to connect to
+            "diff": 32, //the pool difficulty for this port
+
+            /* Variable difficulty is a feature that will automatically adjust difficulty for
+               individual miners based on their hashrate in order to lower networking overhead */
+            "varDiff": {
+                "minDiff": 8, //minimum difficulty
+                "maxDiff": 512, //network difficulty will be used if it is lower than this
+                "targetTime": 15, //try to get 1 share per this many seconds
+                "retargetTime": 90, //check to see if we should retarget every this many seconds
+                "variancePercent": 30 //allow time to very this % from target without retargeting
+            }
         },
+        "3256": { //another port for your miners to connect to, this port does not use varDiff
+            "diff": 256 //the pool difficulty
+        }
+    },
+
+
+    /* This determines what to do with submitted shares. You have two options: 1) Enable internal
+       and disable mpos which will allow this portal to handle all share payments.2) Enable mpos
+       and disabled internal which wil allow MPOS to handle all share payments. */
+    "shareProcessing": {
         "internal": { //enabled this options for share payments to be processed and sent locally
             "enabled": true,
             /* This daemon is used to send out payments. It MUST be for the daemon that owns the
@@ -107,19 +126,17 @@ Description of options:
                 "user": "litecoinrpc",
                 "password": "testnet"
             }
+        },
+        "mpos": { //enabled this and shares will be inserted into share table in a MySql database
+            "enabled": false,
+            "host": "localhost",
+            "port": 3306,
+            "user": "me",
+            "password": "mypass",
+            "database": "ltc"
         }
     },
 
-    /* All options below this are passed directly to the stratum module:
-       https://github.com/zone117x/node-stratum   - which has some additional documentation. */
-
-    "pool": {
-        //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
-        "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //address to where block rewards are given
-        "stratumPort": 3334, //port that youre miners connect to, eg: stratum+tcp://pool.com:3334
-        "difficulty": 8, //your pool difficulty
-        "blockRefreshInterval": 1000 //how often to poll RPC daemons for new blocks, in milliseconds
-    },
 
     /* RPC daemons for block update polling and submitting blocks - recommended to have at least two
        for redundancy in case one dies or goes out-of-sync */
@@ -138,23 +155,6 @@ Description of options:
         }
     ],
 
-    /* Variable difficulty is a feature that will automatically adjust difficulty for individual
-       miners based on their hashrate in order to lower networking overhead */
-    "varDiff": {
-        "enabled": true, //set to false to disable vardiff functionality
-        "minDifficulty": 16, //minimum difficulty
-        "maxDifficulty": 1000, //network difficulty will be used if it is lower than this
-        "targetTime": 30, //target time per share (i.e. try to get 1 share per this many seconds)
-        "retargetTime": 120, //check to see if we should retarget every this many seconds
-        "variancePercent": 20 //allow average time to very this % from target without retarget
-
-        /* By default new difficulties will be sent when a new job is available as stratum
-           protocol (http://mining.bitcoin.cz/stratum-mining) states that new difficulties
-           "will be applied to every next job received from the server." Some miner software
-           will almost immediately apply new difficulties. Set mode to fast for difficulty
-           to be sent immediately. */
-        //mode: 'fast' //NOT recommended for most miners
-    },
 
     /* This allows the pool to connect to the daemon as a node peer to recieve block updates.
        It may be the most efficient way to get block updates (faster than polling, less

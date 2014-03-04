@@ -9,7 +9,7 @@
         "node-json-minify": "*",
         "posix": "*",
         "redis": "*",
-        "mysql": "felixge/node-mysql",
+        "mysql": "felixge/node-mysql"
     },
     "devDependencies": {},
     "scripts": {
