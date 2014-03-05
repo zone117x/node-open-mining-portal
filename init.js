@@ -86,7 +86,7 @@ if (cluster.isMaster){
 
     for (var i = 0; i < numForks; i++) {
         cluster.fork({
-            fork: i,
+            forkId: i,
             pools: serializedConfigs
         });
     }

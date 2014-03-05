@@ -2,148 +2,135 @@ var cluster = require('cluster');
 
 var Stratum = require('stratum-pool');
 
+var MposCompatibility = require('./mposCompatibility.js');
+var ShareProcessor = require('./shareProcessor.js');
+
 module.exports = function(logger){
 
 
-    var logDebug   = logger.logDebug;
-    var logWarning = logger.logWarning;
-    var logError   = logger.logError;
-
-
     var poolConfigs = JSON.parse(process.env.pools);
-    var fork = process.env.fork;
+    var forkId = process.env.forkId;
 
-    var pools = [];
+    var pools = {};
 
     //Handle messages from master process sent via IPC
     process.on('message', function(message) {
         switch(message.type){
             case 'blocknotify':
-                for (var i = 0; i < pools.length; i++){
-                    if (pools[i].options.coin.name.toLowerCase() === message.coin.toLowerCase()){
-                        pools[i].processBlockNotify(message.hash)
-                        return;
-                    }
-                }
-                break;
-            case 'mposAuth':
-                var callbackId = message.callbackId;
-                if (callbackId in mposAuthCallbacks) {
-                    mposAuthCallbacks[callbackId](message.authorized);
-                }
+                var pool = pools[message.coin.toLowerCase()]
+                if (pool) pool.processBlockNotify(message.hash)
                 break;
         }
     });
 
 
-    var mposAuthCallbacks = {};
-
     Object.keys(poolConfigs).forEach(function(coin) {
 
         var poolOptions = poolConfigs[coin];
 
-        var logIdentify = coin + ' (Fork ' + fork + ')';
+        var logIdentify = coin + ' (Fork ' + forkId + ')';
 
-        var authorizeFN = function (ip, workerName, password, callback) {
-            // Default implementation just returns true
-            logDebug(logIdentify, 'client', "Authorize [" + ip + "] " + workerName + ":" + password);
-
-            var mposAuthLevel;
-            if (poolOptions.shareProcessing.mpos.enabled && (
-                (mposAuthLevel = poolOptions.shareProcessing.mpos.stratumAuth) === 'worker' ||
-                    mposAuthLevel === 'password'
-            )){
-                var callbackId = coin + workerName + password + Date.now();
-                var authTimeout = setTimeout(function(){
-                    if (!(callbackId in mposAuthCallbacks))
-                        return;
-                    callback({
-                        error: null,
-                        authorized: false,
-                        disconnect: false
-                    });
-                    delete mposAuthCallbacks[callbackId];
-                }, 30000);
-                mposAuthCallbacks[callbackId] = function(authorized){
-                    callback({
-                        error: null,
-                        authorized: authorized,
-                        disconnect: false
-                    });
-                    delete mposAuthCallbacks[callbackId];
-                    clearTimeout(authTimeout);
-                };
-                process.send({
-                    type       : 'mposAuth',
-                    coin       : poolOptions.coin.name,
-                    callbackId : callbackId,
-                    workerId   : cluster.worker.id,
-                    workerName : workerName,
-                    password   : password,
-                    authLevel  : mposAuthLevel
-                });
+        var poolLogger = {
+            debug: function(key, text){
+                logger.logDebug(logIdentify, key, text);
+            },
+            warning: function(key, text){
+                logger.logWarning(logIdentify, key, text);
+            },
+            error: function(key, text){
+                logger.logError(logIdentify, key, text);
             }
-            else{
-                // if we're here than it means we're on stratumAuth: "none" or something unrecognized by the system!
-                callback({
+        };
+
+        var handlers = {
+            auth: function(){},
+            share: function(){},
+            diff: function(){}
+        };
+
+        var shareProcessing = poolOptions.shareProcessing;
+
+        //Functions required for MPOS compatibility
+        if (shareProcessing.mpos && shareProcessing.mpos.enabled){
+            var mposCompat = new MposCompatibility(poolLogger, poolOptions)
+
+            handlers.auth = function(workerName, password, authCallback){
+                mposCompat.handleAuth(workerName, password, authCallback);
+            };
+
+            handlers.share = function(isValidShare, isValidBlock, data){
+                mposCompat.handleShare(isValidShare, isValidBlock, data);
+            };
+
+            handlers.diff = function(workerName, diff){
+                mposCompat.handleDifficultyUpdate(workerName, diff);
+            }
+        }
+
+        //Functions required for internal payment processing
+        else if (shareProcessing.internal && shareProcessing.internal.enabled){
+
+            var shareProcessor = new ShareProcessor(poolLogger, poolOptions)
+
+            handlers.auth = function(workerName, password, authCallback){
+                authCallback({
                     error: null,
                     authorized: true,
                     disconnect: false
                 });
-            }
+            };
+
+            handlers.share = function(isValidShare, isValidBlock, data){
+                shareProcessor.handleShare(isValidShare, isValidBlock, data);
+            };
+        }
+
+        var authorizeFN = function (ip, workerName, password, callback) {
+            handlers.auth(workerName, password, function(authorized){
+
+                var authString = authorized ? 'Authorized' : 'Unauthorized ';
+
+                poolLogger.debug('client', authorized + ' [' + ip + '] ' + workerName + ':' + password);
+                callback({
+                    error: null,
+                    authorized: authorized,
+                    disconnect: false
+                });
+            });
         };
 
 
         var pool = Stratum.createPool(poolOptions, authorizeFN);
-        pool.on('share', function(isValidShare, isValidBlock, data, blockHex){
+        pool.on('share', function(isValidShare, isValidBlock, data){
 
             var shareData = JSON.stringify(data);
 
-            if (data.solution && !isValidBlock){
-                logDebug(logIdentify, 'client', 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
-            }
-            else if (!isValidShare){
-                logDebug(logIdentify, 'client', 'Invalid share submitted, share data: ' + shareData)
-            }
+            if (data.solution && !isValidBlock)
+                poolLogger.debug('client', 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
+            else if (isValidBlock)
+                poolLogger.debug('client', 'Block found, solution: ' + shareData.solution);
 
-            logDebug(logIdentify, 'client', 'Valid share submitted, share data: ' + shareData);
-            process.send({
-                type         : 'share',
-                share        : data,
-                coin         : poolOptions.coin.name,
-                isValidShare : isValidShare,
-                isValidBlock : isValidBlock,
-                solution     : blockHex // blockHex is undefined is this was not a valid block.
-            });
+            if (isValidShare)
+                poolLogger.debug('client', 'Valid share submitted, share data: ' + shareData);
+            else if (!isValidShare)
+                poolLogger.debug('client', 'Invalid share submitted, share data: ' + shareData)
 
-            if (isValidBlock){
-                logDebug(logIdentify, 'client', 'Block found, solution: ' + shareData.solution);
-                process.send({
-                    type  : 'block',
-                    share : data,
-                    coin  : poolOptions.coin.name
-                });
-            }
+
+            handlers.share(isValidShare, isValidBlock, data)
+
 
         }).on('difficultyUpdate', function(workerName, diff){
-            if (poolOptions.shareProcessing.mpos.enabled){
-                process.send({
-                    type       : 'difficultyUpdate',
-                    workerName : workerName,
-                    diff       : diff,
-                    coin       : poolOptions.coin.name
-                });
-            }
+            handlers.diff(workerName, diff);
         }).on('log', function(severity, logKey, logText) {
             if (severity == 'debug') {
-                logDebug(logIdentify, logKey, logText);
+                poolLogger.debug(logKey, logText);
             } else if (severity == 'warning') {
-                logWarning(logIdentify, logKey, logText);
+                poolLogger.warning(logKey, logText);
             } else if (severity == 'error') {
-                logError(logIdentify, logKey, logText);
+                poolLogger.error(logKey, logText);
             }
         });
         pool.start();
-        pools.push(pool);
+        pools[poolOptions.coin.name.toLowerCase()] = pool;
     });
 };
