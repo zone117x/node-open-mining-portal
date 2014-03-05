@@ -22,7 +22,7 @@
 
     "shareProcessing": {
         "internal": {
-            "enabled": false,
+            "enabled": true,
             "daemon": {
                 "host": "localhost",
                 "port": 19332,
@@ -35,7 +35,7 @@
             }
         },
         "mpos": {
-            "enabled": true,
+            "enabled": false,
             "host": "localhost",
             "port": 3306,
             "user": "me",

@@ -90,7 +90,7 @@ module.exports = function(logger){
 
                 var authString = authorized ? 'Authorized' : 'Unauthorized ';
 
-                poolLogger.debug('client', authorized + ' [' + ip + '] ' + workerName + ':' + password);
+                poolLogger.debug('client', authString + ' [' + ip + '] ' + workerName + ':' + password);
                 callback({
                     error: null,
                     authorized: authorized,

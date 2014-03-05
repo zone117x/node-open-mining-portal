@@ -8,13 +8,23 @@ module.exports = function(logger, poolConfig){
     var connection;
 
     function connect(){
-        var connection = connections[coin] = redis.createClient(redisConfig.port, redisConfig.host);
+
+        var reconnectTimeout;
+
+        var connection = redis.createClient(redisConfig.port, redisConfig.host);
+        connection.on('ready', function(){
+            clearTimeout(reconnectTimeout);
+            logger.debug('redis', 'Successfully connected to redis database');
+        });
         connection.on('error', function(err){
             logger.error('redis', 'Redis client had an error: ' + JSON.stringify(err))
         });
         connection.on('end', function(){
-            logger.warning('redis', 'Connection to redis database as been ended');
-            connect();
+            logger.error('redis', 'Connection to redis database as been ended');
+            logger.warning('redis', 'Trying reconnection in 3 seconds...');
+            reconnectTimeout = setTimeout(function(){
+                connect();
+            }, 3000);
         });
     }
     connect();
