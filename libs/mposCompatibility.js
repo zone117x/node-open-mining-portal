@@ -1,5 +1,5 @@
 var mysql = require('mysql');
-
+var cluster = require('cluster');
 module.exports = function(logger, poolConfigs){
 
     var dbConnections = (function(){
@@ -63,9 +63,9 @@ module.exports = function(logger, poolConfigs){
 
         var sendResult = function(authorized){
             cluster.workers[data.workerId].send({
-                type: 'mposAuth',
-                callbackId: data.callbackId,
-                authorized: authorized
+                type       : 'mposAuth',
+                callbackId : data.callbackId,
+                authorized : authorized
             });
         };
 
@@ -92,14 +92,24 @@ module.exports = function(logger, poolConfigs){
 
     };
 
-    this.handleShare = function(isValidShare, isValidBlock, data){
-
+    this.handleShare = function(data){
+        var isValidShare = data.isValidShare;
+        var isValidBlock = data.isValidBlock;
         if ((!data.coin in dbConnections)) return;
 
         var connection = dbConnections[data.coin];
+        var dbData = [
+            data.share.ip, 
+            data.share.worker, 
+            isValidShare ? 'Y' : 'N', 
+            isValidBlock ? 'Y' : 'N', 
+            data.share.difficulty, 
+            typeof(data.share.error)==='undefined'?null:data.share.error, 
+            typeof(data.solution)==='undefined'?'':data.solution // solution?
+        ];
         connection.query(
             'INSERT INTO `shares` SET time = NOW(), rem_host = ?, username = ?, our_result = ?, upstream_result = ?, difficulty = ?, reason = ?, solution = ?',
-            [data.ip, data.worker, isValidShare ? 'Y' : 'N', isValidBlock ? 'Y' : 'N', data.difficulty, data.error, data.solution],
+            dbData,
             function(err, result) {
                 if (err)
                     logger.logError('shareProcessor', 'mysql', 'MySQL insert error when adding share: ' +
