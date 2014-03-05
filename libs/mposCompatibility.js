@@ -47,7 +47,7 @@ module.exports = function(logger, poolConfig){
                 }
                 else if (!result[0])
                     authCallback(false);
-                else if (data.authLevel === 'worker')
+                else if (mposConfig.stratumAuth === 'worker')
                     authCallback(true);
                 else if (result[0].password === password)
                     authCallback(true)
