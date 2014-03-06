@@ -102,9 +102,12 @@ Description of options:
             "feePercent": 0.02, //(2% default) What percent fee your pool takes from the block reward
             /* Your address that receives pool revenue from fees */
             "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
-            /* How many coins from fee revenue must accumulate before withdrawing to fee address.
-               The higher this threshold, the less of your profit goes to transactions fees. */
-            "feeWithdrawalThreshold": 0.5,
+            /* Minimum number of coins to keep in pool wallet */
+            "minimumReserve": 10,
+            /* How many coins from fee revenue must accumulate on top of the minimum reserve amount
+               in order to trigger withdrawal to fee address. The higher this threshold, the less of
+               your profit goes to transactions fees. */
+            "feeWithdrawalThreshold": 5,
             /* This daemon is used to send out payments. It MUST be for the daemon that owns the
                configured 'address' that receives the block rewards, otherwise the daemon will not
                be able to confirm blocks or send out payments. */
