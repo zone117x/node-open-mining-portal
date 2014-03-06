@@ -117,6 +117,12 @@ Description of options:
     "shareProcessing": {
         "internal": { //enabled this options for share payments to be processed and sent locally
             "enabled": true,
+            /* When workers connect, to receive payments, their address must be used as the worker
+               name. If this option is true, on worker authentication, their address will be verified
+               via a validateaddress API call to the daemon. Miners with invalid addresses will be
+               rejected. */
+            "validateWorkerAddress": true,
+            "paymentInterval": 30, //(seconds) check for confirmed blocks for sending payments
             /* This daemon is used to send out payments. It MUST be for the daemon that owns the
                'address' field above, otherwise the daemon will not be able to confirm blocks
                or sent out payments. */

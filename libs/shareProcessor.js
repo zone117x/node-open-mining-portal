@@ -30,8 +30,6 @@ module.exports = function(logger, poolConfig){
     connect();
 
 
-
-
     this.handleShare = function(isValidShare, isValidBlock, shareData){
 
 

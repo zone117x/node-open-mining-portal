@@ -23,6 +23,8 @@
     "shareProcessing": {
         "internal": {
             "enabled": true,
+            "validateWorkAddress": true,
+            "paymentInterval": 30,
             "daemon": {
                 "host": "localhost",
                 "port": 19332,
