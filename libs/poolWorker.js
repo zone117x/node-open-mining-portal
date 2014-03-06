@@ -106,14 +106,14 @@ module.exports = function(logger){
             var shareData = JSON.stringify(data);
 
             if (data.solution && !isValidBlock)
-                poolLogger.debug('client', 'We thought a block solution was found but it was rejected by the daemon, share data: ' + data);
+                poolLogger.debug('client', 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
             else if (isValidBlock)
                 poolLogger.debug('client', 'Block found, solution: ' + data.solution);
 
             if (isValidShare)
-                poolLogger.debug('client', 'Valid share submitted, share data: ' + data);
+                poolLogger.debug('client', 'Valid share submitted, share data: ' + shareData);
             else if (!isValidShare)
-                poolLogger.debug('client', 'Invalid share submitted, share data: ' + data)
+                poolLogger.debug('client', 'Invalid share submitted, share data: ' + shareData)
 
 
             handlers.share(isValidShare, isValidBlock, data)

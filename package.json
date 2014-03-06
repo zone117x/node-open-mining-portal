@@ -4,7 +4,6 @@
     "description": "Node quick start example portal",
     "main": "init.js",
     "dependencies": {
-
         "stratum-pool": "https://github.com/zone117x/node-stratum/archive/master.tar.gz",
         "dateformat": "*",
         "node-json-minify": "*",
