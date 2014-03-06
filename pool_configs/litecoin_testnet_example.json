@@ -4,6 +4,15 @@
     "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc",
     "blockRefreshInterval": 1000,
 
+    "connectionTimeout": 120,
+
+    "banning": {
+        "enabled": true,
+        "time": 600,
+        "invalidPercent": 50,
+        "checkThreshold": 500
+    },
+
     "ports": {
         "3032": {
             "diff": 32,
@@ -23,8 +32,11 @@
     "shareProcessing": {
         "internal": {
             "enabled": true,
-            "validateWorkAddress": true,
+            "validateWorkerAddress": true,
             "paymentInterval": 30,
+            "minimumPayment": 0.001,
+            "feePercent": 0.02,
+            "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
             "daemon": {
                 "host": "localhost",
                 "port": 19332,

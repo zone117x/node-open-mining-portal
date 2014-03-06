@@ -1,9 +1,26 @@
 var redis = require('redis');
+var Stratum = require('stratum-pool');
+
+
+/*
+This module deals with handling shares when in internal payment processing mode. It connects to a redis
+database and inserts shares with the database structure of:
+
+key: coin_name + ':' + block_height
+value: a hash with..
+        key:
+
+ */
+
 
 module.exports = function(logger, poolConfig){
 
-    var redisConfig = poolConfig.shareProcessing.internal.redis;
+    var internalConfig = poolConfig.shareProcessing.internal;
+    var redisConfig = internalConfig.redis;
     var coin = poolConfig.coin.name;
+
+
+
 
     var connection;
 
@@ -11,7 +28,7 @@ module.exports = function(logger, poolConfig){
 
         var reconnectTimeout;
 
-        var connection = redis.createClient(redisConfig.port, redisConfig.host);
+        connection = redis.createClient(redisConfig.port, redisConfig.host);
         connection.on('ready', function(){
             clearTimeout(reconnectTimeout);
             logger.debug('redis', 'Successfully connected to redis database');

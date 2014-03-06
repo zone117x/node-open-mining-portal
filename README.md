@@ -83,30 +83,43 @@ Description of options:
 {
     "disabled": false, //Set this to true and a pool will not be created from this config file
     "coin": "litecoin", //This MUST be a reference to the 'name' field in your coin's config file
-    "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //address to where block rewards are given
-    "blockRefreshInterval": 1000 //how often to poll RPC daemons for new blocks, in milliseconds
+    "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
+    "blockRefreshInterval": 1000 //How often to poll RPC daemons for new blocks, in milliseconds
     //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
 
+    /* Some attackers will create thousands of workers that use up all available socket connections,
+       usually the workers are zombies and don't submit shares after connecting. This features
+       detects those and disconnects them */
+    "connectionTimeout": 120, //Remove workers that haven't been in contact for this many seconds
+
+    /* If a worker is submitting a good deal of invalid shares we can temporarily ban them to
+       reduce system/network load. Also useful to fight against flooding attacks. */
+    "banning": {
+        "enabled": true,
+        "time": 600, //How many seconds to ban worker for
+        "invalidPercent": 50, //What percent of invalid shares triggers ban
+        "checkThreshold": 500 //Check invalid percent when this many shares have been submitted
+    },
 
     /* Each pool can have as many ports for your miners to connect to as you wish. Each port can
        be configured to use its own pool difficulty and variable difficulty settings. varDiff is
        optional and will only be used for the ports you configure it for. */
     "ports": {
-        "3032": { //a port for your miners to connect to
+        "3032": { //A port for your miners to connect to
             "diff": 32, //the pool difficulty for this port
 
             /* Variable difficulty is a feature that will automatically adjust difficulty for
                individual miners based on their hashrate in order to lower networking overhead */
             "varDiff": {
-                "minDiff": 8, //minimum difficulty
-                "maxDiff": 512, //network difficulty will be used if it is lower than this
-                "targetTime": 15, //try to get 1 share per this many seconds
-                "retargetTime": 90, //check to see if we should retarget every this many seconds
-                "variancePercent": 30 //allow time to very this % from target without retargeting
+                "minDiff": 8, //Minimum difficulty
+                "maxDiff": 512, //Network difficulty will be used if it is lower than this
+                "targetTime": 15, //Try to get 1 share per this many seconds
+                "retargetTime": 90, //Check to see if we should retarget every this many seconds
+                "variancePercent": 30 //Allow time to very this % from target without retargeting
             }
         },
-        "3256": { //another port for your miners to connect to, this port does not use varDiff
-            "diff": 256 //the pool difficulty
+        "3256": { //Another port for your miners to connect to, this port does not use varDiff
+            "diff": 256 //The pool difficulty
         }
     },
 
@@ -115,14 +128,21 @@ Description of options:
        and disable mpos which will allow this portal to handle all share payments.2) Enable mpos
        and disabled internal which wil allow MPOS to handle all share payments. */
     "shareProcessing": {
-        "internal": { //enabled this options for share payments to be processed and sent locally
+        "internal": { //Enabled this options for share payments to be processed and sent locally
             "enabled": true,
             /* When workers connect, to receive payments, their address must be used as the worker
                name. If this option is true, on worker authentication, their address will be verified
                via a validateaddress API call to the daemon. Miners with invalid addresses will be
                rejected. */
             "validateWorkerAddress": true,
-            "paymentInterval": 30, //(seconds) check for confirmed blocks for sending payments
+            "paymentInterval": 30, //(seconds) Check for confirmed blocks for sending payments
+            /* Minimum number of coins that a miner must earn before sending payment. Typically,
+               a higher minimum means transactions fees (more profit for you) but miners see payments
+               less frequently (which they may dislike). Opposite for a lower minimum payment. */
+            "minimumPayment": 0.001,
+            "feePercent": 0.02, //(2% default) What percent fee your pool takes from the block reward
+            /* Your address that receives pool revenue from fees */
+            "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
             /* This daemon is used to send out payments. It MUST be for the daemon that owns the
                'address' field above, otherwise the daemon will not be able to confirm blocks
                or sent out payments. */
@@ -133,13 +153,13 @@ Description of options:
                 "password": "testnet"
             }
         },
-        "mpos": { //enabled this and shares will be inserted into share table in a MySql database
+        "mpos": { //Enabled this and shares will be inserted into share table in a MySQL database
             "enabled": false,
-            "host": "localhost",
-            "port": 3306,
-            "user": "me",
-            "password": "mypass",
-            "database": "ltc",
+            "host": "localhost", //MySQL db host
+            "port": 3306, //MySQL db port
+            "user": "me", //MySQL db user
+            "password": "mypass", //MySQL db password
+            "database": "ltc", //MySQL db database name
             /* For when miner's authenticate: set to "password" for both worker name and password to
                be checked for in the database, set to "worker" for only work name to be checked, or
                don't use this option (set to "none") for no auth checks */
@@ -151,13 +171,13 @@ Description of options:
     /* RPC daemons for block update polling and submitting blocks - recommended to have at least two
        for redundancy in case one dies or goes out-of-sync */
     "daemons": [
-        {   //main daemon instance
+        {   //Main daemon instance
             "host": "localhost",
             "port": 19332,
             "user": "litecoinrpc",
             "password": "testnet"
         },
-        {   //backup daemon instance
+        {   //Backup daemon instance
             "host": "localhost",
             "port": 19344,
             "user": "litecoinrpc",
@@ -181,7 +201,7 @@ Description of options:
          */
         "magic": "fcc1b7dc",
 
-        // Found in src as the PROTOCOL_VERSION variable, for example: http://git.io/KjuCrw
+        //Found in src as the PROTOCOL_VERSION variable, for example: http://git.io/KjuCrw
         "protocolVersion": 70002,
 
     }

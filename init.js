@@ -84,15 +84,26 @@ if (cluster.isMaster){
         return config.clustering.forks;
     })();
 
+    var workerIds = {};
+
     for (var i = 0; i < numForks; i++) {
-        cluster.fork({
+        var worker = cluster.fork({
             forkId: i,
             pools: serializedConfigs
         });
+        workerIds[worker.process.pid] = i;
     }
 
     cluster.on('exit', function(worker, code, signal) {
-        logError('workerFork', 'system', 'fork with PID ' + worker.process.pid + ' died');
+        var diedPid = worker.process.pid;
+        var forkId = workerIds[diedPid]
+        logError('poolWorker', 'system', 'Fork ' + forkId + ' died, spawning replacement worker...');
+        var worker = cluster.fork({
+            forkId: forkId,
+            pools: serializedConfigs
+        });
+        delete workerIds[diedPid];
+        workerIds[worker.process.pid] = forkId;
     });
 
 
