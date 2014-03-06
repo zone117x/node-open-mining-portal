@@ -133,7 +133,7 @@ Description of options:
     },
 
     "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
-    "blockRefreshInterval": 1000 //How often to poll RPC daemons for new blocks, in milliseconds
+    "blockRefreshInterval": 1000, //How often to poll RPC daemons for new blocks, in milliseconds
     //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
 
     /* Some attackers will create thousands of workers that use up all available socket connections,
