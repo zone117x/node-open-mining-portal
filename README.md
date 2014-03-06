@@ -83,45 +83,6 @@ Description of options:
 {
     "disabled": false, //Set this to true and a pool will not be created from this config file
     "coin": "litecoin", //This MUST be a reference to the 'name' field in your coin's config file
-    "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
-    "blockRefreshInterval": 1000 //How often to poll RPC daemons for new blocks, in milliseconds
-    //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
-
-    /* Some attackers will create thousands of workers that use up all available socket connections,
-       usually the workers are zombies and don't submit shares after connecting. This features
-       detects those and disconnects them */
-    "connectionTimeout": 120, //Remove workers that haven't been in contact for this many seconds
-
-    /* If a worker is submitting a good deal of invalid shares we can temporarily ban them to
-       reduce system/network load. Also useful to fight against flooding attacks. */
-    "banning": {
-        "enabled": true,
-        "time": 600, //How many seconds to ban worker for
-        "invalidPercent": 50, //What percent of invalid shares triggers ban
-        "checkThreshold": 500 //Check invalid percent when this many shares have been submitted
-    },
-
-    /* Each pool can have as many ports for your miners to connect to as you wish. Each port can
-       be configured to use its own pool difficulty and variable difficulty settings. varDiff is
-       optional and will only be used for the ports you configure it for. */
-    "ports": {
-        "3032": { //A port for your miners to connect to
-            "diff": 32, //the pool difficulty for this port
-
-            /* Variable difficulty is a feature that will automatically adjust difficulty for
-               individual miners based on their hashrate in order to lower networking overhead */
-            "varDiff": {
-                "minDiff": 8, //Minimum difficulty
-                "maxDiff": 512, //Network difficulty will be used if it is lower than this
-                "targetTime": 15, //Try to get 1 share per this many seconds
-                "retargetTime": 90, //Check to see if we should retarget every this many seconds
-                "variancePercent": 30 //Allow time to very this % from target without retargeting
-            }
-        },
-        "3256": { //Another port for your miners to connect to, this port does not use varDiff
-            "diff": 256 //The pool difficulty
-        }
-    },
 
 
     /* This determines what to do with submitted shares. You have two options: 1) Enable internal
@@ -167,9 +128,51 @@ Description of options:
         }
     },
 
+    "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
+    "blockRefreshInterval": 1000 //How often to poll RPC daemons for new blocks, in milliseconds
+    //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
 
-    /* RPC daemons for block update polling and submitting blocks - recommended to have at least two
-       for redundancy in case one dies or goes out-of-sync */
+    /* Some attackers will create thousands of workers that use up all available socket connections,
+       usually the workers are zombies and don't submit shares after connecting. This features
+       detects those and disconnects them. */
+    "connectionTimeout": 120, //Remove workers that haven't been in contact for this many seconds
+
+    /* If a worker is submitting a good deal of invalid shares we can temporarily ban them to
+       reduce system/network load. Also useful to fight against flooding attacks. */
+    "banning": {
+        "enabled": true,
+        "time": 600, //How many seconds to ban worker for
+        "invalidPercent": 50, //What percent of invalid shares triggers ban
+        "checkThreshold": 500, //Check invalid percent when this many shares have been submitted
+        "purgeInterval": 300 //Every this many seconds clear out the list of old bans
+    },
+
+    /* Each pool can have as many ports for your miners to connect to as you wish. Each port can
+       be configured to use its own pool difficulty and variable difficulty settings. varDiff is
+       optional and will only be used for the ports you configure it for. */
+    "ports": {
+        "3032": { //A port for your miners to connect to
+            "diff": 32, //the pool difficulty for this port
+
+            /* Variable difficulty is a feature that will automatically adjust difficulty for
+               individual miners based on their hashrate in order to lower networking overhead */
+            "varDiff": {
+                "minDiff": 8, //Minimum difficulty
+                "maxDiff": 512, //Network difficulty will be used if it is lower than this
+                "targetTime": 15, //Try to get 1 share per this many seconds
+                "retargetTime": 90, //Check to see if we should retarget every this many seconds
+                "variancePercent": 30 //Allow time to very this % from target without retargeting
+            }
+        },
+        "3256": { //Another port for your miners to connect to, this port does not use varDiff
+            "diff": 256 //The pool difficulty
+        }
+    },
+
+
+    /* Recommended to have at least two daemon instances running in case one drops out-of-sync
+       or offline. For redundancy, all instances will be polled for block/transaction updates
+       and be used for submitting blocks. */
     "daemons": [
         {   //Main daemon instance
             "host": "localhost",
@@ -203,7 +206,6 @@ Description of options:
 
         //Found in src as the PROTOCOL_VERSION variable, for example: http://git.io/KjuCrw
         "protocolVersion": 70002,
-
     }
 }
 

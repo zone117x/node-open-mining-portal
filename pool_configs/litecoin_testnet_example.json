@@ -1,33 +1,6 @@
 {
     "disabled": false,
     "coin": "litecoin",
-    "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc",
-    "blockRefreshInterval": 1000,
-
-    "connectionTimeout": 120,
-
-    "banning": {
-        "enabled": true,
-        "time": 600,
-        "invalidPercent": 50,
-        "checkThreshold": 500
-    },
-
-    "ports": {
-        "3032": {
-            "diff": 32,
-            "varDiff": {
-                "minDiff": 8,
-                "maxDiff": 512,
-                "targetTime": 15,
-                "retargetTime": 90,
-                "variancePercent": 30
-            }
-        },
-        "3256": {
-            "diff": 256
-        }
-    },
 
     "shareProcessing": {
         "internal": {
@@ -56,6 +29,35 @@
             "password": "mypass",
             "database": "ltc",
             "stratumAuth": "password"
+        }
+    },
+
+
+    "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc",
+    "blockRefreshInterval": 1000,
+    "connectionTimeout": 120,
+
+    "banning": {
+        "enabled": true,
+        "time": 600,
+        "invalidPercent": 50,
+        "checkThreshold": 500,
+        "purgeInterval": 300
+    },
+
+    "ports": {
+        "3032": {
+            "diff": 32,
+            "varDiff": {
+                "minDiff": 8,
+                "maxDiff": 512,
+                "targetTime": 15,
+                "retargetTime": 90,
+                "variancePercent": 30
+            }
+        },
+        "3256": {
+            "diff": 256
         }
     },
 
