@@ -96,15 +96,18 @@ Description of options:
             "validateWorkerAddress": true,
             "paymentInterval": 30, //(seconds) Check for confirmed blocks for sending payments
             /* Minimum number of coins that a miner must earn before sending payment. Typically,
-               a higher minimum means transactions fees (more profit for you) but miners see payments
-               less frequently (which they may dislike). Opposite for a lower minimum payment. */
+               a higher minimum means less transactions fees (you profit more) but miners see
+               payments less frequently (they dislike). Opposite for a lower minimum payment. */
             "minimumPayment": 0.001,
             "feePercent": 0.02, //(2% default) What percent fee your pool takes from the block reward
             /* Your address that receives pool revenue from fees */
             "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
+            /* How many coins from fee revenue must accumulate before withdrawing to fee address.
+               The higher this threshold, the less of your profit goes to transactions fees. */
+            "feeWithdrawalThreshold": 0.5,
             /* This daemon is used to send out payments. It MUST be for the daemon that owns the
-               'address' field above, otherwise the daemon will not be able to confirm blocks
-               or sent out payments. */
+               configured 'address' that receives the block rewards, otherwise the daemon will not
+               be able to confirm blocks or send out payments. */
             "daemon": {
                 "host": "localhost",
                 "port": 19332,
