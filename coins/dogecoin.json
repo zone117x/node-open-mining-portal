@@ -1,0 +1,7 @@
+{
+    "name": "Dogecoin",
+    "symbol": "doge",
+    "algorithm": "scrypt",
+    "reward": "POW",
+    "txMessages": false
+}

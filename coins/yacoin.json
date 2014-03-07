@@ -1,0 +1,7 @@
+{
+    "name": "Yacoin",
+    "symbol": "yac",
+    "algorithm": "scrypt-jane",
+    "reward": "POS",
+    "txMessages": false
+}

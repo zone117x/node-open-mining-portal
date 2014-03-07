@@ -1,30 +1,34 @@
 # Stratum Portal
 
-## Description
 This portal is an extremely efficient, highly scalable, all-in-one, easy to setup cryptocurrency mining pool written
 entirely in Node.js. It contains a [stratum poolserver](https://github.com/zone117x/node-stratum), reward/payment/share
 processor (*not yet completed*), and front-end website (*not yet completed*).
 
-It can be used to create a pool for a single coin or for multiple coins at once. The pools use clustering to load
-balance across multiple CPU cores.
+Alternatively, this software also has an [MPOS](https://github.com/MPOS/php-mpos) compatibility mode so that the it can
+function as a drop-in-replacement for [python-stratum-mining](https://github.com/Crypto-Expert/stratum-mining). This
+mode can be enabled in the configuration and will insert shares into a MySQL database in the format which MPOS expects.
+
+This software was built from the ground up with the ability to running with multiple coins that can have different
+properties and hashing algorithms. It can be used to create a pool for a single coin or for multiple coins at once.
+The pools use clustering to load balance across multiple CPU cores.
 
 For reward/payment processing, shares are inserted into a fast NoSQL key/value database (Redis). Each coin has a
 processor that monitors for confirmed submitted blocks then send out payments according to shares accumulated in the
 database. The payment/reward method used will be PROP (proportional) - where when a block is submitted and confirmed,
 miners are paid based on their shares submitted during the round (a round is the process of searching for a single block).
 
-For those that wish to use this project with [MPOS](https://github.com/MPOS/php-mpos), the portal can be configured
-to insert shares into a MySQL database in the format which MPOS expects.
-
 This portal does not have user accounts/logins/registrations. Instead, miners simply use their coin address for stratum
 authentication. A minimalistic HTML5 front-end connects to the portals statistics API to display stats from from each
 pool such as connected miners, network/pool difficulty/hash rate, etc.
 
-To reduce variance for pools just starting out which have little to no hashing power a feature is planned which will
+
+#### Planned Features
+
+* To reduce variance for pools just starting out which have little to no hashing power a feature is planned which will
 allow your own pool to connect upstream to a larger pool server. It will request work from the larger pool then
 redistribute the work to our own connected miners.
 
-Automated switching of connected miners to different pools/coins is also easily done due to the multi-pool architecture
+* Automated switching of connected miners to different pools/coins is also easily done due to the multi-pool architecture
 of this software. The switching can be controlled using a coin profitability API such as CoinChoose.com or CoinWarz.com
 (or calculated locally using daemon-reported network difficulties and exchange APIs).
 
@@ -35,6 +39,8 @@ Usage
 =====
 
 #### 1) Download
+
+Clone the repository and run `npm update` for all the dependencies to be installed:
 
 ```bash
 git clone https://github.com/zone117x/node-stratum-portal.git
@@ -58,7 +64,7 @@ See "Setting up blocknotify" below to set up your daemon to use this feature.
 
 ##### Coin config
 Inside the `coins` directory, ensure a json file exists for your coin. If it does not you will have to create it.
-Here is an example of the required fields
+Here is an example of the required fields:
 ````javascript
 {
     "name": "Litecoin",
@@ -87,27 +93,38 @@ Description of options:
        and disable mpos which will allow this portal to handle all share payments.2) Enable mpos
        and disabled internal which wil allow MPOS to handle all share payments. */
     "shareProcessing": {
+
         "internal": { //Enabled this options for share payments to be processed and sent locally
             "enabled": true,
+
             /* When workers connect, to receive payments, their address must be used as the worker
                name. If this option is true, on worker authentication, their address will be verified
                via a validateaddress API call to the daemon. Miners with invalid addresses will be
                rejected. */
             "validateWorkerAddress": true,
-            "paymentInterval": 30, //(seconds) Check for confirmed blocks for sending payments
+
+            /* Every this many seconds check for confirmed blocks and send out payments. */
+            "paymentInterval": 30,
+
             /* Minimum number of coins that a miner must earn before sending payment. Typically,
                a higher minimum means less transactions fees (you profit more) but miners see
                payments less frequently (they dislike). Opposite for a lower minimum payment. */
             "minimumPayment": 0.001,
-            "feePercent": 0.02, //(2% default) What percent fee your pool takes from the block reward
+
+            /* (2% default) What percent fee your pool takes from the block reward. */
+            "feePercent": 0.02,
+
             /* Your address that receives pool revenue from fees */
             "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
+
             /* Minimum number of coins to keep in pool wallet */
             "minimumReserve": 10,
+
             /* How many coins from fee revenue must accumulate on top of the minimum reserve amount
                in order to trigger withdrawal to fee address. The higher this threshold, the less of
                your profit goes to transactions fees. */
             "feeWithdrawalThreshold": 5,
+
             /* This daemon is used to send out payments. It MUST be for the daemon that owns the
                configured 'address' that receives the block rewards, otherwise the daemon will not
                be able to confirm blocks or send out payments. */
@@ -118,6 +135,7 @@ Description of options:
                 "password": "testnet"
             }
         },
+
         "mpos": { //Enabled this and shares will be inserted into share table in a MySQL database
             "enabled": false,
             "host": "localhost", //MySQL db host
@@ -125,6 +143,7 @@ Description of options:
             "user": "me", //MySQL db user
             "password": "mypass", //MySQL db password
             "database": "ltc", //MySQL db database name
+
             /* For when miner's authenticate: set to "password" for both worker name and password to
                be checked for in the database, set to "worker" for only work name to be checked, or
                don't use this option (set to "none") for no auth checks */
@@ -133,11 +152,13 @@ Description of options:
     },
 
     "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
+
     "blockRefreshInterval": 1000, //How often to poll RPC daemons for new blocks, in milliseconds
+
     //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
 
     /* Some attackers will create thousands of workers that use up all available socket connections,
-       usually the workers are zombies and don't submit shares after connecting. This features
+       usually the workers are zombies and don't submit shares after connecting. This feature
        detects those and disconnects them. */
     "connectionTimeout": 600, //Remove workers that haven't been in contact for this many seconds
 

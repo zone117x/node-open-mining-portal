@@ -1,0 +1,7 @@
+{
+    "name": "Quarkcoin",
+    "symbol": "qrk",
+    "algorithm": "quark",
+    "reward": "POW",
+    "txMessages": false
+}

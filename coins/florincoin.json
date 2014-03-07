@@ -1,0 +1,7 @@
+{
+    "name": "Florincoin",
+    "symbol": "flo",
+    "algorithm": "scrypt",
+    "reward": "POW",
+    "txMessages": true
+}
