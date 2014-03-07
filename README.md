@@ -170,8 +170,8 @@ Description of options:
        detects those and disconnects them. */
     "connectionTimeout": 600, //Remove workers that haven't been in contact for this many seconds
 
-    /* If a worker is submitting a good deal of invalid shares we can temporarily ban them to
-       reduce system/network load. Also useful to fight against flooding attacks. */
+    /* If a worker is submitting a high threshold of invalid shares we can temporarily ban them
+       to reduce system/network load. Also useful to fight against flooding attacks. */
     "banning": {
         "enabled": true,
         "time": 600, //How many seconds to ban worker for
@@ -249,16 +249,19 @@ If you are creating multiple pools, ensure that they have unique stratum ports.
 
 For more information on these configuration options see the [pool module documentation](https://github.com/zone117x/node-stratum#module-usage)
 
+
+
 ##### [Optional, recommended] Setting up blocknotify
-  * In `config.json` set the port and password for `blockNotifyListener`
-  * In your daemon conf file set the `blocknotify` command to use:
+1. In `config.json` set the port and password for `blockNotifyListener`
+2. In your daemon conf file set the `blocknotify` command to use:
+```
+[path to scripts/blockNotify.js] [listener host]:[listener port] [listener password] [coin name in config] %s
+```
+Example: inside `dogecoin.conf` add the line
+```
+blocknotify="scripts/blockNotify.js localhost:8117 mySuperSecurePassword dogecoin %s"
+```
 
-    ```
-    [path to scripts/blockNotify.js] [listener host]:[listener port] [listener password] [coin name in config]
-    %s"
-    ```
-
-    * Example: `dogecoin.conf` > `blocknotify="scripts/blockNotify.js localhost:8117 mySuperSecurePassword dogecoin %s"`
 
 
 
@@ -267,6 +270,9 @@ For more information on these configuration options see the [pool module documen
 ```bash
 node init.js
 ```
+
+Optionally, use something like [forever](https://github.com/nodejitsu/forever) to keep the node script running
+in case the master process crashes. 
 
 
 Donations
