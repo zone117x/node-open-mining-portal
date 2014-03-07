@@ -104,9 +104,9 @@ Description of options:
             "enabled": true,
 
             /* When workers connect, to receive payments, their address must be used as the worker
-               name. If this option is true, on worker authentication, their address will be verified
-               via a validateaddress API call to the daemon. Miners with invalid addresses will be
-               rejected. */
+               name. If this option is true, on worker authentication, their address will be
+               verified via a validateaddress API call to the daemon. Miners with invalid addresses
+               will be rejected. */
             "validateWorkerAddress": true,
 
             /* Every this many seconds check for confirmed blocks and send out payments. */
