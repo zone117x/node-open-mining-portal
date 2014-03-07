@@ -95,12 +95,14 @@ Description of options:
     "coin": "litecoin", //This MUST be a reference to the 'name' field in your coin's config file
 
 
-    /* This determines what to do with submitted shares. You have two options: 1) Enable internal
-       and disable mpos which will allow this portal to handle all share payments.2) Enable mpos
-       and disabled internal which wil allow MPOS to handle all share payments. */
+    /* This determines what to do with submitted shares (and stratum worker authentication).
+       You have two options: 
+        1) Enable internal and disable mpos = this portal to handle all share payments.
+        2) Enable mpos and disable internal = shares will be inserted into MySQL database
+           for MPOS to process. */
     "shareProcessing": {
 
-        "internal": { //Enabled this options for share payments to be processed and sent locally
+        "internal": {
             "enabled": true,
 
             /* When workers connect, to receive payments, their address must be used as the worker
