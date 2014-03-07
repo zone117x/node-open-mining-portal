@@ -1,5 +1,5 @@
 # NOMP
-##### Node Open Mining Portal
+#### Node Open Mining Portal
 
 This portal is an extremely efficient, highly scalable, all-in-one, easy to setup cryptocurrency mining pool written
 entirely in Node.js. It contains a [stratum poolserver](https://github.com/zone117x/node-stratum), reward/payment/share
@@ -33,6 +33,13 @@ of this software. The switching can be controlled using a coin profitability API
 (or calculated locally using daemon-reported network difficulties and exchange APIs).
 
 
+
+#### Community
+For support and general discussion join IRC #nomp: https://webchat.freenode.net/?channels=#nomp
+
+For development discussion join #nomp-dev: https://webchat.freenode.net/?channels=#nomp-dev
+
+If your pool uses NOMP let us know and we will list your website here.
 
 
 Usage
