@@ -9,9 +9,8 @@ Alternatively, this software also has an [MPOS](https://github.com/MPOS/php-mpos
 function as a drop-in-replacement for [python-stratum-mining](https://github.com/Crypto-Expert/stratum-mining). This
 mode can be enabled in the configuration and will insert shares into a MySQL database in the format which MPOS expects.
 
-This software was built from the ground up with the ability to running with multiple coins that can have different
-properties and hashing algorithms. It can be used to create a pool for a single coin or for multiple coins at once.
-The pools use clustering to load balance across multiple CPU cores.
+This software was built from the ground up to run with multiple coins simultaneously (which can have different
+properties and hashing algorithms). It can be used to create a pool for a single coin or for multiple coins at once. The pools use clustering to load balance across multiple CPU cores.
 
 For reward/payment processing, shares are inserted into a fast NoSQL key/value database (Redis). Each coin has a
 processor that monitors for confirmed submitted blocks then send out payments according to shares accumulated in the
@@ -97,18 +96,20 @@ Description of options:
     "coin": "litecoin", //This MUST be a reference to the 'name' field in your coin's config file
 
 
-    /* This determines what to do with submitted shares. You have two options: 1) Enable internal
-       and disable mpos which will allow this portal to handle all share payments.2) Enable mpos
-       and disabled internal which wil allow MPOS to handle all share payments. */
+    /* This determines what to do with submitted shares (and stratum worker authentication).
+       You have two options: 
+        1) Enable internal and disable mpos = this portal to handle all share payments.
+        2) Enable mpos and disable internal = shares will be inserted into MySQL database
+           for MPOS to process. */
     "shareProcessing": {
 
-        "internal": { //Enabled this options for share payments to be processed and sent locally
+        "internal": {
             "enabled": true,
 
             /* When workers connect, to receive payments, their address must be used as the worker
-               name. If this option is true, on worker authentication, their address will be verified
-               via a validateaddress API call to the daemon. Miners with invalid addresses will be
-               rejected. */
+               name. If this option is true, on worker authentication, their address will be
+               verified via a validateaddress API call to the daemon. Miners with invalid addresses
+               will be rejected. */
             "validateWorkerAddress": true,
 
             /* Every this many seconds check for confirmed blocks and send out payments. */
@@ -170,8 +171,8 @@ Description of options:
        detects those and disconnects them. */
     "connectionTimeout": 600, //Remove workers that haven't been in contact for this many seconds
 
-    /* If a worker is submitting a good deal of invalid shares we can temporarily ban them to
-       reduce system/network load. Also useful to fight against flooding attacks. */
+    /* If a worker is submitting a high threshold of invalid shares we can temporarily ban them
+       to reduce system/network load. Also useful to fight against flooding attacks. */
     "banning": {
         "enabled": true,
         "time": 600, //How many seconds to ban worker for
@@ -249,16 +250,19 @@ If you are creating multiple pools, ensure that they have unique stratum ports.
 
 For more information on these configuration options see the [pool module documentation](https://github.com/zone117x/node-stratum#module-usage)
 
+
+
 ##### [Optional, recommended] Setting up blocknotify
-  * In `config.json` set the port and password for `blockNotifyListener`
-  * In your daemon conf file set the `blocknotify` command to use:
+1. In `config.json` set the port and password for `blockNotifyListener`
+2. In your daemon conf file set the `blocknotify` command to use:
+```
+[path to scripts/blockNotify.js] [listener host]:[listener port] [listener password] [coin name in config] %s
+```
+Example: inside `dogecoin.conf` add the line
+```
+blocknotify="scripts/blockNotify.js localhost:8117 mySuperSecurePassword dogecoin %s"
+```
 
-    ```
-    [path to scripts/blockNotify.js] [listener host]:[listener port] [listener password] [coin name in config]
-    %s"
-    ```
-
-    * Example: `dogecoin.conf` > `blocknotify="scripts/blockNotify.js localhost:8117 mySuperSecurePassword dogecoin %s"`
 
 
 
@@ -267,6 +271,9 @@ For more information on these configuration options see the [pool module documen
 ```bash
 node init.js
 ```
+
+Optionally, use something like [forever](https://github.com/nodejitsu/forever) to keep the node script running
+in case the master process crashes. 
 
 
 Donations
