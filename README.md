@@ -139,7 +139,7 @@ Description of options:
     /* Some attackers will create thousands of workers that use up all available socket connections,
        usually the workers are zombies and don't submit shares after connecting. This features
        detects those and disconnects them. */
-    "connectionTimeout": 120, //Remove workers that haven't been in contact for this many seconds
+    "connectionTimeout": 600, //Remove workers that haven't been in contact for this many seconds
 
     /* If a worker is submitting a good deal of invalid shares we can temporarily ban them to
        reduce system/network load. Also useful to fight against flooding attacks. */

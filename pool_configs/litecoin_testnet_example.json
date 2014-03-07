@@ -35,7 +35,7 @@
 
     "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc",
     "blockRefreshInterval": 1000,
-    "connectionTimeout": 120,
+    "connectionTimeout": 600,
 
     "banning": {
         "enabled": true,
