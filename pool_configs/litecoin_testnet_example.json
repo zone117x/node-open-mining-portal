@@ -10,6 +10,8 @@
             "minimumPayment": 0.001,
             "feePercent": 0.02,
             "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
+            "minimumReserve": 10,
+            "feeWithdrawalThreshold": 5,
             "daemon": {
                 "host": "localhost",
                 "port": 19332,
