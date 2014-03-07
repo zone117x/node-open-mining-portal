@@ -8,9 +8,8 @@ Alternatively, this software also has an [MPOS](https://github.com/MPOS/php-mpos
 function as a drop-in-replacement for [python-stratum-mining](https://github.com/Crypto-Expert/stratum-mining). This
 mode can be enabled in the configuration and will insert shares into a MySQL database in the format which MPOS expects.
 
-This software was built from the ground up with the ability to running with multiple coins that can have different
-properties and hashing algorithms. It can be used to create a pool for a single coin or for multiple coins at once.
-The pools use clustering to load balance across multiple CPU cores.
+This software was built from the ground up to run with multiple coins simultaneously (which can have different
+properties and hashing algorithms). It can be used to create a pool for a single coin or for multiple coins at once. The pools use clustering to load balance across multiple CPU cores.
 
 For reward/payment processing, shares are inserted into a fast NoSQL key/value database (Redis). Each coin has a
 processor that monitors for confirmed submitted blocks then send out payments according to shares accumulated in the
