@@ -38,6 +38,13 @@ of this software. The switching can be controlled using a coin profitability API
 Usage
 =====
 
+
+#### Requirements
+* Coin daemon(s)
+* [Node.js](http://nodejs.org/) v0.10+
+* [Redis](http://redis.io/) key-value store/database v2.6+
+
+
 #### 1) Download
 
 Clone the repository and run `npm update` for all the dependencies to be installed:
