@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "casinocoin",
+    "symbol"     : "CSC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

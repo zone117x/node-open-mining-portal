@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "reddcoin",
+    "symbol"     : "REDD",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

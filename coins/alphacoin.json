@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "alphacoin",
+    "symbol"     : "ALF",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

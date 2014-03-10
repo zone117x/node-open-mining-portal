@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "krugercoin",
+    "symbol"     : "KGC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

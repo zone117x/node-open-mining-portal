@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "noirbits",
+    "symbol"     : "NRB",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

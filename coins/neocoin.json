@@ -1,0 +1,7 @@
+{
+    "name"       : "neocoin",
+    "symbol"     : "NEC",
+    "algorithm"  : "scrypt",
+    "reward"     : "POS",
+    "txMessages" : true
+}

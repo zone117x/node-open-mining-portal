@@ -1,7 +1,7 @@
 {
-    "name": "Dogecoin",
-    "symbol": "doge",
-    "algorithm": "scrypt",
-    "reward": "POW",
-    "txMessages": false
+    "name"       : "dogecoin",
+    "symbol"     : "DOGE",
+    "algorithm"  : "scrypt",
+    "reward"     : "POW",
+    "txMessages" : false
 }

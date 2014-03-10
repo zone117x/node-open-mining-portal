@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "stablecoin",
+    "symbol"     : "SBC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

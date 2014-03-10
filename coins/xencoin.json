@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "xencoin",
+    "symbol"     : "XNC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

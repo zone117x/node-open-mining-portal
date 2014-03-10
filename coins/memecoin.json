@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "memecoin",
+    "symbol"     : "MEM",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

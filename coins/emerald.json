@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "emerald",
+    "symbol"     : "EMD",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

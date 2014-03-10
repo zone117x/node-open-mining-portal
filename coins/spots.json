@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "spots",
+    "symbol"     : "SPT",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "auroracoin",
+    "symbol"     : "AUR",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

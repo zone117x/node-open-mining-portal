@@ -1,0 +1,7 @@
+{
+    "name"       : "galaxycoin",
+    "symbol"     : "GLX",
+    "algorithm"  : "scrypt",
+    "reward"     : "POS",
+    "txMessages" : false
+}

@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "ezcoin",
+    "symbol"     : "EZC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

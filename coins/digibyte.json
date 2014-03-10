@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "digibyte",
+    "symbol"     : "DGB",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

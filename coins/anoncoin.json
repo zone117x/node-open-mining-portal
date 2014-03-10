@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "anoncoin",
+    "symbol"     : "ANC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

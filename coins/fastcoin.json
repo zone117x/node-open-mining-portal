@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "fastcoin",
+    "symbol"     : "FST",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

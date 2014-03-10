@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "earthcoin",
+    "symbol"     : "EAC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

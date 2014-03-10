@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "lottocoin",
+    "symbol"     : "LOT",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

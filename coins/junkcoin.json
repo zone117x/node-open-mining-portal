@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "junkcoin",
+    "symbol"     : "JKC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

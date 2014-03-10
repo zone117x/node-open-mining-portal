@@ -1,0 +1,7 @@
+{
+    "name"       : "diamondcoin",
+    "symbol"     : "DMD",
+    "algorithm"  : "scrypt",
+    "reward"     : "POS",
+    "txMessages" : true
+}

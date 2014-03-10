@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "flappycoin",
+    "symbol"     : "FLAP",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

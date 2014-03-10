@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "sexcoin",
+    "symbol"     : "SXC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

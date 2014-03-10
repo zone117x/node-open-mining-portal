@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "elephantcoin",
+    "symbol"     : "ELP",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

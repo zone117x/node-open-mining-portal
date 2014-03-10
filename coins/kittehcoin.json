@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "kittehcoin",
+    "symbol"     : "MEOW",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false

@@ -1,6 +1,6 @@
 {
-    "name"       : "litecoin",
-    "symbol"     : "LTC",
+    "name"       : "luckycoin",
+    "symbol"     : "LKY",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
     "txMessages" : false
