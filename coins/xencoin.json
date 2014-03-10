@@ -1,5 +1,5 @@
 {
-    "name"       : "xencoin",
+    "name"       : "Xencoin",
     "symbol"     : "XNC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

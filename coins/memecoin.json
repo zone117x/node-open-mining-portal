@@ -1,5 +1,5 @@
 {
-    "name"       : "memecoin",
+    "name"       : "Memecoin",
     "symbol"     : "MEM",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

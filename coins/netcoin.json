@@ -1,5 +1,5 @@
 {
-    "name"       : "netcoin",
+    "name"       : "Netcoin",
     "symbol"     : "NET",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

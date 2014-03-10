@@ -1,5 +1,5 @@
 {
-    "name"       : "alphacoin",
+    "name"       : "Alphacoin",
     "symbol"     : "ALF",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

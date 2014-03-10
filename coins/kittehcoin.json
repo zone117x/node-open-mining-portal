@@ -1,5 +1,5 @@
 {
-    "name"       : "kittehcoin",
+    "name"       : "Kittehcoin",
     "symbol"     : "MEOW",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

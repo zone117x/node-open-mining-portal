@@ -1,5 +1,5 @@
 {
-    "name"       : "flappycoin",
+    "name"       : "Flappycoin",
     "symbol"     : "FLAP",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

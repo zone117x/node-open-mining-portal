@@ -1,5 +1,5 @@
 {
-    "name"       : "lottocoin",
+    "name"       : "Lottocoin",
     "symbol"     : "LOT",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

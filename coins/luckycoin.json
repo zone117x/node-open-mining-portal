@@ -1,5 +1,5 @@
 {
-    "name"       : "luckycoin",
+    "name"       : "Luckycoin",
     "symbol"     : "LKY",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

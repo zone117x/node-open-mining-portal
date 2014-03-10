@@ -1,5 +1,5 @@
 {
-    "name"       : "bottlecaps",
+    "name"       : "Bottlecaps",
     "symbol"     : "CAP",
     "algorithm"  : "scrypt",
     "reward"     : "POS",

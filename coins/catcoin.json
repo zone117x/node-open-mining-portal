@@ -1,5 +1,5 @@
 {
-    "name"       : "catcoin",
+    "name"       : "Catcoin",
     "symbol"     : "CAT",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

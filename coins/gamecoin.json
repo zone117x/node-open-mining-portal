@@ -1,5 +1,5 @@
 {
-    "name"       : "gamecoin",
+    "name"       : "Gamecoin",
     "symbol"     : "GME",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

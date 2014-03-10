@@ -1,5 +1,5 @@
 {
-    "name"       : "neocoin",
+    "name"       : "Neocoin",
     "symbol"     : "NEC",
     "algorithm"  : "scrypt",
     "reward"     : "POS",

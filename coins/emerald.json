@@ -1,5 +1,5 @@
 {
-    "name"       : "emerald",
+    "name"       : "Emerald",
     "symbol"     : "EMD",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

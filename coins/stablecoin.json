@@ -1,5 +1,5 @@
 {
-    "name"       : "stablecoin",
+    "name"       : "Stablecoin",
     "symbol"     : "SBC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

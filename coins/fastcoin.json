@@ -1,5 +1,5 @@
 {
-    "name"       : "fastcoin",
+    "name"       : "Fastcoin",
     "symbol"     : "FST",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

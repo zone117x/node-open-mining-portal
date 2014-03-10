@@ -1,5 +1,5 @@
 {
-    "name"       : "ezcoin",
+    "name"       : "Ezcoin",
     "symbol"     : "EZC",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

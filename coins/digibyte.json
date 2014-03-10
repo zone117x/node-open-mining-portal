@@ -1,5 +1,5 @@
 {
-    "name"       : "digibyte",
+    "name"       : "Digibyte",
     "symbol"     : "DGB",
     "algorithm"  : "scrypt",
     "reward"     : "POW",

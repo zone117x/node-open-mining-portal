@@ -1,5 +1,5 @@
 {
-    "name"       : "noirbits",
+    "name"       : "Noirbits",
     "symbol"     : "NRB",
     "algorithm"  : "scrypt",
     "reward"     : "POW",
