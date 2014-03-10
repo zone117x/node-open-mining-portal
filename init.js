@@ -8,18 +8,10 @@ var PoolLogger = require('./libs/logutils.js');
 var BlocknotifyListener = require('./libs/blocknotifyListener.js');
 var WorkerListener = require('./libs/workerListener.js');
 var PoolWorker = require('./libs/poolWorker.js');
+var PaymentProcessor = require('./libs/paymentProcessor.js');
 
 JSON.minify = JSON.minify || require("node-json-minify");
 
-
-
-//Try to give process ability to handle 100k concurrent connections
-try{
-    posix.setrlimit('nofile', { soft: 100000, hard: 100000 });
-}
-catch(e){
-    console.error(e);
-}
 
 
 
@@ -37,85 +29,97 @@ var logWarning = loggerInstance.logWarning;
 var logError   = loggerInstance.logError;
 
 
-
-if (cluster.isMaster){
-
-
-    var config = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
-
-    //Read all coin profile json files from coins directory and build object where key is name of coin
-    var coinProfiles = (function(){
-        var profiles = {};
-        fs.readdirSync('coins').forEach(function(file){
-            var coinProfile = JSON.parse(JSON.minify(fs.readFileSync('coins/' + file, {encoding: 'utf8'})));
-            profiles[coinProfile.name.toLowerCase()] = coinProfile;
-        });
-        return profiles;
-    })();
+//Try to give process ability to handle 100k concurrent connections
+try{
+    posix.setrlimit('nofile', { soft: 100000, hard: 100000 });
+}
+catch(e){
+    logWarning('posix', 'system', '(Safe to ignore) Must be ran as root to increase resource limits');
+}
 
 
-    //Read all pool configs from pool_configs and join them with their coin profile
-    var poolConfigs = (function(){
-        var configs = {};
-        fs.readdirSync('pool_configs').forEach(function(file){
-            var poolOptions = JSON.parse(JSON.minify(fs.readFileSync('pool_configs/' + file, {encoding: 'utf8'})));
-            if (poolOptions.disabled) return;
-            if (!(poolOptions.coin.toLowerCase() in coinProfiles)){
-                logError(poolOptions.coin, 'system', 'could not find coin profile');
-                return;
-            }
-            poolOptions.coin = coinProfiles[poolOptions.coin.toLowerCase()];
-            configs[poolOptions.coin.name] = poolOptions;
-        });
-        return configs;
-    })();
+
+if (cluster.isWorker){
+
+    switch(process.env.workerType){
+        case 'pool':
+            new PoolWorker(loggerInstance);
+            break;
+        case 'paymentProcessor':
+            new PaymentProcessor(loggerInstance);
+            break;
+    }
+
+    return;
+}
 
 
+
+//Read all pool configs from pool_configs and join them with their coin profile
+var buildPoolConfigs = function(){
+    var configs = {};
+    fs.readdirSync('pool_configs').forEach(function(file){
+        var poolOptions = JSON.parse(JSON.minify(fs.readFileSync('pool_configs/' + file, {encoding: 'utf8'})));
+        if (poolOptions.disabled) return;
+        var coinFilePath = 'coins/' + poolOptions.coin;
+        if (!fs.existsSync(coinFilePath)){
+            logError(poolOptions.coin, 'system', 'could not find file: ' + coinFilePath);
+            return;
+        }
+
+        var coinProfile = JSON.parse(JSON.minify(fs.readFileSync(coinFilePath, {encoding: 'utf8'})));
+        poolOptions.coin = coinProfile;
+        configs[poolOptions.coin.name] = poolOptions;
+    });
+    return configs;
+};
+
+
+
+var spawnPoolWorkers = function(portalConfig, poolConfigs){
     var serializedConfigs = JSON.stringify(poolConfigs);
 
 
     var numForks = (function(){
-        if (!config.clustering || !config.clustering.enabled)
+        if (!portalConfig.clustering || !portalConfig.clustering.enabled)
             return 1;
-        if (config.clustering.forks === 'auto')
+        if (portalConfig.clustering.forks === 'auto')
             return os.cpus().length;
-        if (!config.clustering.forks || isNaN(config.clustering.forks))
+        if (!portalConfig.clustering.forks || isNaN(portalConfig.clustering.forks))
             return 1;
-        return config.clustering.forks;
+        return portalConfig.clustering.forks;
     })();
 
-    var workerIds = {};
 
-    for (var i = 0; i < numForks; i++) {
+    var createPoolWorker = function(forkId){
         var worker = cluster.fork({
-            forkId: i,
-            pools: serializedConfigs
-        });
-        workerIds[worker.process.pid] = i;
-    }
-
-    cluster.on('exit', function(worker, code, signal) {
-        var diedPid = worker.process.pid;
-        var forkId = workerIds[diedPid]
-        logError('poolWorker', 'system', 'Fork ' + forkId + ' died, spawning replacement worker...');
-        var worker = cluster.fork({
+            workerType: 'pool',
             forkId: forkId,
             pools: serializedConfigs
         });
-        delete workerIds[diedPid];
-        workerIds[worker.process.pid] = forkId;
-    });
+        worker.on('exit', function(code, signal){
+            logError('poolWorker', 'system', 'Fork ' + forkId + ' died, spawning replacement worker...');
+            createPoolWorker(forkId);
+        });
+    };
+
+    for (var i = 0; i < numForks; i++) {
+        createPoolWorker(i);
+    }
+
+};
 
 
-
+var startWorkerListener = function(poolConfigs){
     var workerListener = new WorkerListener(loggerInstance, poolConfigs);
     workerListener.init();
+};
 
 
-
+var startBlockListener = function(portalConfig){
     //block notify options
     //setup block notify here and use IPC to tell appropriate pools
-    var listener = new BlocknotifyListener(config.blockNotifyListener);
+    var listener = new BlocknotifyListener(portalConfig.blockNotifyListener);
     listener.on('log', function(text){
         logDebug('blocknotify', 'system', text);
     });
@@ -128,13 +132,33 @@ if (cluster.isMaster){
 
     });
     listener.start();
+};
 
-    //create fork for payment processor here
 
-}
+var startPaymentProcessor = function(poolConfigs){
+    var worker = cluster.fork({
+        workerType: 'paymentProcessor',
+        pools: JSON.stringify(poolConfigs)
+    });
+    worker.on('exit', function(code, signal){
+        logError('paymentProcessor', 'system', 'Payment processor died, spawning replacement...');
+        startPaymentProcessor(poolConfigs);
+    });
+};
 
-else{
 
-    var worker = new PoolWorker(loggerInstance);
 
-}
+(function init(){
+    var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
+
+    var poolConfigs = buildPoolConfigs();
+
+    spawnPoolWorkers(portalConfig, poolConfigs);
+
+    startPaymentProcessor(poolConfigs);
+
+    startBlockListener(portalConfig);
+
+    startWorkerListener(poolConfigs);
+
+})();

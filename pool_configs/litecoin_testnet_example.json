@@ -1,12 +1,12 @@
 {
     "disabled": false,
-    "coin": "litecoin",
+    "coin": "litecoin.json",
 
     "shareProcessing": {
         "internal": {
             "enabled": true,
             "validateWorkerAddress": true,
-            "paymentInterval": 30,
+            "paymentInterval": 10,
             "minimumPayment": 0.001,
             "feePercent": 0.02,
             "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
@@ -35,7 +35,7 @@
     },
 
 
-    "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc",
+    "address": "mfsm1ckZKTTjDz94KonZZsbZnAbm1UV4BF",
     "blockRefreshInterval": 1000,
     "connectionTimeout": 600,
 

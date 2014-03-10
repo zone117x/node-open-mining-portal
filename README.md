@@ -92,15 +92,14 @@ Here is an example of the required fields:
 
 ##### Pool config
 Take a look at the example json file inside the `pool_configs` directory. Rename it to `yourcoin.json` and change the
-example fields to fit your setup. The field `coin` __must__ be a string that references the `name` field in your coin's
-configuration file (the string is not case sensitive).
+example fields to fit your setup.
 
 Description of options:
 
 ````javascript
 {
     "disabled": false, //Set this to true and a pool will not be created from this config file
-    "coin": "litecoin", //This MUST be a reference to the 'name' field in your coin's config file
+    "coin": "litecoin.json", //Reference to coin config file in 'coins' directory
 
 
     /* This determines what to do with submitted shares (and stratum worker authentication).
@@ -119,7 +118,9 @@ Description of options:
                will be rejected. */
             "validateWorkerAddress": true,
 
-            /* Every this many seconds check for confirmed blocks and send out payments. */
+            /* Every this many seconds get submitted blocks from redis, use daemon RPC to check
+               their confirmation status, if confirmed then get shares from redis that contributed
+               to block and send out payments. */
             "paymentInterval": 30,
 
             /* Minimum number of coins that a miner must earn before sending payment. Typically,
@@ -149,6 +150,12 @@ Description of options:
                 "port": 19332,
                 "user": "litecoinrpc",
                 "password": "testnet"
+            },
+
+            /* Redis database used for storing share and block submission data. */
+            "redis": {
+                "host": "localhost",
+                "port": 6379
             }
         },
 

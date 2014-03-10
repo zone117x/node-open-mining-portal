@@ -58,7 +58,7 @@ module.exports = function(logger, poolConfig){
         });
 
         if (isValidBlock){
-            connection.sadd(['blocks_' + coin, shareData.solution + ':' + shareData.height], function(error, result){
+            connection.sadd(['blocks_' + coin, shareData.tx + ':' + shareData.height], function(error, result){
                 if (error)
                     logger.error('redis', 'Could not store block data');
             });

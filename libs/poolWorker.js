@@ -1,5 +1,3 @@
-var cluster = require('cluster');
-
 var Stratum = require('stratum-pool');
 
 var MposCompatibility = require('./mposCompatibility.js');
@@ -28,7 +26,7 @@ module.exports = function(logger){
 
         var poolOptions = poolConfigs[coin];
 
-        var logIdentify = coin + ' (Fork ' + forkId + ')';
+        var logIdentify = 'Pool Fork ' + forkId + ' (' + coin + ')';
 
         var poolLogger = {
             debug: function(key, text){
