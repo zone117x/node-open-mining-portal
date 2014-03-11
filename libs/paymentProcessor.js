@@ -80,17 +80,21 @@ function SetupForPool(logger, poolOptions){
         daemon.cmd('gettransaction', [tx], function(results){
             //console.dir(results[0].response.details[0].category);
             var status = results[0].response.details[0].category;
-            var confirmed = (status === 'generate');
+            var amount = results[0].response.details[0].amount;
+            if (status !== 'generate') return;
+            var f = 'shares_' + coin + ':round' + blockHeight;
+            console.log(f);
+            redisClient.hgetall('shares_' + coin + ':round' + blockHeight, function(error, results){
+                if (error || !results) return;
+                console.log('okay ' + JSON.stringify(results));
 
-            /* next:
-            - get contributed shares
-            - get unsent payments
-            - calculate payments
-            - send payments
-            - put unsent payments in db
-            - remove tx from db
-            - remove shares from db
-            */
+                //get balances_coin from redis for each address in this round
+                //add up total balances
+                //send necessary payments
+                //put left over balances in redis
+                //clean up (move block entry to processedBlocks_coin) so this logic isn't called again
+
+            });
         });
     };
 
