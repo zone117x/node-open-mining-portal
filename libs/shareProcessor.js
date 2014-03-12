@@ -52,16 +52,16 @@ module.exports = function(logger, poolConfig){
 
         if (!isValidShare) return;
 
-        connection.hincrby(['shares_' + coin + ':roundCurrent', shareData.worker, shareData.difficulty], function(error, result){
+        connection.hincrby([coin + '_shares:roundCurrent', shareData.worker, shareData.difficulty], function(error, result){
             if (error)
                 logger.error('redis', 'Could not store worker share')
         });
 
         if (isValidBlock){
-            connection.rename('shares_' + coin + ':roundCurrent', 'shares_' + coin + ':round' + shareData.height, function(result){
+            connection.rename(coin + '_shares:roundCurrent', coin + '_shares:round' + shareData.height, function(result){
                 console.log('rename result: ' + result);
             });
-            connection.sadd(['blocks_' + coin, shareData.tx + ':' + shareData.height], function(error, result){
+            connection.sadd([coin + '_blocks', shareData.tx + ':' + shareData.height], function(error, result){
                 if (error)
                     logger.error('redis', 'Could not store block data');
             });

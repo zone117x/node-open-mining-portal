@@ -36,7 +36,8 @@
         "node-json-minify": "*",
         "posix": "*",
         "redis": "*",
-        "mysql": "*"
+        "mysql": "*",
+        "async": "*"
     },
     "engines": {
         "node": ">=0.10"
