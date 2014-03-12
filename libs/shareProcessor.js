@@ -52,6 +52,13 @@ module.exports = function(logger, poolConfig){
 
         if (!isValidShare) return;
 
+        /*use http://redis.io/commands/zrangebyscore to store shares with timestamps
+          so we can use the min-max to get shares from the last x minutes to determine hash rate :)
+          also use a hash like coin_stats:{ invalidShares, validShares, invalidBlocks, validBlocks, etc }
+          for more efficient stats
+         */
+
+
         connection.hincrby([coin + '_shares:roundCurrent', shareData.worker, shareData.difficulty], function(error, result){
             if (error)
                 logger.error('redis', 'Could not store worker share')

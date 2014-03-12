@@ -90,6 +90,7 @@ function SetupForPool(logger, poolOptions){
                   }
             */
             function(callback){
+
                 redisClient.smembers(coin + '_blocks', function(error, results){
 
                     if (error){
@@ -112,6 +113,7 @@ function SetupForPool(logger, poolOptions){
                     callback(null, txs);
                 });
             },
+
 
             /* Receives txs object with key, checks each key (the transHash) with block batch rpc call to daemon.
                Each confirmed on get the amount added to transHash object as {amount: amount},
@@ -153,7 +155,6 @@ function SetupForPool(logger, poolOptions){
             /* Use height from each txHash to get worker shares from each round and pass along */
             function(txs, callback){
 
-
                 var shareLooksup = [];
                 for (var hash in txs){
                     var height = txs[hash].height;
@@ -176,14 +177,13 @@ function SetupForPool(logger, poolOptions){
                                 balancesForRounds[worker] = sharesAdded;
                         }
                     });
-                    callback(null, balancesForRounds);
+                    callback(null, balancesForRounds, txs);
                 });
-
             },
 
 
             /* Get worker existing balances from coin_balances hashset in redis*/
-            function(balancesForRounds, callback){
+            function(balancesForRounds, txs, callback){
 
                 var workerAddress = Object.keys(balancesForRounds);
 
@@ -200,18 +200,18 @@ function SetupForPool(logger, poolOptions){
 
                     }
 
-                    callback(null, balancesForRounds)
+                    callback(null, txs, balancesForRounds)
                 });
-
-
             },
 
 
             /* Calculate if any payments are ready to be sent and trigger them sending
-             Get remaining balances for each address and pass it along as object of latest balances
-             such as {worker1: balance1, worker2, balance2} */
-            function(fullBalance, callback){
-
+             Get balance different for each address and pass it along as object of latest balances such as
+             {worker1: balance1, worker2, balance2}
+             when deciding the sent balance, it the difference should be -1*amount they had in db,
+             if not sending the balance, the differnce should be +(the amount they earned this round)
+             */
+            function(fullBalance, txs, callback){
 
                 /* if payments dont succeed (likely because daemon isnt responding to rpc), then cancel here
                    so that all of this can be tried again when the daemon is working. otherwise we will consider
@@ -220,16 +220,15 @@ function SetupForPool(logger, poolOptions){
 
             },
 
-            /* clean DB: update remaining balances in coin_balance hashset in redis */
-            function(remainingBalance, callback){
 
-            },
+            /* clean DB: update remaining balances in coin_balance hashset in redis
+            */
+            function(balanceDifference, txs, callback){
 
-            /* clean DB: move this block entry to coin_processedBlocks so payments are not resent */
-            function (none, callback){
+                //SMOVE each tx key from coin_blocks to coin_processedBlocks
+                //HINCRBY to apply balance different for coin_balances worker1
 
             }
-
         ], function(error, result){
             //log error completion
         });
