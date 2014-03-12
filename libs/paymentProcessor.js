@@ -80,9 +80,6 @@ function SetupForPool(logger, poolOptions){
 
 
 
-    redisClient.hset('Litecoin_balances', 'zone117x.worker1', 434);
-
-
     var processPayments = function(){
         async.waterfall([
 
@@ -184,6 +181,7 @@ function SetupForPool(logger, poolOptions){
 
             },
 
+
             /* Get worker existing balances from coin_balances hashset in redis*/
             function(balancesForRounds, callback){
 
@@ -208,19 +206,26 @@ function SetupForPool(logger, poolOptions){
 
             },
 
+
             /* Calculate if any payments are ready to be sent and trigger them sending
              Get remaining balances for each address and pass it along as object of latest balances
              such as {worker1: balance1, worker2, balance2} */
             function(fullBalance, callback){
 
+
+                /* if payments dont succeed (likely because daemon isnt responding to rpc), then cancel here
+                   so that all of this can be tried again when the daemon is working. otherwise we will consider
+                   payment sent after we cleaned up the db.
+                 */
+
             },
 
-            /* update remaining balances in coin_balance hashset in redis */
+            /* clean DB: update remaining balances in coin_balance hashset in redis */
             function(remainingBalance, callback){
 
             },
 
-            //move this block entry to coin_processedBlocks so payments are not resent
+            /* clean DB: move this block entry to coin_processedBlocks so payments are not resent */
             function (none, callback){
 
             }
