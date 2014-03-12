@@ -164,13 +164,6 @@ function SetupForPool(logger, poolOptions){
                     callback(response);
                 });
 
-
-                //get balances_coin from redis for each address in this round
-                //add up total balances
-                //send necessary payments
-                //put left over balances in redis
-                //clean up (move block entry to processedBlocks_coin) so this logic isn't called again
-
             },
 
             /* Get worker existing balances from coin_balances hashset in redis*/
