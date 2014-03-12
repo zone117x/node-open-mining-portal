@@ -68,7 +68,7 @@ module.exports = function(logger, poolConfig){
             connection.rename(coin + '_shares:roundCurrent', coin + '_shares:round' + shareData.height, function(result){
                 console.log('rename result: ' + result);
             });
-            connection.sadd([coin + '_blocks', shareData.tx + ':' + shareData.height], function(error, result){
+            connection.sadd([coin + '_blocks', shareData.tx + ':' + shareData.height + ':' + shareData.reward], function(error, result){
                 if (error)
                     logger.error('redis', 'Could not store block data');
             });

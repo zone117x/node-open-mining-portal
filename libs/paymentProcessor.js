@@ -80,15 +80,12 @@ function SetupForPool(logger, poolOptions){
 
 
 
+
     var processPayments = function(){
         async.waterfall([
 
-            /* Check redis for all pending block submissions, then pass along each object with:
-                  {
-                    transHash1: {height: blockHeight1},
-                    transHash2: {height: blockHeight2}
-                  }
-            */
+            /* Call redis to get an array of rounds - which are coinbase transactions and block heights from submitted
+               blocks. */
             function(callback){
 
                 redisClient.smembers(coin + '_blocks', function(error, results){
@@ -103,30 +100,25 @@ function SetupForPool(logger, poolOptions){
                         return;
                     }
 
-                    var txs = {};
+                    var rounds = [];
                     results.forEach(function(item){
                         var details = item.split(':');
-                        var txHash = details[0];
-                        var height = details[1];
-                        txs[txHash] = {height: height};
+                        rounds.push({txHash: details[0], height: details[1], reward: details[2]});
                     });
-                    callback(null, txs);
+                    callback(null, rounds);
                 });
             },
 
 
-            /* Receives txs object with key, checks each key (the transHash) with block batch rpc call to daemon.
-               Each confirmed on get the amount added to transHash object as {amount: amount},
-               Non confirmed txHashes get deleted from obj. Then remaining txHashes are passed along
-            */
-            function(txs, callback){
+            /* Does a batch rpc call to daemon with all the transaction hashes to see if they are confirmed yet.
+               It also adds the block reward amount to the round object - which the daemon gives also gives us. */
+            function(rounds, callback){
 
                 var batchRPCcommand = [];
 
-                for (var txHash in txs){
-                    batchRPCcommand.push(['gettransaction', [txHash]]);
+                for (var i = 0; i < rounds.length; i++){
+                    batchRPCcommand.push(['gettransaction', [rounds[i].txHash]]);
                 }
-
                 daemon.batchCmd(batchRPCcommand, function(error, txDetails){
 
                     if (error || !txDetails){
@@ -134,57 +126,83 @@ function SetupForPool(logger, poolOptions){
                         return;
                     }
 
-                    txDetails.filter(function(tx){
+                    //Rounds that are not confirmed yet are removed from the round array
+                    //We also get reward amount for each block from daemon reply
+                    txDetails.forEach(function(tx){
+                        var txResult = tx.result;
                         var txDetails = tx.result.details[0];
-                        if (txDetails.categery === 'generate'){
-                            txs[txDetails.txid].amount = txDetails.amount;
+                        for (var i = 0; i < rounds.length; i++){
+                            if (rounds[i].txHash === txResult.txid){
+                                rounds[i].amount = txResult.amount;
+                                rounds[i].magnitude = rounds[i].reward / txResult.amount;
+                                if (txDetails.category !== 'generate')
+                                    rounds.splice(i, 1);
+                            }
                         }
-                        else delete txs[txDetails.txid];
-
                     });
-                    if (Object.keys(txs).length === 0){
+                    if (rounds.length === 0){
                         callback('done - no confirmed transactions yet');
                         return;
                     }
-                    callback(null, txs);
+                    callback(null, rounds);
 
                 });
             },
 
 
-            /* Use height from each txHash to get worker shares from each round and pass along */
-            function(txs, callback){
+            /* Does a batch redis call to get shares contributed to each round. Then calculates the reward
+               amount owned to each miner for each round. */
+            function(rounds, callback){
 
                 var shareLooksup = [];
-                for (var hash in txs){
-                    var height = txs[hash].height;
-                    shareLooksup.push(['hgetall', coin + '_shares:round' + height]);
+                for (var i = 0; i < rounds.length; i++){
+                    shareLooksup.push(['hgetall', coin + '_shares:round' + rounds[i].height]);
                 }
 
-                redisClient.multi(shareLooksup).exec(function(error, workerShares){
+
+
+                redisClient.multi(shareLooksup).exec(function(error, allWorkerShares){
                     if (error){
                         callback('done - redis error with multi get rounds share')
                         return;
                     }
 
-                    var balancesForRounds = {};
-                    workerShares.forEach(function(item){
-                        for (var worker in item){
-                            var sharesAdded = parseInt(item[worker]);
-                            if (worker in balancesForRounds)
-                                balancesForRounds[worker] += sharesAdded;
-                            else
-                                balancesForRounds[worker] = sharesAdded;
+                    var workerRewards = {};
+
+                    for (var i = 0; i < rounds.length; i++){
+                        var round = rounds[i];
+                        var workerShares = allWorkerShares[i];
+
+                        var reward = round.reward * (1 - processingConfig.feePercent);
+
+                        var totalShares = 0;
+                        for (var worker in workerShares){
+                            totalShares += parseInt(workerShares[worker]);
                         }
-                    });
-                    callback(null, balancesForRounds, txs);
+
+                        for (var worker in workerShares){
+                            var singleWorkerShares = parseInt(workerShares[worker]);
+                            var percent = singleWorkerShares / totalShares;
+                            var workerRewardTotal = (reward * percent) / round.magnitude;
+                            workerRewardTotal = Math.floor(workerRewardTotal * round.magnitude) / round.magnitude;
+                            if (worker in workerRewards)
+                                workerRewards[worker] += workerRewardTotal;
+                            else
+                                workerRewards[worker] = workerRewardTotal;
+                        }
+                    }
+
+
+                    console.dir(workerRewards);
+
+                    callback(null, rounds);
                 });
             },
 
 
-            /* Get worker existing balances from coin_balances hashset in redis*/
-            function(balancesForRounds, txs, callback){
-
+            /* Does a batch call to redis to get worker existing balances from coin_balances*/
+            function(rounds, callback){
+                /*
                 var workerAddress = Object.keys(balancesForRounds);
 
                 redisClient.hmget([coin + '_balances'].concat(workerAddress), function(error, results){
@@ -200,8 +218,9 @@ function SetupForPool(logger, poolOptions){
 
                     }
 
-                    callback(null, txs, balancesForRounds)
+                    callback(null, rounds, balancesForRounds)
                 });
+                */
             },
 
 
@@ -211,7 +230,7 @@ function SetupForPool(logger, poolOptions){
              when deciding the sent balance, it the difference should be -1*amount they had in db,
              if not sending the balance, the differnce should be +(the amount they earned this round)
              */
-            function(fullBalance, txs, callback){
+            function(fullBalance, rounds, callback){
 
                 /* if payments dont succeed (likely because daemon isnt responding to rpc), then cancel here
                    so that all of this can be tried again when the daemon is working. otherwise we will consider
@@ -223,13 +242,14 @@ function SetupForPool(logger, poolOptions){
 
             /* clean DB: update remaining balances in coin_balance hashset in redis
             */
-            function(balanceDifference, txs, callback){
+            function(balanceDifference, rounds, callback){
 
                 //SMOVE each tx key from coin_blocks to coin_processedBlocks
                 //HINCRBY to apply balance different for coin_balances worker1
 
             }
         ], function(error, result){
+            console.log(error);
             //log error completion
         });
     };
