@@ -99,7 +99,9 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
         });
         worker.on('exit', function(code, signal){
             logError('poolWorker', 'system', 'Fork ' + forkId + ' died, spawning replacement worker...');
-            createPoolWorker(forkId);
+            setTimeout(function(){
+                createPoolWorker(forkId);
+            }, 2000);
         });
     };
 
@@ -142,7 +144,9 @@ var startPaymentProcessor = function(poolConfigs){
     });
     worker.on('exit', function(code, signal){
         logError('paymentProcessor', 'system', 'Payment processor died, spawning replacement...');
-        startPaymentProcessor(poolConfigs);
+        setTimeout(function(){
+            startPaymentProcessor(poolConfigs);
+        }, 2000);
     });
 };
 

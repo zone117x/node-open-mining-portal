@@ -80,6 +80,8 @@ function SetupForPool(logger, poolOptions){
 
 
 
+    redisClient.hset('Litecoin_balances', 'zone117x.worker1', 434);
+
 
     var processPayments = function(){
         async.waterfall([
@@ -92,6 +94,7 @@ function SetupForPool(logger, poolOptions){
             */
             function(callback){
                 redisClient.smembers(coin + '_blocks', function(error, results){
+
                     if (error){
                         logger.error('redis', 'Could get blocks from redis ' + JSON.stringify(error));
                         callback('done - redis error for getting blocks');
@@ -122,28 +125,33 @@ function SetupForPool(logger, poolOptions){
                 var batchRPCcommand = [];
 
                 for (var txHash in txs){
-                    batchRPCcommand.push(['gettranscation', [txHash]]);
+                    batchRPCcommand.push(['gettransaction', [txHash]]);
                 }
 
                 daemon.batchCmd(batchRPCcommand, function(error, txDetails){
 
-                    txDetails.forEach(function (tx){
-                        var confirmedTxs = txDetails.filter(function(tx){
-                            var txDetails = tx.details[0];
-                            if (txDetails.categery === 'generate'){
-                                txs[txDetails.txid].amount = txDetails.amount;
-                            }
-                            else delete txs[txDetails.txid];
+                    if (error || !txDetails){
+                        callback('done - daemon rpc error with batch gettransactions ' + JSON.stringify(error));
+                        return;
+                    }
 
-                        });
-                        if (Object.keys(txs).length === 0){
-                            callback('done - no confirmed transactions yet');
-                            return;
+                    txDetails.filter(function(tx){
+                        var txDetails = tx.result.details[0];
+                        if (txDetails.categery === 'generate'){
+                            txs[txDetails.txid].amount = txDetails.amount;
                         }
-                        callback(null, txs);
+                        else delete txs[txDetails.txid];
+
                     });
+                    if (Object.keys(txs).length === 0){
+                        callback('done - no confirmed transactions yet');
+                        return;
+                    }
+                    callback(null, txs);
+
                 });
             },
+
 
             /* Use height from each txHash to get worker shares from each round and pass along */
             function(txs, callback){
@@ -155,32 +163,64 @@ function SetupForPool(logger, poolOptions){
                     shareLooksup.push(['hgetall', coin + '_shares:round' + height]);
                 }
 
-                redisClient.multi(shareLooksup).exe(function(error, responses){
+                redisClient.multi(shareLooksup).exec(function(error, workerShares){
                     if (error){
                         callback('done - redis error with multi get rounds share')
                         return;
                     }
-                    console.dir(response);
-                    callback(response);
+
+                    var balancesForRounds = {};
+                    workerShares.forEach(function(item){
+                        for (var worker in item){
+                            var sharesAdded = parseInt(item[worker]);
+                            if (worker in balancesForRounds)
+                                balancesForRounds[worker] += sharesAdded;
+                            else
+                                balancesForRounds[worker] = sharesAdded;
+                        }
+                    });
+                    callback(null, balancesForRounds);
                 });
 
             },
 
             /* Get worker existing balances from coin_balances hashset in redis*/
-            function(confirmedTxs, callback){
+            function(balancesForRounds, callback){
 
-                /* Calculate if any payments are ready to be sent and trigger them sending
-                   Get remaining balances for each address and pass it along as object of latest balances
-                   such as {worker1: balance1, worker2, balance2} */
+                var workerAddress = Object.keys(balancesForRounds);
+
+                redisClient.hmget([coin + '_balances'].concat(workerAddress), function(error, results){
+                    if (error){
+                        callback('done - redis error with multi get rounds share')
+                        return;
+                    }
+
+                    for (var i = 0; i < results.length; i++){
+                        var shareInt = parseInt(results[i]);
+                        if (shareInt)
+                            balancesForRounds[workerAddress[i]] += shareInt;
+
+                    }
+
+                    callback(null, balancesForRounds)
+                });
+
+
+            },
+
+            /* Calculate if any payments are ready to be sent and trigger them sending
+             Get remaining balances for each address and pass it along as object of latest balances
+             such as {worker1: balance1, worker2, balance2} */
+            function(fullBalance, callback){
 
             },
 
             /* update remaining balances in coin_balance hashset in redis */
-            function(updateBalances, callback){
+            function(remainingBalance, callback){
 
             },
 
-            //move this block enty to coin_processedBlocks so payments are not resent
+            //move this block entry to coin_processedBlocks so payments are not resent
             function (none, callback){
 
             }
@@ -191,10 +231,7 @@ function SetupForPool(logger, poolOptions){
     };
 
 
-    setInterval(function(){
-
-        processPayments();
-
-    }, processingConfig.paymentInterval * 1000);
+    setInterval(processPayments, processingConfig.paymentInterval * 1000);
+    setTimeout(processPayments, 100);
 
 };
