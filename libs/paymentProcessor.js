@@ -189,7 +189,7 @@ function SetupForPool(logger, poolOptions){
                     }, 0);
 
                     var poolTotalRewards = rounds.reduce(function(p, c){
-                        return p + c.amount;
+                        return p + c.amount * c.magnitude;
                     }, 0);
 
                     console.log(workerRewards);

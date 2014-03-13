@@ -1,18 +1,14 @@
-var express = require('express');
 var os = require('os');
-var app = express();
-
-app.get('/getstatus', function (req, res) {
-	res.send({
-		'loadavg': os.loadavg(),
-		'freemem': os.freemem()
-	});
-});
 
 
-module.exports = {
-	start: function () {
-		app.listen(9000);
-	}
-}
+module.exports = function(logger, poolConfigs){
+
+    //Every 10 minutes clear out old hashrate stat data from redis
+    setInterval(function(){
+        var tenMinutesAgo = (Date.now() / 1000 | 0) - (60 * 10);
+        connection.zremrangebyscore([coin + '_hashrate', '-inf', tenMinutesAgo]);
+    }, 10 * 60 * 1000);
+
+
+};
 

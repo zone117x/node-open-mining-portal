@@ -4,7 +4,7 @@ var cluster = require('cluster');
 
 
 var posix = require('posix');
-var PoolLogger = require('./libs/logutils.js');
+var PoolLogger = require('./libs/logUtil.js');
 var BlocknotifyListener = require('./libs/blocknotifyListener.js');
 var WorkerListener = require('./libs/workerListener.js');
 var PoolWorker = require('./libs/poolWorker.js');
@@ -14,15 +14,11 @@ var Website = require('./libs/website.js');
 JSON.minify = JSON.minify || require("node-json-minify");
 
 
+var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
 
 
 var loggerInstance = new PoolLogger({
-    'default': true,
-    'keys': {
-        //'client'      : 'warning',
-        'system'      : true,
-        'submitblock' : true
-    }
+    logLevel: portalConfig.logLevel
 });
 
 var logDebug   = loggerInstance.logDebug;
@@ -174,7 +170,6 @@ var startWebsite = function(portalConfig, poolConfigs){
 
 
 (function init(){
-    var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
 
     var poolConfigs = buildPoolConfigs();
 

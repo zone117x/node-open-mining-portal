@@ -29,6 +29,7 @@ var dot = require('dot');
 var express = require('express');
 
 
+
 module.exports = function(logger){
 
     var portalConfig = JSON.parse(process.env.portalConfig);

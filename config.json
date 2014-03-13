@@ -1,4 +1,5 @@
 {
+    "logLevel": "debug",
     "clustering": {
         "enabled": true,
         "forks": "auto"
