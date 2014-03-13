@@ -128,14 +128,15 @@ Description of options:
                payments less frequently (they dislike). Opposite for a lower minimum payment. */
             "minimumPayment": 0.001,
 
+            /* Minimum number of coins to keep in pool wallet. It is recommended to deposit at
+               at least this many coins into the pool wallet when first starting the pool. */
+            "minimumReserve": 10,
+
             /* (2% default) What percent fee your pool takes from the block reward. */
             "feePercent": 0.02,
 
             /* Your address that receives pool revenue from fees */
             "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
-
-            /* Minimum number of coins to keep in pool wallet */
-            "minimumReserve": 10,
 
             /* How many coins from fee revenue must accumulate on top of the minimum reserve amount
                in order to trigger withdrawal to fee address. The higher this threshold, the less of

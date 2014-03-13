@@ -100,11 +100,11 @@ function SetupForPool(logger, poolOptions){
                         return;
                     }
 
-                    var rounds = [];
-                    results.forEach(function(item){
-                        var details = item.split(':');
-                        rounds.push({txHash: details[0], height: details[1], reward: details[2]});
+                    var rounds = results.map(function(r){
+                        var details = r.split(':');
+                        return {txHash: details[0], height: details[1], reward: details[2]};
                     });
+
                     callback(null, rounds);
                 });
             },
@@ -114,11 +114,10 @@ function SetupForPool(logger, poolOptions){
                It also adds the block reward amount to the round object - which the daemon gives also gives us. */
             function(rounds, callback){
 
-                var batchRPCcommand = [];
+                var batchRPCcommand = rounds.map(function(r){
+                    return ['gettransaction', [r.txHash]];
+                });
 
-                for (var i = 0; i < rounds.length; i++){
-                    batchRPCcommand.push(['gettransaction', [rounds[i].txHash]]);
-                }
                 daemon.batchCmd(batchRPCcommand, function(error, txDetails){
 
                     if (error || !txDetails){
@@ -128,18 +127,14 @@ function SetupForPool(logger, poolOptions){
 
                     //Rounds that are not confirmed yet are removed from the round array
                     //We also get reward amount for each block from daemon reply
-                    txDetails.forEach(function(tx){
-                        var txResult = tx.result;
-                        var txDetails = tx.result.details[0];
-                        for (var i = 0; i < rounds.length; i++){
-                            if (rounds[i].txHash === txResult.txid){
-                                rounds[i].amount = txResult.amount;
-                                rounds[i].magnitude = rounds[i].reward / txResult.amount;
-                                if (txDetails.category !== 'generate')
-                                    rounds.splice(i, 1);
-                            }
-                        }
+                    rounds = rounds.filter(function(r){
+                        var tx = txDetails.filter(function(t){ return t.result.txid === r.txHash; })[0];
+                        if (tx.result.details[0].category !== 'generate') return false;
+                        r.amount = tx.result.amount;
+                        r.magnitude = r.reward / r.amount;
+                        return true;
                     });
+
                     if (rounds.length === 0){
                         callback('done - no confirmed transactions yet');
                         return;
@@ -154,14 +149,12 @@ function SetupForPool(logger, poolOptions){
                amount owned to each miner for each round. */
             function(rounds, callback){
 
-                var shareLooksup = [];
-                for (var i = 0; i < rounds.length; i++){
-                    shareLooksup.push(['hgetall', coin + '_shares:round' + rounds[i].height]);
-                }
 
+                var shareLookups = rounds.map(function(r){
+                    return ['hgetall', coin + '_shares:round' + r.height]
+                });
 
-
-                redisClient.multi(shareLooksup).exec(function(error, allWorkerShares){
+                redisClient.multi(shareLookups).exec(function(error, allWorkerShares){
                     if (error){
                         callback('done - redis error with multi get rounds share')
                         return;
@@ -169,58 +162,68 @@ function SetupForPool(logger, poolOptions){
 
                     var workerRewards = {};
 
+
                     for (var i = 0; i < rounds.length; i++){
                         var round = rounds[i];
                         var workerShares = allWorkerShares[i];
 
                         var reward = round.reward * (1 - processingConfig.feePercent);
 
-                        var totalShares = 0;
-                        for (var worker in workerShares){
-                            totalShares += parseInt(workerShares[worker]);
-                        }
+                        var totalShares = Object.keys(workerShares).reduce(function(p, c){
+                            return p + parseInt(workerShares[c])
+                        }, 0);
+
 
                         for (var worker in workerShares){
-                            var singleWorkerShares = parseInt(workerShares[worker]);
-                            var percent = singleWorkerShares / totalShares;
-                            var workerRewardTotal = (reward * percent) / round.magnitude;
-                            workerRewardTotal = Math.floor(workerRewardTotal * round.magnitude) / round.magnitude;
-                            if (worker in workerRewards)
-                                workerRewards[worker] += workerRewardTotal;
-                            else
-                                workerRewards[worker] = workerRewardTotal;
+                            var percent = parseInt(workerShares[worker]) / totalShares;
+                            var workerRewardTotal = Math.floor(reward * percent);
+                            if (!(worker in workerRewards)) workerRewards[worker] = 0;
+                            workerRewards[worker] += workerRewardTotal;
                         }
                     }
 
+                    //this calculates profit if you wanna see it
+                    /*
+                    var workerTotalRewards = Object.keys(workerRewards).reduce(function(p, c){
+                        return p + workerRewards[c];
+                    }, 0);
 
-                    console.dir(workerRewards);
+                    var poolTotalRewards = rounds.reduce(function(p, c){
+                        return p + c.amount;
+                    }, 0);
 
-                    callback(null, rounds);
+                    console.log(workerRewards);
+                    console.log('pool profit percent' + ((poolTotalRewards - workerTotalRewards) / poolTotalRewards));
+                    */
+
+                    callback(null, rounds, workerRewards);
                 });
             },
 
 
             /* Does a batch call to redis to get worker existing balances from coin_balances*/
-            function(rounds, callback){
-                /*
-                var workerAddress = Object.keys(balancesForRounds);
+            function(rounds, workerRewards, callback){
 
-                redisClient.hmget([coin + '_balances'].concat(workerAddress), function(error, results){
+                var workers = Object.keys(workerRewards);
+
+                redisClient.hmget([coin + '_balances'].concat(workers), function(error, results){
                     if (error){
                         callback('done - redis error with multi get rounds share')
                         return;
                     }
+                    console.dir(workerRewards);
 
-                    for (var i = 0; i < results.length; i++){
-                        var shareInt = parseInt(results[i]);
-                        if (shareInt)
-                            balancesForRounds[workerAddress[i]] += shareInt;
+                    var workerBalances = {};
 
+                    for (var i = 0; i < workers.length; i++){
+                        workerBalances[workers[i]] = parseInt(results[i]) || 0;
                     }
 
-                    callback(null, rounds, balancesForRounds)
+                    console.dir(workerBalances);
+
+                    callback(null, rounds, workerRewards, workerBalances)
                 });
-                */
+
             },
 
 
@@ -230,11 +233,18 @@ function SetupForPool(logger, poolOptions){
              when deciding the sent balance, it the difference should be -1*amount they had in db,
              if not sending the balance, the differnce should be +(the amount they earned this round)
              */
-            function(fullBalance, rounds, callback){
+            function(rounds, workerRewards, workerBalances, callback){
 
                 /* if payments dont succeed (likely because daemon isnt responding to rpc), then cancel here
                    so that all of this can be tried again when the daemon is working. otherwise we will consider
                    payment sent after we cleaned up the db.
+                 */
+
+                /* In here do daemon.getbalance, figure out how many payments should be sent, see if the
+                   remaining balance after payments-to-be sent is greater than the min reserver, otherwise
+                   put everything in worker balances to be paid next time.
+
+
                  */
 
             },
