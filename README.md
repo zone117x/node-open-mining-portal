@@ -34,10 +34,13 @@ of this software. The switching can be controlled using a coin profitability API
 
 
 
-#### Community
+#### Community / Support
 For support and general discussion join IRC #nomp: https://webchat.freenode.net/?channels=#nomp
 
 For development discussion join #nomp-dev: https://webchat.freenode.net/?channels=#nomp-dev
+
+*Having problems getting the portal running due to some module dependency error?* It's probably because you
+didn't follow the instructions in this README. Please __read the usage instructions__ including [requirements](#requirements) and [downloading/installing](#1-downloading--installing). If you've followed the instructions completely and are still having problems then open an issue here on github or join our #nomp IRC channel and explain your problem :).
 
 If your pool uses NOMP let us know and we will list your website here.
 
@@ -52,7 +55,7 @@ Usage
 * [Redis](http://redis.io/) key-value store v2.6+ ([follow these instructions](http://redis.io/topics/quickstart))
 
 
-#### 1) Download
+#### 1) Downloading & Installing
 
 Clone the repository and run `npm update` for all the dependencies to be installed:
 
@@ -315,8 +318,13 @@ blocknotify="scripts/blockNotify.js localhost:8117 mySuperSecurePassword dogecoi
 node init.js
 ```
 
-Optionally, use something like [forever](https://github.com/nodejitsu/forever) to keep the node script running
+###### Optional enhancements for your awesome new mining pool server setup:
+* Use something like [forever](https://github.com/nodejitsu/forever) to keep the node script running
 in case the master process crashes. 
+* Use something like [redis-commander](https://github.com/joeferner/redis-commander) to have a nice GUI
+for exploring your redis database.
+* Use something like [logrotator](http://www.thegeekstuff.com/2010/07/logrotate-examples/) to rotate log 
+output from NOMP.
 
 
 Donations
