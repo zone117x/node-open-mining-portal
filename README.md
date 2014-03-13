@@ -61,19 +61,47 @@ git clone https://github.com/zone117x/node-stratum-portal.git
 npm update
 ```
 
-#### 2) Setup
+#### 2) Configuration
 
 ##### Portal config
-Inside the `config.json` file, ensure the default configuration will work for your environment. The `clustering.forks`
-option is set to `"auto"` by default which will spawn one process/fork/worker for each CPU core in your system.
-Each of these workers will run a separate instance of your pool(s), and the kernel will load balance miners
-using these forks. Optionally, the `clustering.forks` field can be a number for how many forks you wish to spawn.
+Inside the `config.json` file, ensure the default configuration will work for your environment.
 
-With `blockNotifyListener` enabled, the master process will start listening on the configured port for messages from
-the `scripts/blockNotify.js` script which your coin daemons can be configured to run when a new block is available.
-When a blocknotify message is received, the master process uses IPC (inter-process communication) to notify each
-worker process about the message. Each worker process then sends the message to the appropriate coin pool.
-See "Setting up blocknotify" below to set up your daemon to use this feature.
+Explanation for each field:
+````javascript
+{
+    /* Specifies the level of log output verbosity. Anything more severy than the level specified
+       will also be logged. */
+    "logLevel": "debug", //or "warning", "error"
+    
+    /* By default 'forks' is set to "auto" which will spawn one process/fork/worker for each CPU
+       core in your system. Each of these workers will run a separate instance of your pool(s),
+       and the kernel will load balance miners using these forks. Optionally, the 'forks' field
+       can be a number for how many forks will be spawned. */
+    "clustering": {
+        "enabled": true,
+        "forks": "auto"
+    },
+    
+    /* With this enabled, the master process will start listening on the configured port for
+       messages from the 'scripts/blockNotify.js' script which your coin daemons can be configured
+       to run when a new block is available. When a blocknotify message is received, the master
+       process uses IPC (inter-process communication) to notify each worker process about the
+       message. Each worker process then sends the message to the appropriate coin pool. See
+       "Setting up blocknotify" below to set up your daemon to use this feature. */
+    "blockNotifyListener": {
+        "enabled": true,
+        "port": 8117,
+        "password": "test"
+    },
+    
+    /* This is the front-end. Its not finished. When it is finished, this comment will say so. */
+    "website": {
+        "enabled": true,
+        "port": 80,
+        "liveStats": true
+    }
+}
+````
 
 
 ##### Coin config
