@@ -5,7 +5,7 @@ var app = express();
 app.get('/getstatus', function (req, res) {
 	res.send({
 		'loadavg': os.loadavg(),
-		'freemem': os.freemem(),
+		'freemem': os.freemem()
 	});
 });
 

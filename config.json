@@ -7,5 +7,10 @@
         "enabled": true,
         "port": 8117,
         "password": "test"
+    },
+    "website": {
+        "enabled": true,
+        "port": 80,
+        "liveStats": true
     }
 }

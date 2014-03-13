@@ -37,7 +37,9 @@
         "posix": "*",
         "redis": "*",
         "mysql": "*",
-        "async": "*"
+        "async": "*",
+        "express": "*",
+        "dot": "*"
     },
     "engines": {
         "node": ">=0.10"

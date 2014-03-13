@@ -9,6 +9,7 @@ var BlocknotifyListener = require('./libs/blocknotifyListener.js');
 var WorkerListener = require('./libs/workerListener.js');
 var PoolWorker = require('./libs/poolWorker.js');
 var PaymentProcessor = require('./libs/paymentProcessor.js');
+var Website = require('./libs/website.js');
 
 JSON.minify = JSON.minify || require("node-json-minify");
 
@@ -47,6 +48,9 @@ if (cluster.isWorker){
             break;
         case 'paymentProcessor':
             new PaymentProcessor(loggerInstance);
+            break;
+        case 'website':
+            new Website(loggerInstance);
             break;
     }
 
@@ -145,7 +149,24 @@ var startPaymentProcessor = function(poolConfigs){
     worker.on('exit', function(code, signal){
         logError('paymentProcessor', 'system', 'Payment processor died, spawning replacement...');
         setTimeout(function(){
-            startPaymentProcessor(poolConfigs);
+            startPaymentProcessor.apply(null, arguments);
+        }, 2000);
+    });
+};
+
+
+var startWebsite = function(portalConfig, poolConfigs){
+    if (!portalConfig.website.enabled) return;
+
+    var worker = cluster.fork({
+        workerType: 'website',
+        pools: JSON.stringify(poolConfigs),
+        portalConfig: JSON.stringify(portalConfig)
+    });
+    worker.on('exit', function(code, signal){
+        logError('website', 'system', 'Website process died, spawning replacement...');
+        setTimeout(function(){
+            startWebsite.apply(null, arguments);
         }, 2000);
     });
 };
@@ -164,5 +185,7 @@ var startPaymentProcessor = function(poolConfigs){
     startBlockListener(portalConfig);
 
     startWorkerListener(poolConfigs);
+
+    startWebsite(portalConfig, poolConfigs);
 
 })();

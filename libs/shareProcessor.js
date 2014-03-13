@@ -19,9 +19,6 @@ module.exports = function(logger, poolConfig){
     var redisConfig = internalConfig.redis;
     var coin = poolConfig.coin.name;
 
-
-
-
     var connection;
 
     function connect(){
@@ -47,6 +44,13 @@ module.exports = function(logger, poolConfig){
     connect();
 
 
+    //Every 10 minutes clear out old hashrate stat data from redis
+    setInterval(function(){
+        var tenMinutesAgo = (Date.now() / 1000 | 0) - (60 * 10);
+        connection.zremrangebyscore([coin + '_hashrate', '-inf', tenMinutesAgo]);
+    }, 10 * 60 * 1000);
+
+
     this.handleShare = function(isValidShare, isValidBlock, shareData){
 
 
@@ -58,6 +62,10 @@ module.exports = function(logger, poolConfig){
           for more efficient stats
          */
 
+        //store share diff, worker, and unique value with a score that is the timestamp
+        //unique value ensures it doesnt overwrite an existing entry
+        //the timestamp as score lets us query shares from last X minutes to generate hashrate for each worker and pool
+        connection.zadd(coin + '_hashrate', Date.now() / 1000 | 0, shareData.difficulty + ':' + shareData.worker + ':' + Math.random());
 
         connection.hincrby([coin + '_shares:roundCurrent', shareData.worker, shareData.difficulty], function(error, result){
             if (error)

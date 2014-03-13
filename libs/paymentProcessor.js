@@ -211,7 +211,7 @@ function SetupForPool(logger, poolOptions){
                         callback('done - redis error with multi get rounds share')
                         return;
                     }
-                    console.dir(workerRewards);
+
 
                     var workerBalances = {};
 
@@ -219,7 +219,6 @@ function SetupForPool(logger, poolOptions){
                         workerBalances[workers[i]] = parseInt(results[i]) || 0;
                     }
 
-                    console.dir(workerBalances);
 
                     callback(null, rounds, workerRewards, workerBalances)
                 });
