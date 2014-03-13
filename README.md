@@ -47,9 +47,9 @@ Usage
 
 
 #### Requirements
-* Coin daemon(s)
-* [Node.js](http://nodejs.org/) v0.10+
-* [Redis](http://redis.io/) key-value store/database v2.6+
+* Coin daemon(s) (find the coin's repo and build latest version from source)
+* [Node.js](http://nodejs.org/) v0.10+ ([follow these installation instructions](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager))
+* [Redis](http://redis.io/) key-value store v2.6+ ([follow these instructions](http://redis.io/topics/quickstart))
 
 
 #### 1) Download
