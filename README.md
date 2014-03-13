@@ -315,8 +315,11 @@ blocknotify="scripts/blockNotify.js localhost:8117 mySuperSecurePassword dogecoi
 node init.js
 ```
 
-Optionally, use something like [forever](https://github.com/nodejitsu/forever) to keep the node script running
+###### Optional enhancements for your awesome new mining pool server setup:
+* Use something like [forever](https://github.com/nodejitsu/forever) to keep the node script running
 in case the master process crashes. 
+* Use something like [redis-commander](https://github.com/joeferner/redis-commander) to have a nice GUI
+for exploring your redis database.
 
 
 Donations
