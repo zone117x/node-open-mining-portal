@@ -320,6 +320,8 @@ node init.js
 in case the master process crashes. 
 * Use something like [redis-commander](https://github.com/joeferner/redis-commander) to have a nice GUI
 for exploring your redis database.
+* Use something like [logrotator](http://www.thegeekstuff.com/2010/07/logrotate-examples/) to rotate log 
+output from NOMP.
 
 
 Donations
