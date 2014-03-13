@@ -34,10 +34,13 @@ of this software. The switching can be controlled using a coin profitability API
 
 
 
-#### Community
+#### Community / Support
 For support and general discussion join IRC #nomp: https://webchat.freenode.net/?channels=#nomp
 
 For development discussion join #nomp-dev: https://webchat.freenode.net/?channels=#nomp-dev
+
+If you're having a problem getting the portal running due to some module dependency error - its probably because you
+didn't follow the instructions in this README. Please __read the usage instructions__ including [requirements](#requirements) and [downloading/installing](#1-downloading--installing). If you've followed the instructions completely and are still having problems then open an issue here on github or join our #nomp IRC channel and explain your problem :).
 
 If your pool uses NOMP let us know and we will list your website here.
 
@@ -52,7 +55,7 @@ Usage
 * [Redis](http://redis.io/) key-value store v2.6+ ([follow these instructions](http://redis.io/topics/quickstart))
 
 
-#### 1) Download
+#### 1) Downloading & Installing
 
 Clone the repository and run `npm update` for all the dependencies to be installed:
 
