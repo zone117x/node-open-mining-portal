@@ -48,33 +48,38 @@ module.exports = function(logger, poolConfig){
     this.handleShare = function(isValidShare, isValidBlock, shareData){
 
 
-        if (!isValidShare) return;
+        var redisCommands = [];
 
-        /*use http://redis.io/commands/zrangebyscore to store shares with timestamps
-          so we can use the min-max to get shares from the last x minutes to determine hash rate :)
-          also use a hash like coin_stats:{ invalidShares, validShares, invalidBlocks, validBlocks, etc }
-          for more efficient stats
-         */
+        if (isValidShare){
+            redisCommands.push(['hincrby', coin + '_shares:roundCurrent', shareData.worker, shareData.difficulty]);
+            redisCommands.push(['hincrby', coin + '_stats', 'validShares', 1]);
 
-        //store share diff, worker, and unique value with a score that is the timestamp
-        //unique value ensures it doesnt overwrite an existing entry
-        //the timestamp as score lets us query shares from last X minutes to generate hashrate for each worker and pool
-        connection.zadd(coin + '_hashrate', Date.now() / 1000 | 0, shareData.difficulty + ':' + shareData.worker + ':' + Math.random());
-
-        connection.hincrby([coin + '_shares:roundCurrent', shareData.worker, shareData.difficulty], function(error, result){
-            if (error)
-                logger.error('redis', 'Could not store worker share')
-        });
+            /* Stores share diff, worker, and unique value with a score that is the timestamp. Unique value ensures it
+               doesn't overwrite an existing entry, and timestamp as score lets us query shares from last X minutes to
+               generate hashrate for each worker and pool. */
+            redisCommands.push(['zadd', coin + '_hashrate', Date.now() / 1000 | 0, [shareData.difficulty, shareData.worker, Math.random()].join(':')]);
+        }
+        else{
+            redisCommands.push(['hincrby', coin + '_stats', 'invalidShares', 1]);
+        }
 
         if (isValidBlock){
-            connection.rename(coin + '_shares:roundCurrent', coin + '_shares:round' + shareData.height, function(result){
-                console.log('rename result: ' + result);
-            });
-            connection.sadd([coin + '_blocks', shareData.tx + ':' + shareData.height + ':' + shareData.reward], function(error, result){
-                if (error)
-                    logger.error('redis', 'Could not store block data');
-            });
+            redisCommands.push(['rename', coin + '_shares:roundCurrent', coin + '_shares:round' + shareData.height]);
+            redisCommands.push(['sadd', coin + '_blocks', shareData.tx + ':' + shareData.height + ':' + shareData.reward]);
+            redisCommands.push(['hincrby', coin + '_stats', 'validBlocks', 1]);
         }
+        else if (shareData.solution){
+            redisCommands.push(['hincrby', coin + '_stats', 'invalidBlocks', 1]);
+        }
+
+        connection.multi(redisCommands).exec(function(err, replies){
+            if (err)
+                console.log('error with share processor multi ' + JSON.stringify(err));
+            else{
+                console.log(JSON.stringify(replies));
+            }
+        });
+
 
     };
 
