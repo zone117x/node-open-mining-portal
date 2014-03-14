@@ -1,4 +1,5 @@
 {
+    "logLevel": "debug",
     "clustering": {
         "enabled": true,
         "forks": "1"
@@ -8,6 +9,7 @@
         "port": 8117,
         "password": "test"
     },
+
     "redisBlockNotifyListener": {
     	"redisPort": 6379,
     	"redisHost": "coindaemons.ultimatecoinpool.com",
@@ -47,5 +49,9 @@
                 }
             }
         }
+    "website": {
+        "enabled": true,
+        "port": 80,
+        "liveStats": true
     }
 }

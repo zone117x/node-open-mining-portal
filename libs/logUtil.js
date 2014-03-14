@@ -39,35 +39,35 @@ var getSeverityColor = function(severity) {
 
 var PoolLogger = function (configuration) {
 
+    var logLevelInt = severityToInt(configuration.logLevel);
+
     // privates
     var shouldLog = function(key, severity) {
-        var keyValue = configuration.keys[key];
-        if (typeof(keyValue) === 'undefined') {
-            keyValue = configuration.default;
-        } 
-
-        if (typeof(keyValue) === 'boolean') {
-            return keyValue;
-        } else if (typeof(keyValue) === 'string') {
-            return severityToInt(severity) >= severityToInt(keyValue);
-        }
-    }
+        var severity = severityToInt(severity);
+        return severity >= logLevelInt;
+    };
 
     var log = function(severity, key, poolName, text) {
-        if ( ! shouldLog(key, severity) ) {
-            // if this tag is set to not be logged or the default value is false then drop it!
-            //console.log(key+"DROPPED "+text + 'SEV' + severity);
+        if (!shouldLog(key, severity))
             return;
 
-        }
         var desc = poolName ? '[' + poolName + '] ' : '';
         console.log(
+<<<<<<< HEAD:libs/logutils.js
             '\u001b['+getSeverityColor(severity)+'m' +
             dateFormat(new Date(), 'yyyy-mm-dd HH:MM:ss') + 
             " ["+key+"]" + '\u001b[39m: ' + "\t" +
             desc + 
             text);
     }
+=======
+            '\u001b[' + getSeverityColor(severity) + 'm' +
+            dateFormat(new Date(), 'yyyy-mm-dd HH:MM:ss') +
+            " [" + key + "]" + '\u001b[39m: ' + "\t" +
+            desc + text
+        );
+    };
+>>>>>>> 0db53a296f9b77ad6ff76b5f06c7156d5366a777:libs/logUtil.js
 
     // public
 

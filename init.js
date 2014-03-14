@@ -3,6 +3,7 @@ var os = require('os');
 var cluster = require('cluster');
 
 
+<<<<<<< HEAD
 var posix                    = require('posix');
 var PoolLogger               = require('./libs/logutils.js');
 var BlocknotifyListener      = require('./libs/blocknotifyListener.js');
@@ -14,15 +15,24 @@ var PaymentProcessor         = require('./libs/paymentProcessor.js');
 JSON.minify = JSON.minify || require("node-json-minify");
 
  
+=======
+var posix = require('posix');
+var PoolLogger = require('./libs/logUtil.js');
+var BlocknotifyListener = require('./libs/blocknotifyListener.js');
+var WorkerListener = require('./libs/workerListener.js');
+var PoolWorker = require('./libs/poolWorker.js');
+var PaymentProcessor = require('./libs/paymentProcessor.js');
+var Website = require('./libs/website.js');
+
+JSON.minify = JSON.minify || require("node-json-minify");
+
+
+var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
+>>>>>>> 0db53a296f9b77ad6ff76b5f06c7156d5366a777
 
 
 var loggerInstance = new PoolLogger({
-    'default': true,
-    'keys': {
-        //'client'      : 'warning',
-        'system'      : true,
-        'submitblock' : true
-    }
+    logLevel: portalConfig.logLevel
 });
 
 var logDebug   = loggerInstance.logDebug;
@@ -48,6 +58,9 @@ if (cluster.isWorker){
             break;
         case 'paymentProcessor':
             new PaymentProcessor(loggerInstance);
+            break;
+        case 'website':
+            new Website(loggerInstance);
             break;
     }
 
@@ -112,7 +125,9 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
         });
         worker.on('exit', function(code, signal){
             logError('poolWorker', 'system', 'Fork ' + forkId + ' died, spawning replacement worker...');
-            createPoolWorker(forkId);
+            setTimeout(function(){
+                createPoolWorker(forkId);
+            }, 2000);
         });
     };
 
@@ -170,13 +185,31 @@ var startPaymentProcessor = function(poolConfigs){
     });
     worker.on('exit', function(code, signal){
         logError('paymentProcessor', 'system', 'Payment processor died, spawning replacement...');
-        startPaymentProcessor(poolConfigs);
+        setTimeout(function(){
+            startPaymentProcessor.apply(null, arguments);
+        }, 2000);
+    });
+};
+
+
+var startWebsite = function(portalConfig, poolConfigs){
+    if (!portalConfig.website.enabled) return;
+
+    var worker = cluster.fork({
+        workerType: 'website',
+        pools: JSON.stringify(poolConfigs),
+        portalConfig: JSON.stringify(portalConfig)
+    });
+    worker.on('exit', function(code, signal){
+        logError('website', 'system', 'Website process died, spawning replacement...');
+        setTimeout(function(){
+            startWebsite.apply(null, arguments);
+        }, 2000);
     });
 };
 
 
 (function init(){
-    var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
 
     var poolConfigs = buildPoolConfigs();
 
@@ -190,5 +223,11 @@ var startPaymentProcessor = function(poolConfigs){
 
     startWorkerListener(poolConfigs);
 
+<<<<<<< HEAD
 
 })();
+=======
+    startWebsite(portalConfig, poolConfigs);
+
+})();
+>>>>>>> 0db53a296f9b77ad6ff76b5f06c7156d5366a777

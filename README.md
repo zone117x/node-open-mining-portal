@@ -34,10 +34,13 @@ of this software. The switching can be controlled using a coin profitability API
 
 
 
-#### Community
+#### Community / Support
 For support and general discussion join IRC #nomp: https://webchat.freenode.net/?channels=#nomp
 
 For development discussion join #nomp-dev: https://webchat.freenode.net/?channels=#nomp-dev
+
+*Having problems getting the portal running due to some module dependency error?* It's probably because you
+didn't follow the instructions in this README. Please __read the usage instructions__ including [requirements](#requirements) and [downloading/installing](#1-downloading--installing). If you've followed the instructions completely and are still having problems then open an issue here on github or join our #nomp IRC channel and explain your problem :).
 
 If your pool uses NOMP let us know and we will list your website here.
 
@@ -47,12 +50,12 @@ Usage
 
 
 #### Requirements
-* Coin daemon(s)
-* [Node.js](http://nodejs.org/) v0.10+
-* [Redis](http://redis.io/) key-value store/database v2.6+
+* Coin daemon(s) (find the coin's repo and build latest version from source)
+* [Node.js](http://nodejs.org/) v0.10+ ([follow these installation instructions](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager))
+* [Redis](http://redis.io/) key-value store v2.6+ ([follow these instructions](http://redis.io/topics/quickstart))
 
 
-#### 1) Download
+#### 1) Downloading & Installing
 
 Clone the repository and run `npm update` for all the dependencies to be installed:
 
@@ -61,19 +64,47 @@ git clone https://github.com/zone117x/node-stratum-portal.git
 npm update
 ```
 
-#### 2) Setup
+#### 2) Configuration
 
 ##### Portal config
-Inside the `config.json` file, ensure the default configuration will work for your environment. The `clustering.forks`
-option is set to `"auto"` by default which will spawn one process/fork/worker for each CPU core in your system.
-Each of these workers will run a separate instance of your pool(s), and the kernel will load balance miners
-using these forks. Optionally, the `clustering.forks` field can be a number for how many forks you wish to spawn.
+Inside the `config.json` file, ensure the default configuration will work for your environment.
 
-With `blockNotifyListener` enabled, the master process will start listening on the configured port for messages from
-the `scripts/blockNotify.js` script which your coin daemons can be configured to run when a new block is available.
-When a blocknotify message is received, the master process uses IPC (inter-process communication) to notify each
-worker process about the message. Each worker process then sends the message to the appropriate coin pool.
-See "Setting up blocknotify" below to set up your daemon to use this feature.
+Explanation for each field:
+````javascript
+{
+    /* Specifies the level of log output verbosity. Anything more severy than the level specified
+       will also be logged. */
+    "logLevel": "debug", //or "warning", "error"
+    
+    /* By default 'forks' is set to "auto" which will spawn one process/fork/worker for each CPU
+       core in your system. Each of these workers will run a separate instance of your pool(s),
+       and the kernel will load balance miners using these forks. Optionally, the 'forks' field
+       can be a number for how many forks will be spawned. */
+    "clustering": {
+        "enabled": true,
+        "forks": "auto"
+    },
+    
+    /* With this enabled, the master process will start listening on the configured port for
+       messages from the 'scripts/blockNotify.js' script which your coin daemons can be configured
+       to run when a new block is available. When a blocknotify message is received, the master
+       process uses IPC (inter-process communication) to notify each worker process about the
+       message. Each worker process then sends the message to the appropriate coin pool. See
+       "Setting up blocknotify" below to set up your daemon to use this feature. */
+    "blockNotifyListener": {
+        "enabled": true,
+        "port": 8117,
+        "password": "test"
+    },
+    
+    /* This is the front-end. Its not finished. When it is finished, this comment will say so. */
+    "website": {
+        "enabled": true,
+        "port": 80,
+        "liveStats": true
+    }
+}
+````
 
 
 ##### Coin config
@@ -128,14 +159,15 @@ Description of options:
                payments less frequently (they dislike). Opposite for a lower minimum payment. */
             "minimumPayment": 0.001,
 
+            /* Minimum number of coins to keep in pool wallet. It is recommended to deposit at
+               at least this many coins into the pool wallet when first starting the pool. */
+            "minimumReserve": 10,
+
             /* (2% default) What percent fee your pool takes from the block reward. */
             "feePercent": 0.02,
 
             /* Your address that receives pool revenue from fees */
             "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
-
-            /* Minimum number of coins to keep in pool wallet */
-            "minimumReserve": 10,
 
             /* How many coins from fee revenue must accumulate on top of the minimum reserve amount
                in order to trigger withdrawal to fee address. The higher this threshold, the less of
@@ -286,8 +318,13 @@ blocknotify="scripts/blockNotify.js localhost:8117 mySuperSecurePassword dogecoi
 node init.js
 ```
 
-Optionally, use something like [forever](https://github.com/nodejitsu/forever) to keep the node script running
+###### Optional enhancements for your awesome new mining pool server setup:
+* Use something like [forever](https://github.com/nodejitsu/forever) to keep the node script running
 in case the master process crashes. 
+* Use something like [redis-commander](https://github.com/joeferner/redis-commander) to have a nice GUI
+for exploring your redis database.
+* Use something like [logrotator](http://www.thegeekstuff.com/2010/07/logrotate-examples/) to rotate log 
+output from NOMP.
 
 
 Donations

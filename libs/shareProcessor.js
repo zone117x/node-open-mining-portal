@@ -19,9 +19,6 @@ module.exports = function(logger, poolConfig){
     var redisConfig = internalConfig.redis;
     var coin = poolConfig.coin.name;
 
-
-
-
     var connection;
 
     function connect(){
@@ -47,22 +44,42 @@ module.exports = function(logger, poolConfig){
     connect();
 
 
+
     this.handleShare = function(isValidShare, isValidBlock, shareData){
 
 
-        if (!isValidShare) return;
+        var redisCommands = [];
 
-        connection.hincrby(['shares_' + coin + ':' + shareData.height, shareData.worker, shareData.difficulty], function(error, result){
-            if (error)
-                logger.error('redis', 'Could not store worker share')
-        });
+        if (isValidShare){
+            redisCommands.push(['hincrby', coin + '_shares:roundCurrent', shareData.worker, shareData.difficulty]);
+            redisCommands.push(['hincrby', coin + '_stats', 'validShares', 1]);
+
+            /* Stores share diff, worker, and unique value with a score that is the timestamp. Unique value ensures it
+               doesn't overwrite an existing entry, and timestamp as score lets us query shares from last X minutes to
+               generate hashrate for each worker and pool. */
+            redisCommands.push(['zadd', coin + '_hashrate', Date.now() / 1000 | 0, [shareData.difficulty, shareData.worker, Math.random()].join(':')]);
+        }
+        else{
+            redisCommands.push(['hincrby', coin + '_stats', 'invalidShares', 1]);
+        }
 
         if (isValidBlock){
-            connection.sadd(['blocks_' + coin, shareData.tx + ':' + shareData.height], function(error, result){
-                if (error)
-                    logger.error('redis', 'Could not store block data');
-            });
+            redisCommands.push(['rename', coin + '_shares:roundCurrent', coin + '_shares:round' + shareData.height]);
+            redisCommands.push(['sadd', coin + '_blocks', shareData.tx + ':' + shareData.height + ':' + shareData.reward]);
+            redisCommands.push(['hincrby', coin + '_stats', 'validBlocks', 1]);
         }
+        else if (shareData.solution){
+            redisCommands.push(['hincrby', coin + '_stats', 'invalidBlocks', 1]);
+        }
+
+        connection.multi(redisCommands).exec(function(err, replies){
+            if (err)
+                console.log('error with share processor multi ' + JSON.stringify(err));
+            else{
+                console.log(JSON.stringify(replies));
+            }
+        });
+
 
     };
 
