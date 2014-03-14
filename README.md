@@ -2,32 +2,28 @@
 #### Node Open Mining Portal
 
 This portal is an extremely efficient, highly scalable, all-in-one, easy to setup cryptocurrency mining pool written
-entirely in Node.js. It contains a [stratum poolserver](https://github.com/zone117x/node-stratum), reward/payment/share
-processor (*not yet completed*), and front-end website (*not yet completed*).
+entirely in Node.js. It contains a stratum poolserver, reward/payment/share processor (*not yet completed*), and
+front-end website (*not yet completed*).
 
-Alternatively, this software also has an [MPOS](https://github.com/MPOS/php-mpos) compatibility mode so that the it can
+#### Features
+
+* For the pool server it uses the highly efficient [node-stratum](https://github.com/zone117x/node-stratum) module which
+supports vardiff, POW & POS, transaction messages, anti-DDoS, IP banning, several hashing algorithms.
+
+* The portal has an [MPOS](https://github.com/MPOS/php-mpos) compatibility mode so that the it can
 function as a drop-in-replacement for [python-stratum-mining](https://github.com/Crypto-Expert/stratum-mining). This
 mode can be enabled in the configuration and will insert shares into a MySQL database in the format which MPOS expects.
 
-This software was built from the ground up to run with multiple coins simultaneously (which can have different
-properties and hashing algorithms). It can be used to create a pool for a single coin or for multiple coins at once. The pools use clustering to load balance across multiple CPU cores.
+* Multi-pool ability - this software was built from the ground up to run with multiple coins simultaneously (which can
+have different properties and hashing algorithms). It can be used to create a pool for a single coin or for multiple
+coins at once. The pools use clustering to load balance across multiple CPU cores.
 
-For reward/payment processing, shares are inserted into a fast NoSQL key/value database (Redis). Each coin has a
-processor that monitors for confirmed submitted blocks then send out payments according to shares accumulated in the
-database. The payment/reward method used will be PROP (proportional) - where when a block is submitted and confirmed,
-miners are paid based on their shares submitted during the round (a round is the process of searching for a single block).
+* For reward/payment processing, shares are inserted into Redis (a fast NoSQL key/value store). The PROP (proportional)
+reward system is used. Each and every share will be rewarded - even for rounds resulting in orphaned blocks.
 
-This portal does not have user accounts/logins/registrations. Instead, miners simply use their coin address for stratum
+* This portal does not have user accounts/logins/registrations. Instead, miners simply use their coin address for stratum
 authentication. A minimalistic HTML5 front-end connects to the portals statistics API to display stats from from each
 pool such as connected miners, network/pool difficulty/hash rate, etc.
-
-
-#### Security
-NOMP has some implicit security advantages for pool operators and miners:
-* No user registration/login system so non-security-oriented miners reusing passwords across pools is no longer a concern.
-* Automated payouts by default and pool profits are sent to another address so pool wallets aren't plump with coins -
-giving hackers little reward and keeping your pool from being a target.
-* Miners can notice lack of automated payments as a possible early warning sign that an operator is about to run off with their coins.
 
 
 #### Planned Features
@@ -40,6 +36,13 @@ redistribute the work to our own connected miners.
 of this software. The switching can be controlled using a coin profitability API such as CoinChoose.com or CoinWarz.com
 (or calculated locally using daemon-reported network difficulties and exchange APIs).
 
+
+#### Security
+NOMP has some implicit security advantages for pool operators and miners:
+* Without a registration/login system, non-security-oriented miners reusing passwords across pools is no longer a concern.
+* Automated payouts by default and pool profits are sent to another address so pool wallets aren't plump with coins -
+giving hackers little reward and keeping your pool from being a target.
+* Miners can notice lack of automated payments as a possible early warning sign that an operator is about to run off with their coins.
 
 
 #### Community / Support
