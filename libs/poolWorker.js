@@ -1,4 +1,6 @@
 var Stratum = require('stratum-pool');
+var Vardiff = require('stratum-pool/lib/varDiff.js');
+var net     = require('net');
 
 var MposCompatibility = require('./mposCompatibility.js');
 var ShareProcessor = require('./shareProcessor.js');
@@ -6,17 +8,38 @@ var ShareProcessor = require('./shareProcessor.js');
 module.exports = function(logger){
 
 
-    var poolConfigs = JSON.parse(process.env.pools);
-    var forkId = process.env.forkId;
+    var poolConfigs  = JSON.parse(process.env.pools);
+    var portalConfig = JSON.parse(process.env.portalConfig);
 
-    var pools = {};
+    var forkId       = process.env.forkId;
+    
+    var pools        = {};
+    var varDiffsInstances = {}; // contains all the vardiffs for the profit switching pool
 
+    var proxyStuff = {}
     //Handle messages from master process sent via IPC
     process.on('message', function(message) {
         switch(message.type){
             case 'blocknotify':
                 var pool = pools[message.coin.toLowerCase()]
                 if (pool) pool.processBlockNotify(message.hash)
+                break;
+            case 'switch':
+                var newCoinPool = pools[message.coin.toLowerCase()];
+                if (newCoinPool) {
+                    var oldPool = pools[proxyStuff.curActivePool];
+                    oldPool.relinquishMiners(
+                        function (miner, cback) { 
+                            // relinquish miners that are attached to one of the "Auto-switch" ports and leave the others there.
+                            cback(typeof(portalConfig.proxy.ports[miner.client.socket.localPort]) !== 'undefined')
+                        }, 
+                        function (clients) {
+                            newCoinPool.attachMiners(clients);
+                            proxyStuff.curActivePool = message.coin.toLowerCase();
+                        }
+                    )
+                    
+                }
                 break;
         }
     });
@@ -131,4 +154,36 @@ module.exports = function(logger){
         pool.start();
         pools[poolOptions.coin.name.toLowerCase()] = pool;
     });
+
+    
+    if (typeof(portalConfig.proxy) !== 'undefined' && portalConfig.proxy.enabled === true) {
+        proxyStuff.curActivePool = Object.keys(pools)[0];
+        proxyStuff.proxys = {};
+        proxyStuff.varDiffs = {};
+        Object.keys(portalConfig.proxy.ports).forEach(function(port) {
+            proxyStuff.varDiffs[port] = new Vardiff(port, portalConfig.proxy.ports[port].varDiff);
+        });
+        Object.keys(pools).forEach(function (coinName) {
+            var p = pools[coinName];
+            Object.keys(proxyStuff.varDiffs).forEach(function(port) {
+                p.setVarDiff(port, proxyStuff.varDiffs[port]);
+            });
+        });
+
+        Object.keys(portalConfig.proxy.ports).forEach(function (port) {
+
+            proxyStuff.proxys[port] = net 
+                                        .createServer({allowHalfOpen: true}, function(socket) { 
+                                            console.log(proxyStuff.curActivePool);
+                                            pools[proxyStuff.curActivePool].getStratumServer().handleNewClient(socket);
+                                        } )
+                                        .listen(parseInt(port), function(){
+                                            console.log("Proxy listening on "+port);
+                                        });    
+
+        });
+
+
+        
+    }
 };
