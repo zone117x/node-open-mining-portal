@@ -22,6 +22,14 @@ authentication. A minimalistic HTML5 front-end connects to the portals statistic
 pool such as connected miners, network/pool difficulty/hash rate, etc.
 
 
+#### Security
+NOMP has some implicit security advantages for pool operators and miners:
+* No user registration/login system so non-security-oriented miners reusing passwords across pools is no longer a concern.
+* Automated payouts by default and pool profits are sent to another address so pool wallets aren't plump with coins -
+giving hackers little reward and keeping your pool from being a target.
+* Miners can notice lack of automated payments as a possible early warning sign that an operator is about to run off with their coins.
+
+
 #### Planned Features
 
 * To reduce variance for pools just starting out which have little to no hashing power a feature is planned which will
