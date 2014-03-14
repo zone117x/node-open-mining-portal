@@ -1,11 +1,51 @@
 {
     "clustering": {
         "enabled": true,
-        "forks": "auto"
+        "forks": "1"
     },
     "blockNotifyListener": {
-        "enabled": true,
+        "enabled": false,
         "port": 8117,
         "password": "test"
+    },
+    "redisBlockNotifyListener": {
+    	"redisPort": 6379,
+    	"redisHost": "coindaemons.ultimatecoinpool.com",
+    	"psubscribeKey": "newblocks:*"
+    },
+    "proxy": {
+        "enabled": true,
+        "ports": {
+            "80": {
+                "diff": 32,
+                "varDiff": {
+                    "minDiff": 8,
+                    "maxDiff": 512,
+                    "targetTime": 15,
+                    "retargetTime": 90,
+                    "variancePercent": 30
+                }
+            },
+            "6000": {
+                "diff": 32,
+                "varDiff": {
+                    "minDiff": 8,
+                    "maxDiff": 512,
+                    "targetTime": 15,
+                    "retargetTime": 90,
+                    "variancePercent": 30
+                }
+            },
+            "8080": {
+                "diff": 32,
+                "varDiff": {
+                    "minDiff": 8,
+                    "maxDiff": 512,
+                    "targetTime": 15,
+                    "retargetTime": 90,
+                    "variancePercent": 30
+                }
+            }
+        }
     }
 }

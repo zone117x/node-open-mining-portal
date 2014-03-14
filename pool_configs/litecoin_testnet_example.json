@@ -1,5 +1,5 @@
 {
-    "disabled": false,
+    "disabled": true,
     "coin": "litecoin.json",
 
     "shareProcessing": {

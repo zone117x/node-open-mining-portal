@@ -3,16 +3,17 @@ var os = require('os');
 var cluster = require('cluster');
 
 
-var posix = require('posix');
-var PoolLogger = require('./libs/logutils.js');
-var BlocknotifyListener = require('./libs/blocknotifyListener.js');
-var WorkerListener = require('./libs/workerListener.js');
-var PoolWorker = require('./libs/poolWorker.js');
-var PaymentProcessor = require('./libs/paymentProcessor.js');
+var posix                    = require('posix');
+var PoolLogger               = require('./libs/logutils.js');
+var BlocknotifyListener      = require('./libs/blocknotifyListener.js');
+var RedisBlocknotifyListener = require('./libs/redisblocknotifyListener.js');
+var WorkerListener           = require('./libs/workerListener.js');
+var PoolWorker               = require('./libs/poolWorker.js');
+var PaymentProcessor         = require('./libs/paymentProcessor.js');
 
 JSON.minify = JSON.minify || require("node-json-minify");
 
-
+ 
 
 
 var loggerInstance = new PoolLogger({
@@ -40,7 +41,7 @@ catch(e){
 
 
 if (cluster.isWorker){
-
+    
     switch(process.env.workerType){
         case 'pool':
             new PoolWorker(loggerInstance);
@@ -51,6 +52,17 @@ if (cluster.isWorker){
     }
 
     return;
+} else {
+    var coinNames = ['alphacoin','frankocoin','emerald','kittehcoin'];
+    var curIndex = 0;
+    setInterval(function () {
+        var newCoinName = coinNames[++curIndex % coinNames.length];
+        console.log("SWITCHING to "+newCoinName);
+        var ipcMessage = {type:'switch', coin: newCoinName};
+        Object.keys(cluster.workers).forEach(function(id) {
+            cluster.workers[id].send(ipcMessage);
+        });
+    }, 120000);
 }
 
 
@@ -93,9 +105,10 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
 
     var createPoolWorker = function(forkId){
         var worker = cluster.fork({
-            workerType: 'pool',
-            forkId: forkId,
-            pools: serializedConfigs
+            workerType   : 'pool',
+            forkId       : forkId,
+            pools        : serializedConfigs,
+            portalConfig : JSON.stringify(portalConfig),
         });
         worker.on('exit', function(code, signal){
             logError('poolWorker', 'system', 'Fork ' + forkId + ' died, spawning replacement worker...');
@@ -134,6 +147,21 @@ var startBlockListener = function(portalConfig){
     listener.start();
 };
 
+var startRedisBlockListener = function(portalConfig){
+    //block notify options
+    //setup block notify here and use IPC to tell appropriate pools
+    var listener = new RedisBlocknotifyListener(portalConfig.redisBlockNotifyListener);
+    listener.on('log', function(text){
+        logDebug('blocknotify', 'system', text);
+    }).on('hash', function (message) {
+        var ipcMessage = {type:'blocknotify', coin: message.coin, hash: message.hash};
+        Object.keys(cluster.workers).forEach(function(id) {
+            cluster.workers[id].send(ipcMessage);
+        });
+    });
+    listener.start();
+};
+
 
 var startPaymentProcessor = function(poolConfigs){
     var worker = cluster.fork({
@@ -147,7 +175,6 @@ var startPaymentProcessor = function(poolConfigs){
 };
 
 
-
 (function init(){
     var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
 
@@ -159,6 +186,9 @@ var startPaymentProcessor = function(poolConfigs){
 
     startBlockListener(portalConfig);
 
+    startRedisBlockListener(portalConfig);
+
     startWorkerListener(poolConfigs);
+
 
 })();

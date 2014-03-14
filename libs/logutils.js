@@ -63,7 +63,7 @@ var PoolLogger = function (configuration) {
         var desc = poolName ? '[' + poolName + '] ' : '';
         console.log(
             '\u001b['+getSeverityColor(severity)+'m' +
-            dateFormat(new Date(), 'yyyy-mm-dd HH:mm:ss') + 
+            dateFormat(new Date(), 'yyyy-mm-dd HH:MM:ss') + 
             " ["+key+"]" + '\u001b[39m: ' + "\t" +
             desc + 
             text);
