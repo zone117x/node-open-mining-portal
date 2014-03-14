@@ -3,33 +3,18 @@ var os = require('os');
 var cluster = require('cluster');
 
 
-<<<<<<< HEAD
 var posix                    = require('posix');
-var PoolLogger               = require('./libs/logutils.js');
+var PoolLogger               = require('./libs/logUtil.js');
 var BlocknotifyListener      = require('./libs/blocknotifyListener.js');
 var RedisBlocknotifyListener = require('./libs/redisblocknotifyListener.js');
 var WorkerListener           = require('./libs/workerListener.js');
 var PoolWorker               = require('./libs/poolWorker.js');
 var PaymentProcessor         = require('./libs/paymentProcessor.js');
-
+var Website                  = require('./libs/website.js');
 JSON.minify = JSON.minify || require("node-json-minify");
-
- 
-=======
-var posix = require('posix');
-var PoolLogger = require('./libs/logUtil.js');
-var BlocknotifyListener = require('./libs/blocknotifyListener.js');
-var WorkerListener = require('./libs/workerListener.js');
-var PoolWorker = require('./libs/poolWorker.js');
-var PaymentProcessor = require('./libs/paymentProcessor.js');
-var Website = require('./libs/website.js');
-
-JSON.minify = JSON.minify || require("node-json-minify");
-
 
 var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
->>>>>>> 0db53a296f9b77ad6ff76b5f06c7156d5366a777
-
+ 
 
 var loggerInstance = new PoolLogger({
     logLevel: portalConfig.logLevel
@@ -75,7 +60,7 @@ if (cluster.isWorker){
         Object.keys(cluster.workers).forEach(function(id) {
             cluster.workers[id].send(ipcMessage);
         });
-    }, 120000);
+    }, 20000);
 }
 
 
@@ -193,6 +178,8 @@ var startPaymentProcessor = function(poolConfigs){
 
 
 var startWebsite = function(portalConfig, poolConfigs){
+    console.log(portalConfig.website);
+
     if (!portalConfig.website.enabled) return;
 
     var worker = cluster.fork({
@@ -222,12 +209,8 @@ var startWebsite = function(portalConfig, poolConfigs){
     startRedisBlockListener(portalConfig);
 
     startWorkerListener(poolConfigs);
+;
 
-<<<<<<< HEAD
-
-})();
-=======
     startWebsite(portalConfig, poolConfigs);
 
 })();
->>>>>>> 0db53a296f9b77ad6ff76b5f06c7156d5366a777

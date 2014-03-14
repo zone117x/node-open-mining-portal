@@ -53,21 +53,12 @@ var PoolLogger = function (configuration) {
 
         var desc = poolName ? '[' + poolName + '] ' : '';
         console.log(
-<<<<<<< HEAD:libs/logutils.js
             '\u001b['+getSeverityColor(severity)+'m' +
             dateFormat(new Date(), 'yyyy-mm-dd HH:MM:ss') + 
             " ["+key+"]" + '\u001b[39m: ' + "\t" +
             desc + 
             text);
     }
-=======
-            '\u001b[' + getSeverityColor(severity) + 'm' +
-            dateFormat(new Date(), 'yyyy-mm-dd HH:MM:ss') +
-            " [" + key + "]" + '\u001b[39m: ' + "\t" +
-            desc + text
-        );
-    };
->>>>>>> 0db53a296f9b77ad6ff76b5f06c7156d5366a777:libs/logUtil.js
 
     // public
 
