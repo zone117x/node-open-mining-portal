@@ -50,7 +50,7 @@ if (cluster.isWorker){
     }
 
     return;
-} else {
+} /* else {
     var coinNames = ['alphacoin','frankocoin','emerald','kittehcoin'];
     var curIndex = 0;
     setInterval(function () {
@@ -61,7 +61,7 @@ if (cluster.isWorker){
             cluster.workers[id].send(ipcMessage);
         });
     }, 20000);
-}
+} */
 
 
 
