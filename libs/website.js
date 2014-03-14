@@ -24,16 +24,23 @@ We will use fs.watch to detect changes to anything in the /website folder and up
 
  */
 
+var fs = require('fs');
+var path = require('path');
 
+var async = require('async');
 var dot = require('dot');
 var express = require('express');
 
+var api = require('./api.js');
 
 
 module.exports = function(logger){
 
     var portalConfig = JSON.parse(process.env.portalConfig);
     var poolConfigs = JSON.parse(process.env.pools);
+
+
+    var portalApi = new api(logger, poolConfigs);
 
     var logIdentify = 'Website';
 
@@ -49,10 +56,90 @@ module.exports = function(logger){
         }
     };
 
+    var pageResources = '';
+    var pageTemplate;
+    var pageProcessed = '';
+
+    var loadWebPage = function(callback){
+        fs.readdir('website', function(err, files){
+            async.map(files, function(fileName, callback){
+                var filePath = 'website/' + fileName;
+                fs.readFile(filePath, 'utf8', function(err, data){
+                    callback(null, {name: fileName, data: data, ext: path.extname(filePath)});
+                });
+            }, function(err, fileObjects){
+
+                var indexPage = fileObjects.filter(function(f){
+                    return f.name === 'index.html';
+                })[0].data;
+
+                var jsCode = '<script>';
+                var cssCode = '<style>';
+                fileObjects.forEach(function(f){
+                    switch(f.ext){
+                        case '.css':
+                            cssCode += (f.data + '\n\n\n\n');
+                            break;
+                        case '.js':
+                            jsCode += (f.data + ';\n\n\n\n');
+                            break;
+                    }
+                });
+                jsCode += '</script>';
+                cssCode += '</style>';
+
+                var bodyIndex = indexPage.indexOf('<body>');
+                pageTemplate = dot.template(indexPage.slice(bodyIndex));
+
+
+                pageResources = indexPage.slice(0, bodyIndex);
+                var headIndex = pageResources.indexOf('</head>');
+                pageResources = pageResources.slice(0, headIndex) +
+                    jsCode + '\n\n\n\n' +
+                    cssCode + '\n\n\n\n' +
+                    pageResources.slice(headIndex);
+
+                applyTemplateInfo();
+                callback || function(){}();
+            })
+        });
+    };
+
+    loadWebPage();
+
+    var applyTemplateInfo = function(){
+
+        portalApi.getStats(function(stats){
+
+            //need to give template info about pools and stats
+
+            pageProcessed = pageTemplate({test: 'visitor', time: Date.now()});
+        });
+    };
+
+    setInterval(function(){
+        applyTemplateInfo();
+    }, 5000);
+
+
+    var reloadTimeout;
+    fs.watch('website', function(){
+        clearTimeout(reloadTimeout);
+        reloadTimeout = setTimeout(function(){
+            loadWebPage();
+        }, 500);
+    });
+
+
     var app = express();
 
+    //need to create a stats api endpoint for eventsource live stat updates which are triggered on the applytemplateinfo interval
+
+
+
+
     app.get('/', function(req, res){
-        res.send('hello');
+        res.send(pageResources + pageProcessed);
     });
 
     app.use(function(err, req, res, next){
