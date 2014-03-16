@@ -28,6 +28,19 @@ pool such as connected miners, network/pool difficulty/hash rate, etc.
 
 #### Planned Features
 
+* Instead of the "help"
+page on the website being being confusing to non-techies, there will be a simple "Download NOMP Desktop App" for your
+platform (use javascript to detect platform and default them to the correct one). I will create this app using C#+mono
+so for all platforms runs with ease on all platforms, and it will have its own github repo that NOMP links to. So when
+git pulling and getting submodules it will download executables for each platform. Then will be a nomp.ini file paired
+with the executable which specifies the NOMP pool's API url. When NOMP initiates it zips the apps per platform with
+the ini. The app will get the coin-version-byte form NOMP API for each coin it wants to mine so the app can
+securely generate a local private key and address to use for mining. The app pill prompt printing the private key to
+paper and also enforce a STRONG (unbruteforcable) password encryption on the file. When using the app they can choose a unique
+username that is used with stratum authentication like "zone117x.mfsm1ckZKTTjDz94KonZZsbZnAbm1UV4BF", so that on a NOMP
+mobile app, a user can enter in the NOMP pool and their username in order to see how their mining rig is doing since
+the API will report stats back for the address such as hashrate and balance.
+
 * To reduce variance for pools just starting out which have little to no hashing power a feature is planned which will
 allow your own pool to connect upstream to a larger pool server. It will request work from the larger pool then
 redistribute the work to our own connected miners.

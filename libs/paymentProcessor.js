@@ -82,7 +82,7 @@ function SetupForPool(logger, poolOptions){
     /* When blocks or orphaned, all shares contributed to that round would receive no reward. That doesn't seem fair
        so we still all the shares from an orphaned rounds into the current round.
      */
-    var adoptOrphanRounds = function(rounds){
+    /*var adoptOrphanRounds = function(rounds){
 
         var shareLookups = rounds.map(function(r){
             return ['hgetall', coin + '_shares:round' + r.height]
@@ -120,7 +120,7 @@ function SetupForPool(logger, poolOptions){
                 }
             }
         });
-    };
+    };*/
 
 
     var processPayments = function(){
