@@ -1,5 +1,5 @@
 {
-    "disabled": true,
+    "disabled": false,
     "coin": "litecoin.json",
 
     "shareProcessing": {
@@ -48,8 +48,8 @@
     },
 
     "ports": {
-        "3032": {
-            "diff": 32,
+        "3008":{
+            "diff": 8,
             "varDiff": {
                 "minDiff": 8,
                 "maxDiff": 512,
@@ -57,6 +57,9 @@
                 "retargetTime": 90,
                 "variancePercent": 30
             }
+        },
+        "3032": {
+            "diff": 32
         },
         "3256": {
             "diff": 256

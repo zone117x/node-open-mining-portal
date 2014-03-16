@@ -79,6 +79,48 @@ function SetupForPool(logger, poolOptions){
     connectToRedis();
 
 
+    /* When blocks or orphaned, all shares contributed to that round would receive no reward. That doesn't seem fair
+       so we still all the shares from an orphaned rounds into the current round.
+     */
+    var adoptOrphanRounds = function(rounds){
+
+        var shareLookups = rounds.map(function(r){
+            return ['hgetall', coin + '_shares:round' + r.height]
+        });
+
+        var shareIncries = [];
+
+
+
+        redisClient.multi(shareLookups).exec(function(error, allWorkerShares){
+            if (error){
+                paymentLogger.error('redis', 'Error with multi get rounds share for adopting orphan');
+                return;
+            }
+
+            var workerRewards = {};
+
+
+            for (var i = 0; i < rounds.length; i++){
+                var round = rounds[i];
+                var workerShares = allWorkerShares[i];
+
+                var reward = round.reward * (1 - processingConfig.feePercent);
+
+                var totalShares = Object.keys(workerShares).reduce(function(p, c){
+                    return p + parseInt(workerShares[c])
+                }, 0);
+
+
+                for (var worker in workerShares){
+                    var percent = parseInt(workerShares[worker]) / totalShares;
+                    var workerRewardTotal = Math.floor(reward * percent);
+                    if (!(worker in workerRewards)) workerRewards[worker] = 0;
+                    workerRewards[worker] += workerRewardTotal;
+                }
+            }
+        });
+    };
 
 
     var processPayments = function(){
@@ -125,29 +167,61 @@ function SetupForPool(logger, poolOptions){
                         return;
                     }
 
+
+                    for (var i = txDetails.length; i > 0; --i){
+                        var tx = txDetails[i];
+                        if (tx.error || !tx.result){
+                            console.log('error with requesting transaction from block daemon: ' + JSON.stringify(t));
+                            txDetails.splice(i, 1);
+                        }
+                    }
+
+
+                    var orphanedRounds = [];
+                    var confirmedRounds = [];
                     //Rounds that are not confirmed yet are removed from the round array
                     //We also get reward amount for each block from daemon reply
-                    rounds = rounds.filter(function(r){
-                        var tx = txDetails.filter(function(t){ return t.result.txid === r.txHash; })[0];
-                        if (tx.result.details[0].category !== 'generate') return false;
-                        r.amount = tx.result.amount;
-                        r.magnitude = r.reward / r.amount;
-                        return true;
+                    rounds.forEach(function(r){
+
+                        var tx = txDetails.filter(function(tx){return tx.result.txid === r.txHash})[0];
+
+                        if (!tx){
+                            console.log('daemon did not give us back a transaction that we asked for: ' + r.txHash);
+                            return;
+                        }
+
+
+                        r.category = tx.result.details[0].category;
+
+                        if (r.category === 'orphan'){
+                            orphanedRounds.push(r);
+
+                        }
+                        else if (r.category === 'generate'){
+                            r.amount = tx.result.amount;
+                            r.magnitude = r.reward / r.amount;
+                            confirmedRounds.push(r);
+                        }
+
                     });
 
-                    if (rounds.length === 0){
-                        callback('done - no confirmed transactions yet');
-                        return;
+                    if (orphanedRounds.length === 0 && confirmedRounds.length === 0){
+                        callback('done - no confirmed or orhpaned rounds');
                     }
-                    callback(null, rounds);
-
+                    else{
+                        callback(null, confirmedRounds, orphanedRounds);
+                    }
                 });
             },
 
 
             /* Does a batch redis call to get shares contributed to each round. Then calculates the reward
                amount owned to each miner for each round. */
-            function(rounds, callback){
+            function(confirmedRounds, orphanedRounds, callback){
+
+                var rounds = [];
+                for (var i = 0; i < orphanedRounds; i++) rounds.push(orphanedRounds[i]);
+                for (var i = 0; i < confirmedRounds; i++) rounds.push(confirmedRounds[i]);
 
 
                 var shareLookups = rounds.map(function(r){
@@ -159,6 +233,16 @@ function SetupForPool(logger, poolOptions){
                         callback('done - redis error with multi get rounds share')
                         return;
                     }
+
+                    var orphanMergeCommands = []
+                    for (var i = 0; i < orphanedRounds.length; i++){
+                        var workerShares = allWorkerShares[i];
+                        Object.keys(workerShares).forEach(function(worker){
+                            orphanMergeCommands.push(['hincrby', coin + '_shares:roundCurrent', worker, workerShares[worker]]);
+                        });
+                        orphanMergeCommands.push([]);
+                    }
+
 
                     var workerRewards = {};
 

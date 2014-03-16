@@ -2,7 +2,7 @@
     "logLevel": "debug",
     "clustering": {
         "enabled": true,
-        "forks": "1"
+        "forks": "auto"
     },
     "blockNotifyListener": {
         "enabled": false,
@@ -16,8 +16,13 @@
         "redisHost"     : "hostname",
         "psubscribeKey" : "newblocks:*"
     },
+    "website": {
+        "enabled": false,
+        "port": 80,
+        "statUpdateInterval": 3
+    },
     "proxy": {
-        "enabled": true,
+        "enabled": false,
         "ports": {
             "80": {
                 "diff": 32,
@@ -50,10 +55,5 @@
                 }
             }
         }
-    },
-    "website": {
-        "enabled": false,
-        "port": 80,
-        "liveStats": true
     }
 }

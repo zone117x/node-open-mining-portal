@@ -40,7 +40,19 @@ module.exports = function(logger, poolConfigs){
     setInterval(clearExpiredHashrates, 10 * 60 * 1000);
     clearExpiredHashrates();
 
+
+
+
+
     this.getStats = function(callback){
+
+
+        /*
+        { global: {
+
+        }
+
+         */
 
         //get stats like hashrate and in/valid shares/blocks and workers in current round
 

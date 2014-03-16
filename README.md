@@ -313,11 +313,11 @@ For more information on these configuration options see the [pool module documen
 1. In `config.json` set the port and password for `blockNotifyListener`
 2. In your daemon conf file set the `blocknotify` command to use:
 ```
-[path to scripts/blockNotify.js] [listener host]:[listener port] [listener password] [coin name in config] %s
+node [path to scripts/blockNotify.js] [listener host]:[listener port] [listener password] [coin name in config] %s
 ```
 Example: inside `dogecoin.conf` add the line
 ```
-blocknotify="scripts/blockNotify.js localhost:8117 mySuperSecurePassword dogecoin %s"
+blocknotify="node scripts/blockNotify.js localhost:8117 mySuperSecurePassword dogecoin %s"
 ```
 
 
@@ -343,6 +343,14 @@ Donations
 To support development of this project feel free to donate :)
 
 BTC: 1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR
+
+
+Credits
+-------
+* [vekexasia](https://github.com/vekexasia) - co-developer & great tester
+* [TheSeven](https://github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful and king gentleman
+* Those that contributed to [node-stratum](/zone117x/node-stratum)
+
 
 License
 -------

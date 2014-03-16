@@ -74,10 +74,7 @@ module.exports = function(logger, poolConfig){
 
         connection.multi(redisCommands).exec(function(err, replies){
             if (err)
-                console.log('error with share processor multi ' + JSON.stringify(err));
-            else{
-                console.log(JSON.stringify(replies));
-            }
+                logger.error('redis', 'error with share processor multi ' + JSON.stringify(err));
         });
 
 

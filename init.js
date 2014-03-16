@@ -150,6 +150,9 @@ var startBlockListener = function(portalConfig){
 var startRedisBlockListener = function(portalConfig){
     //block notify options
     //setup block notify here and use IPC to tell appropriate pools
+
+    if (!portalConfig.redisBlockNotifyListener.enabled) return;
+
     var listener = new RedisBlocknotifyListener(portalConfig.redisBlockNotifyListener);
     listener.on('log', function(text){
         logDebug('blocknotify', 'system', text);
@@ -178,7 +181,6 @@ var startPaymentProcessor = function(poolConfigs){
 
 
 var startWebsite = function(portalConfig, poolConfigs){
-    console.log(portalConfig.website);
 
     if (!portalConfig.website.enabled) return;
 
@@ -209,7 +211,6 @@ var startWebsite = function(portalConfig, poolConfigs){
     startRedisBlockListener(portalConfig);
 
     startWorkerListener(poolConfigs);
-;
 
     startWebsite(portalConfig, poolConfigs);
 

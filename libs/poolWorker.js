@@ -94,10 +94,9 @@ module.exports = function(logger){
             var shareProcessor = new ShareProcessor(poolLogger, poolOptions)
 
             handlers.auth = function(workerName, password, authCallback){
-                authCallback({
-                    error: null,
-                    authorized: true,
-                    disconnect: false
+                pool.daemon.cmd('validateaddress', [workerName], function(results){
+                    var isValid = results.filter(function(r){return r.response.isvalid}).length > 0;
+                    authCallback(isValid);
                 });
             };
 
