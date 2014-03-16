@@ -28,18 +28,23 @@ pool such as connected miners, network/pool difficulty/hash rate, etc.
 
 #### Planned Features
 
-* Instead of the "help"
-page on the website being being confusing to non-techies, there will be a simple "Download NOMP Desktop App" for your
-platform (use javascript to detect platform and default them to the correct one). I will create this app using C#+mono
-so for all platforms runs with ease on all platforms, and it will have its own github repo that NOMP links to. So when
-git pulling and getting submodules it will download executables for each platform. Then will be a nomp.ini file paired
-with the executable which specifies the NOMP pool's API url. When NOMP initiates it zips the apps per platform with
-the ini. The app will get the coin-version-byte form NOMP API for each coin it wants to mine so the app can
-securely generate a local private key and address to use for mining. The app pill prompt printing the private key to
-paper and also enforce a STRONG (unbruteforcable) password encryption on the file. When using the app they can choose a unique
-username that is used with stratum authentication like "zone117x.mfsm1ckZKTTjDz94KonZZsbZnAbm1UV4BF", so that on a NOMP
-mobile app, a user can enter in the NOMP pool and their username in order to see how their mining rig is doing since
-the API will report stats back for the address such as hashrate and balance.
+* To knock down the barrier to entry for cryptocurrency and mining for those not programmers or tech-origiented, instead
+of the "help" page on the website being being confusing for non-techies (when most people see a black command prompt screen
+they run away screaming), there will be a simple "Download NOMP Desktop App" to get started mining immediately for your
+platform (use javascript to detect platform and default them to the correct one). I will create this app using C# + Mono
+so runs with ease on all platforms, and it will have its own github repo that NOMP links to. So a pool operator does a
+`git clone --recursive` on NOMP repo, it will download NOMP app executables for each platform. There will be a nomp.ini
+file paired with the executable which the pool operator configures to user their NOMP pool's API url. When the NOMP portal
+initiates creates a zip for each platform with the nomp.ini inside. When user's download the app, it auto-connects to the
+NOMP pool API to get available coins along with the version-byte for each coin so the app can securely generate a local private
+key and valid address to mine with. The app pill prompt printing the private key to paper and also enforce a
+STRONG (uncrackable) password encryption on the file.
+The app will scan their system to get the appropriate mining software - run in background - parse the gibberish (to a noob) output
+into something that makes sense. It will also prompt them to download the coins wallet software and import their private key.
+When using the app they can choose a unique username that is used
+with stratum authentication like "zone117x.mfsm1ckZKTTjDz94KonZZsbZnAbm1UV4BF", so that on a NOMP mobile app, a user can
+enter in the NOMP pool and their username in order to see how their mining rig is doing since the API will report stats
+back for the address such as hashrate and balance.
 
 * To reduce variance for pools just starting out which have little to no hashing power a feature is planned which will
 allow your own pool to connect upstream to a larger pool server. It will request work from the larger pool then
