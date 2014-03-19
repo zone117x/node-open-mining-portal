@@ -7,7 +7,6 @@ $(function(){
         $('a[href="/' + page + '"]').parent().addClass('selected')
         $.get("/api/get_page", {id: page}, function(data){
             $('#page').html(data);
-            console.log('swapped to ' + page);
         }, 'html')
     };
 
@@ -22,7 +21,7 @@ $(function(){
     window.addEventListener('load', function() {
         setTimeout(function() {
             window.addEventListener("popstate", function(e) {
-                hotSwap(location.pathname.slice(1))
+                hotSwap(location.pathname.slice(1));
             });
         }, 0);
     });

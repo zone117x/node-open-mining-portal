@@ -84,7 +84,8 @@ module.exports = function(logger){
 
     var readPageFiles = function(){
         async.each(Object.keys(pageFiles), function(fileName, callback){
-            fs.readFile('website/' + fileName, 'utf8', function(err, data){
+            var filePath = 'website/' + (fileName === 'index.html' ? '' : 'pages/') + fileName;
+            fs.readFile(filePath, 'utf8', function(err, data){
                 var pTemp = dot.template(data);
                 pageTemplates[pageFiles[fileName]] = pTemp
                 callback();
@@ -97,7 +98,6 @@ module.exports = function(logger){
             processTemplates();
         });
     };
-
 
 
 
@@ -191,7 +191,7 @@ module.exports = function(logger){
         //res.send('you did api method ' + req.params.method);
     });
 
-    app.use('/static', express.static('website'));
+    app.use('/static', express.static('website/static'));
 
     app.use(function(err, req, res, next){
         console.error(err.stack);
