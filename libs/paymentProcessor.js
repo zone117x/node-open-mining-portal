@@ -167,15 +167,13 @@ function SetupForPool(logger, poolOptions){
                         return;
                     }
 
-
-                    for (var i = txDetails.length; i > 0; --i){
-                        var tx = txDetails[i];
+                    txDetails = txDetails.filter(function(tx){
                         if (tx.error || !tx.result){
                             console.log('error with requesting transaction from block daemon: ' + JSON.stringify(t));
-                            txDetails.splice(i, 1);
+                            return false;
                         }
-                    }
-
+                        return true;
+                    });
 
                     var orphanedRounds = [];
                     var confirmedRounds = [];
@@ -292,7 +290,7 @@ function SetupForPool(logger, poolOptions){
 
                 redisClient.hmget([coin + '_balances'].concat(workers), function(error, results){
                     if (error){
-                        callback('done - redis error with multi get rounds share')
+                        callback('done - redis error with multi get balances')
                         return;
                     }
 

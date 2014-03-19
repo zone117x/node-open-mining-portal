@@ -4,17 +4,56 @@
 <head>
     <meta charset="utf-8">
 
-    <title>Title</title>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.4.2/pure-min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/0.2.0/Chart.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/zepto/1.1.3/zepto.min.js"></script>
+
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/main.js"></script>
+
+
+    <title>{{=it.siteTitle}}</title>
 
 
 </head>
 
 <body>
 
+<header class="header">
+    <div class="pure-menu pure-menu-open pure-menu-horizontal">
+        <ul>
+            <li id="home" class="{{? it.selected === '' }}selected{{?}}"><a class="hot-swapper" href="/"><i class="fa fa-home"></i> Home</a></li>
+            <li class="{{? it.selected === 'getting_started' }}selected{{?}}"><a class="hot-swapper" href="/getting_started">Getting Started</a></li>
+            <li class="{{? it.selected === 'stats' }}selected{{?}}"><a class="hot-swapper" href="/stats">Stats</a></li>
+            <li class="{{? it.selected === 'api' }}selected{{?}}"><a class="hot-swapper" href="/api"><i class="fa fa-code"></i> API</a></li>
+        </ul>
+    </div>
+</header>
 
-<div>Hello {{=it.test}}!</div>
-<div>The unix time at page generation is {{=it.time}}</div>
-<div>Need to build a pretty page here...</div>
+<main>
+    <div id="page">
+        {{=it.page}}
+    </div>
+</main>
+
+
+<footer>
+
+
+
+    <div>This site is powered by the open source&nbsp;<a href="https://github.com/zone117x/node-open-mining-portal/">NOMP</a>&nbsp;project created by Matthew Little and licensed under the&nbsp;<a href="http://www.gnu.org/licenses/gpl-2.0.html">GPL</a></div>
+    <div>Support this project by donating&nbsp;<i class="fa fa-btc"></i>&nbsp;BTC: 1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR</div>
+    <div id="communityFooter">
+        Community: &nbsp;<a target="_blank" href="https://kiwiirc.com/client/irc.freenode.net/nomp">#nomp IRC</a>
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <a href="http://reddit.com/r/nomp">/r/nomp</a>
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+        <iframe src="http://ghbtns.com/github-btn.html?user=zone117x&repo=node-open-mining-portal&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="140" height="20"></iframe>
+    </div>
+
+</footer>
+
 
 </body>
 </html>

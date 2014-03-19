@@ -17,9 +17,9 @@
         "psubscribeKey" : "newblocks:*"
     },
     "website": {
-        "enabled": false,
+        "enabled": true,
         "port": 80,
-        "statUpdateInterval": 3
+        "statUpdateInterval": 5
     },
     "proxy": {
         "enabled": false,

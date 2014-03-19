@@ -39,6 +39,7 @@ module.exports = function(logger){
     var portalConfig = JSON.parse(process.env.portalConfig);
     var poolConfigs = JSON.parse(process.env.pools);
 
+    var websiteConfig = portalConfig.website;
 
     var portalApi = new api(logger, poolConfigs);
 
@@ -56,91 +57,115 @@ module.exports = function(logger){
         }
     };
 
-    var pageResources = '';
-    var pageTemplate;
-    var pageProcessed = '';
 
-    var loadWebPage = function(callback){
-        fs.readdir('website', function(err, files){
-            async.map(files, function(fileName, callback){
-                var filePath = 'website/' + fileName;
-                fs.readFile(filePath, 'utf8', function(err, data){
-                    callback(null, {name: fileName, data: data, ext: path.extname(filePath)});
-                });
-            }, function(err, fileObjects){
+    var pageFiles = {
+        'index.html': 'index',
+        'home.html': '',
+        'getting_started.html': 'getting_started',
+        'stats.html': 'stats',
+        'api.html': 'api'
+    };
 
-                var indexPage = fileObjects.filter(function(f){
-                    return f.name === 'index.html';
-                })[0].data;
+    var pageTemplates = {};
 
-                var jsCode = '<script>';
-                var cssCode = '<style>';
-                fileObjects.forEach(function(f){
-                    switch(f.ext){
-                        case '.css':
-                            cssCode += (f.data + '\n\n\n\n');
-                            break;
-                        case '.js':
-                            jsCode += (f.data + ';\n\n\n\n');
-                            break;
-                    }
-                });
-                jsCode += '</script>';
-                cssCode += '</style>';
-
-                var bodyIndex = indexPage.indexOf('<body>');
-                pageTemplate = dot.template(indexPage.slice(bodyIndex));
+    var pageProcessed = {};
 
 
-                pageResources = indexPage.slice(0, bodyIndex);
-                var headIndex = pageResources.indexOf('</head>');
-                pageResources = pageResources.slice(0, headIndex) +
-                    jsCode + '\n\n\n\n' +
-                    cssCode + '\n\n\n\n' +
-                    pageResources.slice(headIndex);
+    var processTemplates = function(){
+        for (var pageName in pageTemplates){
+            pageProcessed[pageName] = pageTemplates[pageName]({
+                poolsConfigs: poolConfigs,
+                stats: portalApi.stats
+            });
+        }
+    };
 
-                applyTemplateInfo();
-                callback || function(){}();
-            })
+
+    var readPageFiles = function(){
+        async.each(Object.keys(pageFiles), function(fileName, callback){
+            fs.readFile('website/' + fileName, 'utf8', function(err, data){
+                var pTemp = dot.template(data);
+                pageTemplates[pageFiles[fileName]] = pTemp
+                callback();
+            });
+        }, function(err){
+            if (err){
+                console.log('error reading files for creating dot templates: '+ JSON.stringify(err));
+                return;
+            }
+            processTemplates();
         });
     };
 
-    loadWebPage();
-
-    var applyTemplateInfo = function(){
-
-        portalApi.getStats(function(stats){
-
-            //need to give template info about pools and stats
-
-            pageProcessed = pageTemplate({test: 'visitor', time: Date.now()});
-        });
-    };
-
-    setInterval(function(){
-        applyTemplateInfo();
-    }, 5000);
 
 
-    var reloadTimeout;
-    fs.watch('website', function(){
-        clearTimeout(reloadTimeout);
-        reloadTimeout = setTimeout(function(){
-            loadWebPage();
-        }, 500);
+
+    fs.watch('website', function(event, filename){
+        if (event === 'change' && filename in pageFiles)
+            readPageFiles();
+
     });
+
+    portalApi.getStats(function(){
+        readPageFiles(Object.keys(pageFiles));
+    });
+
+    var buildUpdatedWebsite = function(){
+        portalApi.getStats(function(){
+            processTemplates();
+        });
+    };
+
+    setInterval(buildUpdatedWebsite, websiteConfig.statUpdateInterval * 1000);
 
 
     var app = express();
 
-    //need to create a stats api endpoint for eventsource live stat updates which are triggered on the applytemplateinfo interval
+    var getPage = function(pageId){
+        if (pageId in pageProcessed){
+            var requestedPage = pageProcessed[pageId];
+            return requestedPage;
+        }
+    };
 
+    var route = function(req, res, next){
+        var pageId = req.params.page || '';
+        var requestedPage = getPage(pageId);
+        if (requestedPage){
+            var data = pageTemplates.index({
+                siteTitle: websiteConfig.siteTitle,
+                page: requestedPage,
+                selected: pageId,
+                stats: portalApi.stats,
+                poolConfigs: poolConfigs
+            });
+            res.send(data);
+        }
+        else
+            next();
 
+    };
 
+    app.get('/:page', route);
+    app.get('/', route);
 
-    app.get('/', function(req, res){
-        res.send(pageResources + pageProcessed);
+    app.get('/api/:method', function(req, res, next){
+
+        switch(req.params.method){
+            case 'get_page':
+                var requestedPage = getPage(req.query.id);
+                if (requestedPage){
+                    res.send(requestedPage);
+                    return;
+                }
+            default:
+                next();
+        }
+
+        res.send('you did api method ' + req.params.method);
     });
+
+    app.use('/static', express.static('website'));
 
     app.use(function(err, req, res, next){
         console.error(err.stack);

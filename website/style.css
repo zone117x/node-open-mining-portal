@@ -1,0 +1,95 @@
+body{
+    min-height: 100vh;
+    overflow: hidden;
+
+    display: -moz-box;
+    display: -webkit-flexbox;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    -moz-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+}
+header{
+    background-color: #f3f2ef;
+}
+
+header .selected, header a:active, header a:focus{
+    background-color: #404040 !important;
+
+}
+
+.selected > a {
+    color: white !important;
+}
+
+header a {
+    line-height: 2.5em !important;
+    font-size: 1.1em !important;
+}
+header a:hover {
+    background-color: #4d4d4d !important;
+    color: white !important;
+}
+
+
+.pure-menu-heading{
+    padding-left: 0 !important;
+}
+
+header > div{
+    background-color: transparent !important;
+    max-width: 768px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+main {
+    flex: 1 1 auto;
+    padding: 20px 0;
+}
+
+main > div{
+    max-width: 768px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+footer{
+    text-align: center;
+    color: #b3b3b3;
+    background-color: #404040;
+    text-decoration: none;
+    font-size: 0.8em;
+    padding: 15px;
+    line-height: 24px;
+}
+footer a{
+    color: #fff;
+    text-decoration: none;
+}
+
+
+
+footer > div{
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+}
+
