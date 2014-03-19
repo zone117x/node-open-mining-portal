@@ -18,6 +18,7 @@
     },
     "website": {
         "enabled": true,
+        "siteTitle": "Cryppit",
         "port": 80,
         "statUpdateInterval": 5
     },

@@ -75,7 +75,8 @@ module.exports = function(logger){
         for (var pageName in pageTemplates){
             pageProcessed[pageName] = pageTemplates[pageName]({
                 poolsConfigs: poolConfigs,
-                stats: portalApi.stats
+                stats: portalApi.stats,
+                portalConfig: portalConfig
             });
         }
     };
@@ -133,11 +134,11 @@ module.exports = function(logger){
         var requestedPage = getPage(pageId);
         if (requestedPage){
             var data = pageTemplates.index({
-                siteTitle: websiteConfig.siteTitle,
                 page: requestedPage,
                 selected: pageId,
                 stats: portalApi.stats,
-                poolConfigs: poolConfigs
+                poolConfigs: poolConfigs,
+                portalConfig: portalConfig
             });
             res.send(data);
         }

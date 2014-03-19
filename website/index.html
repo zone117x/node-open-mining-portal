@@ -13,7 +13,7 @@
     <script src="/static/main.js"></script>
 
 
-    <title>{{=it.siteTitle}}</title>
+    <title>{{=it.portalConfig.website.siteTitle}}</title>
 
 
 </head>
@@ -23,10 +23,10 @@
 <header class="header">
     <div class="pure-menu pure-menu-open pure-menu-horizontal">
         <ul>
-            <li id="home" class="{{? it.selected === '' }}selected{{?}}"><a class="hot-swapper" href="/"><i class="fa fa-home"></i> Home</a></li>
-            <li class="{{? it.selected === 'getting_started' }}selected{{?}}"><a class="hot-swapper" href="/getting_started">Getting Started</a></li>
-            <li class="{{? it.selected === 'stats' }}selected{{?}}"><a class="hot-swapper" href="/stats">Stats</a></li>
-            <li class="{{? it.selected === 'api' }}selected{{?}}"><a class="hot-swapper" href="/api"><i class="fa fa-code"></i> API</a></li>
+            <li id="home" class="{{? it.selected === '' }}selected{{?}}"><a class="hot-swapper" href="/"><i class="fa fa-home"></i>&nbsp; Home</a></li>
+            <li class="{{? it.selected === 'getting_started' }}selected{{?}}"><a class="hot-swapper" href="/getting_started"><i class="fa fa-arrow-right"></i>&nbsp; Getting Started</a></li>
+            <li class="{{? it.selected === 'stats' }}selected{{?}}"><a class="hot-swapper" href="/stats"><i class="fa fa-bar-chart-o"></i>&nbsp; Stats</a></li>
+            <li class="{{? it.selected === 'api' }}selected{{?}}"><a class="hot-swapper" href="/api"><i class="fa fa-code"></i>&nbsp; API</a></li>
         </ul>
     </div>
 </header>
@@ -43,11 +43,11 @@
 
 
     <div>This site is powered by the open source&nbsp;<a href="https://github.com/zone117x/node-open-mining-portal/">NOMP</a>&nbsp;project created by Matthew Little and licensed under the&nbsp;<a href="http://www.gnu.org/licenses/gpl-2.0.html">GPL</a></div>
-    <div>Support this project by donating&nbsp;<i class="fa fa-btc"></i>&nbsp;BTC: 1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR</div>
+    <div><i class="fa fa-heart"></i>&nbsp; Support this project by donating&nbsp;<i class="fa fa-btc"></i>&nbsp;BTC: 1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR</div>
     <div id="communityFooter">
-        Community: &nbsp;<a target="_blank" href="https://kiwiirc.com/client/irc.freenode.net/nomp">#nomp IRC</a>
+        Community&nbsp;<i class="fa fa-comment"></i>&nbsp;: &nbsp;<a target="_blank" href="https://kiwiirc.com/client/irc.freenode.net/nomp">#nomp IRC</a>
         &nbsp;&nbsp;|&nbsp;&nbsp;
-        <a href="http://reddit.com/r/nomp">/r/nomp</a>
+        <a target="_blank" href="http://reddit.com/r/nomp">/r/nomp</a>
         &nbsp;&nbsp;|&nbsp;&nbsp;
         <iframe src="http://ghbtns.com/github-btn.html?user=zone117x&repo=node-open-mining-portal&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="140" height="20"></iframe>
     </div>
