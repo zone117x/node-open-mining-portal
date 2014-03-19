@@ -102,21 +102,9 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 portalStats.global.hashrate += coinStats.hashrate;
                 portalStats.global.workers += Object.keys(coinStats.workers).length;
             });
-
-            console.log(JSON.stringify(portalStats, null, 4));
-
             _this.stats = portalStats;
             callback();
         });
-
-        /*
-        { global: {
-
-        }
-
-         */
-
-        //get stats like hashrate and in/valid shares/blocks and workers in current round
 
     };
 };
