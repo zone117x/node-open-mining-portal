@@ -174,7 +174,7 @@ var startPaymentProcessor = function(poolConfigs){
     worker.on('exit', function(code, signal){
         logError('paymentProcessor', 'system', 'Payment processor died, spawning replacement...');
         setTimeout(function(){
-            startPaymentProcessor.apply(null, arguments);
+            startPaymentProcessor(poolConfigs);
         }, 2000);
     });
 };
@@ -192,7 +192,7 @@ var startWebsite = function(portalConfig, poolConfigs){
     worker.on('exit', function(code, signal){
         logError('website', 'system', 'Website process died, spawning replacement...');
         setTimeout(function(){
-            startWebsite.apply(null, arguments);
+            startWebsite(portalConfig, poolConfigs);
         }, 2000);
     });
 };

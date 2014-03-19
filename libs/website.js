@@ -31,7 +31,7 @@ var async = require('async');
 var dot = require('dot');
 var express = require('express');
 
-var api = require('./api.js');
+var stats = require('./stats.js');
 
 
 module.exports = function(logger){
@@ -41,7 +41,7 @@ module.exports = function(logger){
 
     var websiteConfig = portalConfig.website;
 
-    var portalApi = new api(logger, poolConfigs);
+    var portalStats = new stats(logger, portalConfig, poolConfigs);
 
     var logIdentify = 'Website';
 
@@ -75,7 +75,7 @@ module.exports = function(logger){
         for (var pageName in pageTemplates){
             pageProcessed[pageName] = pageTemplates[pageName]({
                 poolsConfigs: poolConfigs,
-                stats: portalApi.stats,
+                stats: portalStats.stats,
                 portalConfig: portalConfig
             });
         }
@@ -107,13 +107,20 @@ module.exports = function(logger){
 
     });
 
-    portalApi.getStats(function(){
+    portalStats.getStats(function(){
         readPageFiles(Object.keys(pageFiles));
     });
 
     var buildUpdatedWebsite = function(){
-        portalApi.getStats(function(){
+        portalStats.getStats(function(){
             processTemplates();
+
+            var statData = 'data: ' + JSON.stringify(portalStats.stats) + '\n\n';
+            for (var uid in liveStatConnections){
+                var res = liveStatConnections[uid];
+                res.write(statData);
+            }
+
         });
     };
 
@@ -136,16 +143,20 @@ module.exports = function(logger){
             var data = pageTemplates.index({
                 page: requestedPage,
                 selected: pageId,
-                stats: portalApi.stats,
+                stats: portalStats.stats,
                 poolConfigs: poolConfigs,
                 portalConfig: portalConfig
             });
-            res.send(data);
+            res.end(data);
         }
         else
             next();
 
     };
+
+
+    var liveStatConnections = {};
+
 
     app.get('/:page', route);
     app.get('/', route);
@@ -156,21 +167,35 @@ module.exports = function(logger){
             case 'get_page':
                 var requestedPage = getPage(req.query.id);
                 if (requestedPage){
-                    res.send(requestedPage);
+                    res.end(requestedPage);
                     return;
                 }
+            case 'live_stats':
+                res.writeHead(200, {
+                    'Content-Type': 'text/event-stream',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive'
+                });
+                res.write('\n');
+                var uid = Math.random().toString();
+                liveStatConnections[uid] = res;
+                req.on("close", function() {
+                    delete liveStatConnections[uid];
+                });
+
+                return;
             default:
                 next();
         }
 
-        res.send('you did api method ' + req.params.method);
+        //res.send('you did api method ' + req.params.method);
     });
 
     app.use('/static', express.static('website'));
 
     app.use(function(err, req, res, next){
         console.error(err.stack);
-        res.send(500, 'Something broke!');
+        res.end(500, 'Something broke!');
     });
 
     app.listen(portalConfig.website.port, function(){

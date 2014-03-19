@@ -22,9 +22,21 @@ header{
     background-color: #f3f2ef;
 }
 
+header > div{
+    display: -moz-box;
+    display: -webkit-flexbox;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: flex;
+}
+header > div > ul{
+    flex: 1;
+}
+
+
 header .selected, header a:active, header a:focus{
     background-color: #404040 !important;
-
 }
 
 .selected > a {
@@ -41,17 +53,42 @@ header a:hover {
 }
 
 
+.stats{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stats > div{
+    padding: 2px 15px;
+    border-radius: 4px;
+    color: #f2f2f2;
+    font-size: 0.95em;
+    width: 120px;
+    text-align: center;
+}
+
+.stats > div:nth-child(1){
+    background-color: #71a380;
+    margin-bottom: 4px;
+}
+.stats > div:nth-child(2){
+    background-color: #7196a3;
+}
+
 .pure-menu-heading{
     padding-left: 0 !important;
 }
 
 header > div{
     background-color: transparent !important;
-    max-width: 768px;
     margin-left: auto;
     margin-right: auto;
 }
 
+main > div, header > div{
+    max-width: 800px;
+}
 
 main {
     flex: 1 1 auto;
@@ -59,10 +96,10 @@ main {
 }
 
 main > div{
-    max-width: 768px;
     margin-left: auto;
     margin-right: auto;
 }
+
 
 footer{
     text-align: center;
