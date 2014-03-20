@@ -51,7 +51,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 redisCommands.push(['zremrangebyscore', coin + '_hashrate', '-inf', '(' + windowTime]);
                 redisCommands.push(['zrangebyscore', coin + '_hashrate', windowTime, '+inf']);
                 redisCommands.push(['hgetall', coin + '_stats']);
-                redisCommands.push(['scard', coin + '_blocks']);
+                redisCommands.push(['scard', coin + '_blocksPending']);
             });
 
 

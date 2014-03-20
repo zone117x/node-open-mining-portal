@@ -2,6 +2,8 @@ var Stratum = require('stratum-pool');
 var Vardiff = require('stratum-pool/lib/varDiff.js');
 var net     = require('net');
 
+
+
 var MposCompatibility = require('./mposCompatibility.js');
 var ShareProcessor = require('./shareProcessor.js');
 
@@ -170,16 +172,12 @@ module.exports = function(logger){
         });
 
         Object.keys(portalConfig.proxy.ports).forEach(function (port) {
-
-            proxyStuff.proxys[port] = net 
-                                        .createServer({allowHalfOpen: true}, function(socket) { 
-                                            console.log(proxyStuff.curActivePool);
-                                            pools[proxyStuff.curActivePool].getStratumServer().handleNewClient(socket);
-                                        } )
-                                        .listen(parseInt(port), function(){
-                                            console.log("Proxy listening on "+port);
-                                        });    
-
+            proxyStuff.proxys[port] = net .createServer({allowHalfOpen: true}, function(socket) {
+                console.log(proxyStuff.curActivePool);
+                pools[proxyStuff.curActivePool].getStratumServer().handleNewClient(socket);
+            }).listen(parseInt(port), function(){
+                console.log("Proxy listening on " + port);
+            });
         });
 
 

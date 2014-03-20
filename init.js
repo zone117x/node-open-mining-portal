@@ -3,6 +3,7 @@ var os = require('os');
 var cluster = require('cluster');
 
 
+
 var posix                    = require('posix');
 var PoolLogger               = require('./libs/logUtil.js');
 var BlocknotifyListener      = require('./libs/blocknotifyListener.js');
@@ -14,7 +15,7 @@ var Website                  = require('./libs/website.js');
 JSON.minify = JSON.minify || require("node-json-minify");
 
 var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
- 
+
 
 var loggerInstance = new PoolLogger({
     logLevel: portalConfig.logLevel
@@ -23,6 +24,13 @@ var loggerInstance = new PoolLogger({
 var logDebug   = loggerInstance.logDebug;
 var logWarning = loggerInstance.logWarning;
 var logError   = loggerInstance.logError;
+
+
+try {
+    require('newrelic');
+    if (cluster.isMaster)
+        logDebug('newrelic', 'system', 'New Relic initiated');
+} catch(e) {}
 
 
 //Try to give process ability to handle 100k concurrent connections

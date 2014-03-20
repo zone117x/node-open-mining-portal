@@ -5,7 +5,6 @@ var Stratum = require('stratum-pool');
 
 
 
-
 module.exports = function(logger){
 
     var poolConfigs = JSON.parse(process.env.pools);
@@ -79,49 +78,6 @@ function SetupForPool(logger, poolOptions){
     connectToRedis();
 
 
-    /* When blocks or orphaned, all shares contributed to that round would receive no reward. That doesn't seem fair
-       so we still all the shares from an orphaned rounds into the current round.
-     */
-    /*var adoptOrphanRounds = function(rounds){
-
-        var shareLookups = rounds.map(function(r){
-            return ['hgetall', coin + '_shares:round' + r.height]
-        });
-
-        var shareIncries = [];
-
-
-
-        redisClient.multi(shareLookups).exec(function(error, allWorkerShares){
-            if (error){
-                paymentLogger.error('redis', 'Error with multi get rounds share for adopting orphan');
-                return;
-            }
-
-            var workerRewards = {};
-
-
-            for (var i = 0; i < rounds.length; i++){
-                var round = rounds[i];
-                var workerShares = allWorkerShares[i];
-
-                var reward = round.reward * (1 - processingConfig.feePercent);
-
-                var totalShares = Object.keys(workerShares).reduce(function(p, c){
-                    return p + parseInt(workerShares[c])
-                }, 0);
-
-
-                for (var worker in workerShares){
-                    var percent = parseInt(workerShares[worker]) / totalShares;
-                    var workerRewardTotal = Math.floor(reward * percent);
-                    if (!(worker in workerRewards)) workerRewards[worker] = 0;
-                    workerRewards[worker] += workerRewardTotal;
-                }
-            }
-        });
-    };*/
-
 
     var processPayments = function(){
         async.waterfall([
@@ -130,7 +86,7 @@ function SetupForPool(logger, poolOptions){
                blocks. */
             function(callback){
 
-                redisClient.smembers(coin + '_blocks', function(error, results){
+                redisClient.smembers(coin + '_blocksPending', function(error, results){
 
                     if (error){
                         logger.error('redis', 'Could get blocks from redis ' + JSON.stringify(error));
@@ -144,7 +100,7 @@ function SetupForPool(logger, poolOptions){
 
                     var rounds = results.map(function(r){
                         var details = r.split(':');
-                        return {txHash: details[0], height: details[1], reward: details[2]};
+                        return {txHash: details[0], height: details[1], reward: details[2], serialized: r};
                     });
 
                     callback(null, rounds);
@@ -217,9 +173,10 @@ function SetupForPool(logger, poolOptions){
                amount owned to each miner for each round. */
             function(confirmedRounds, orphanedRounds, callback){
 
+
                 var rounds = [];
-                for (var i = 0; i < orphanedRounds; i++) rounds.push(orphanedRounds[i]);
-                for (var i = 0; i < confirmedRounds; i++) rounds.push(confirmedRounds[i]);
+                for (var i = 0; i < orphanedRounds.length; i++) rounds.push(orphanedRounds[i]);
+                for (var i = 0; i < confirmedRounds.length; i++) rounds.push(confirmedRounds[i]);
 
 
                 var shareLookups = rounds.map(function(r){
@@ -232,6 +189,8 @@ function SetupForPool(logger, poolOptions){
                         return;
                     }
 
+
+                    // Iterate through the beginning of the share results which are for the orphaned rounds
                     var orphanMergeCommands = []
                     for (var i = 0; i < orphanedRounds.length; i++){
                         var workerShares = allWorkerShares[i];
@@ -241,11 +200,10 @@ function SetupForPool(logger, poolOptions){
                         orphanMergeCommands.push([]);
                     }
 
-
+                    // Iterate through the rest of the share results which are for the worker rewards
                     var workerRewards = {};
+                    for (var i = orphanedRounds.length; i < allWorkerShares.length; i++){
 
-
-                    for (var i = 0; i < rounds.length; i++){
                         var round = rounds[i];
                         var workerShares = allWorkerShares[i];
 
@@ -264,6 +222,7 @@ function SetupForPool(logger, poolOptions){
                         }
                     }
 
+
                     //this calculates profit if you wanna see it
                     /*
                     var workerTotalRewards = Object.keys(workerRewards).reduce(function(p, c){
@@ -278,19 +237,19 @@ function SetupForPool(logger, poolOptions){
                     console.log('pool profit percent' + ((poolTotalRewards - workerTotalRewards) / poolTotalRewards));
                     */
 
-                    callback(null, rounds, workerRewards);
+                    callback(null, rounds, workerRewards, orphanMergeCommands);
                 });
             },
 
 
             /* Does a batch call to redis to get worker existing balances from coin_balances*/
-            function(rounds, workerRewards, callback){
+            function(rounds, workerRewards, orphanMergeCommands, callback){
 
                 var workers = Object.keys(workerRewards);
 
                 redisClient.hmget([coin + '_balances'].concat(workers), function(error, results){
                     if (error){
-                        callback('done - redis error with multi get balances')
+                        callback('done - redis error with multi get balances');
                         return;
                     }
 
@@ -302,7 +261,7 @@ function SetupForPool(logger, poolOptions){
                     }
 
 
-                    callback(null, rounds, workerRewards, workerBalances)
+                    callback(null, rounds, workerRewards, workerBalances, orphanMergeCommands);
                 });
 
             },
@@ -314,29 +273,97 @@ function SetupForPool(logger, poolOptions){
              when deciding the sent balance, it the difference should be -1*amount they had in db,
              if not sending the balance, the differnce should be +(the amount they earned this round)
              */
-            function(rounds, workerRewards, workerBalances, callback){
+            function(rounds, workerRewards, workerBalances, orphanMergeCommands, callback){
 
-                /* if payments dont succeed (likely because daemon isnt responding to rpc), then cancel here
-                   so that all of this can be tried again when the daemon is working. otherwise we will consider
-                   payment sent after we cleaned up the db.
-                 */
+                var magnitude = rounds[0].magnitude;
 
-                /* In here do daemon.getbalance, figure out how many payments should be sent, see if the
-                   remaining balance after payments-to-be sent is greater than the min reserver, otherwise
-                   put everything in worker balances to be paid next time.
+                daemon.cmd('getbalance', [], function(results){
+
+                    var totalBalance = results[0].response * magnitude;
+                    var toBePaid = 0;
+                    var workerPayments = {};
 
 
-                 */
+                    var balanceUpdateCommands = [];
+                    var workerPayoutsCommand = [];
 
+                    for (var worker in workerRewards){
+                        workerPayments[worker] = (workerPayments[worker] || 0) + workerRewards[worker];
+                    }
+                    for (var worker in workerBalances){
+                        workerPayments[worker] = (workerPayments[worker] || 0) + workerBalances[worker];
+                    }
+                    for (var worker in workerPayments){
+                        if (workerPayments[worker] < processingConfig.minimumPayment * magnitude){
+                            balanceUpdateCommands.push(['hincrby', coin + '_balances', worker, workerRewards[worker]]);
+                            delete workerPayments[worker];
+                        }
+                        else{
+                            if (workerBalances[worker] !== 0)
+                                balanceUpdateCommands.push(['hincrby', coin + '_balances', worker, -1 * workerBalances[worker]]);
+                            workerPayoutsCommand.push(['hincrby', coin + '_balances', worker, workerRewards[worker]]);
+                            toBePaid += workerPayments[worker];
+                        }
+                    }
+
+                    var balanceLeftOver = totalBalance - toBePaid;
+                    var minReserveSatoshis = processingConfig.minimumReserve * magnitude;
+                    if (balanceLeftOver < minReserveSatoshis){
+
+                        callback('done - payments would wipe out minimum reserve, tried to pay out ' + toBePaid +
+                            ' but only have ' + totalBalance + '. Left over balance would be ' + balanceLeftOver +
+                            ', needs to be at least ' + minReserveSatoshis);
+                        return;
+                    }
+
+
+                    var movePendingCommands = [];
+                    var deleteRoundsCommand = ['del'];
+                    rounds.forEach(function(r){
+                        var destinationSet = r.category === 'orphan' ? '_blocksOrphaned' : '_blocksConfirmed';
+                        movePendingCommands.push(['smove', coin + '_blocksPending', coin + destinationSet, r.serialized]);
+                        deleteRoundsCommand.push(coin + '_shares:round' + r.height)
+                    });
+
+                    var finalRedisCommands = [];
+
+                    finalRedisCommands = finalRedisCommands.concat(
+                        movePendingCommands,
+                        orphanMergeCommands,
+                        balanceUpdateCommands,
+                        workerPayoutsCommand
+                    );
+
+                    finalRedisCommands.push(deleteRoundsCommand);
+                    finalRedisCommands.push(['hincrby', coin + '_stats', 'totalPaid', toBePaid]);
+
+
+                    callback(null, magnitude, workerPayments, finalRedisCommands);
+
+
+
+                });
             },
 
+            function(magnitude, workerPayments, finalRedisCommands, callback){
 
-            /* clean DB: update remaining balances in coin_balance hashset in redis
-            */
-            function(balanceDifference, rounds, callback){
+                var sendManyCmd = ['', {}];
+                for (var address in workerPayments){
+                    sendManyCmd[1][address] = workerPayments[address] / magnitude;
+                }
 
-                //SMOVE each tx key from coin_blocks to coin_processedBlocks
-                //HINCRBY to apply balance different for coin_balances worker1
+                console.log(JSON.stringify(finalRedisCommands, null, 4));
+                console.log(JSON.stringify(workerPayments, null, 4));
+                console.log(JSON.stringify(sendManyCmd, null, 4));
+
+                return; //not yet...
+                daemon.cmd(sendManyCmd, function(error, result){
+                    //if successful then do finalRedisCommands
+                });
+
+
+
+
 
             }
         ], function(error, result){

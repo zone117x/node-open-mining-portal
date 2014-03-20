@@ -2,6 +2,7 @@ var redis = require('redis');
 var Stratum = require('stratum-pool');
 
 
+
 /*
 This module deals with handling shares when in internal payment processing mode. It connects to a redis
 database and inserts shares with the database structure of:
@@ -65,7 +66,7 @@ module.exports = function(logger, poolConfig){
 
         if (isValidBlock){
             redisCommands.push(['rename', coin + '_shares:roundCurrent', coin + '_shares:round' + shareData.height]);
-            redisCommands.push(['sadd', coin + '_blocks', shareData.tx + ':' + shareData.height + ':' + shareData.reward]);
+            redisCommands.push(['sadd', coin + '_blocksPending', shareData.tx + ':' + shareData.height + ':' + shareData.reward]);
             redisCommands.push(['hincrby', coin + '_stats', 'validBlocks', 1]);
         }
         else if (shareData.solution){

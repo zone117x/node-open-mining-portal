@@ -361,6 +361,7 @@ in case the master process crashes.
 for exploring your redis database.
 * Use something like [logrotator](http://www.thegeekstuff.com/2010/07/logrotate-examples/) to rotate log 
 output from NOMP.
+* Use [New Relic](http://newrelic.com/) to monitor your NOMP instance and server performance.
 
 
 Donations
