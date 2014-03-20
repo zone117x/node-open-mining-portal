@@ -10,6 +10,11 @@ module.exports = function(logger, portalConfig, poolConfigs){
 
     var redisClients = [];
 
+    var algoMultipliers = {
+        'scrypt': Math.pow(2, 16),
+        'sha256': Math.pow(2, 32)
+    };
+
     Object.keys(poolConfigs).forEach(function(coin){
         var poolConfig = poolConfigs[coin];
         var internalConfig = poolConfig.shareProcessing.internal;
@@ -37,13 +42,13 @@ module.exports = function(logger, portalConfig, poolConfigs){
         var allCoinStats = [];
 
         async.each(redisClients, function(client, callback){
-            var windowTime = (Date.now() / 1000 | 0) - portalConfig.website.hashrateWindow;
+            var windowTime = (((Date.now() / 1000) - portalConfig.website.hashrateWindow) | 0).toString();
             var redisCommands = [];
             var commandsPerCoin = 4;
 
             //Clear out old hashrate stats for each coin from redis
             client.coins.forEach(function(coin){
-                redisCommands.push(['zremrangebyscore', coin + '_hashrate', '-inf', windowTime]);
+                redisCommands.push(['zremrangebyscore', coin + '_hashrate', '-inf', '(' + windowTime]);
                 redisCommands.push(['zrangebyscore', coin + '_hashrate', windowTime, '+inf']);
                 redisCommands.push(['hgetall', coin + '_stats']);
                 redisCommands.push(['scard', coin + '_blocks']);
@@ -97,7 +102,9 @@ module.exports = function(logger, portalConfig, poolConfigs){
                     else
                         coinStats.workers[worker] = workerShares
                 });
-                coinStats.hashrate = (coinStats.shares * 4294967296 / portalConfig.website.hashrateWindow) / 100000000 | 0;
+                var shareMultiplier = algoMultipliers[poolConfigs[coinStats.coinName].coin.algorithm];
+                var hashratePre = shareMultiplier * coinStats.shares / portalConfig.website.hashrateWindow;
+                coinStats.hashrate = hashratePre / 1e3 | 0;
                 delete coinStats.hashrates;
                 portalStats.global.hashrate += coinStats.hashrate;
                 portalStats.global.workers += Object.keys(coinStats.workers).length;
