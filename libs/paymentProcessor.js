@@ -89,7 +89,7 @@ function SetupForPool(logger, poolOptions){
                 redisClient.smembers(coin + '_blocksPending', function(error, results){
 
                     if (error){
-                        logger.error('redis', 'Could get blocks from redis ' + JSON.stringify(error));
+                        paymentLogger.error('redis', 'Could get blocks from redis ' + JSON.stringify(error));
                         callback('done - redis error for getting blocks');
                         return;
                     }
@@ -356,7 +356,7 @@ function SetupForPool(logger, poolOptions){
                 console.log(JSON.stringify(workerPayments, null, 4));
                 console.log(JSON.stringify(sendManyCmd, null, 4));
 
-                return; //not yet...
+                //return callback('not yet...');
                 daemon.cmd('sendmany', sendManyCmd, function(results){
                     if (results[0].error){
                         callback('done - error with sendmany ' + JSON.stringify(results[0].error));
@@ -376,12 +376,38 @@ function SetupForPool(logger, poolOptions){
             }
         ], function(error, result){
             if (error)
-                logger.debug(error)
+                paymentLogger.debug('system', error)
 
             else{
-                logger.debug(result);
+                paymentLogger.debug('system', result);
+                withdrawalProfit();
             }
         });
+    };
+
+
+    var withdrawalProfit = function(){
+        try{
+        daemon.cmd('getbalance', [], function(results){
+
+            var totalBalance = results[0].response;
+            var withdrawalAmount = totalBalance - processingConfig.minimumReserve;
+            var leftOverBalance = totalBalance - withdrawalAmount;
+
+
+            if (leftOverBalance < processingConfig.minimumReserve || withdrawalAmount < processingConfig.feeWithdrawalThreshold){
+                paymentLogger.debug('system', 'Not enough profit to withdrawal yet');
+            }
+            else{
+                //Need to figure out how much of the balance is profit... ???
+                paymentLogger.debug('system', 'Can send profit');
+            }
+
+        });
+        }
+        catch(e){
+            throw e;
+        }
     };
 
 
