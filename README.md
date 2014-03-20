@@ -2,7 +2,7 @@
 #### Node Open Mining Portal
 
 This portal is an extremely efficient, highly scalable, all-in-one, easy to setup cryptocurrency mining pool written
-entirely in Node.js. It contains a stratum poolserver, reward/payment/share processor (*not yet completed*), and
+entirely in Node.js. It contains a stratum poolserver, reward/payment/share processor, and
 front-end website (*not yet completed*).
 
 #### Features
@@ -197,13 +197,13 @@ Description of options:
             /* (2% default) What percent fee your pool takes from the block reward. */
             "feePercent": 0.02,
 
-            /* Your address that receives pool revenue from fees */
-            "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
+            /* (Not implemented yet) Your address that receives pool revenue from fees */
+            //"feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
 
-            /* How many coins from fee revenue must accumulate on top of the minimum reserve amount
-               in order to trigger withdrawal to fee address. The higher this threshold, the less of
-               your profit goes to transactions fees. */
-            "feeWithdrawalThreshold": 5,
+            /* (Not implemented yet) How many coins from fee revenue must accumulate on top of the
+               minimum reserve amount in order to trigger withdrawal to fee address. The higher
+               this threshold, the less of your profit goes to transactions fees. */
+            //"feeWithdrawalThreshold": 5,
 
             /* This daemon is used to send out payments. It MUST be for the daemon that owns the
                configured 'address' that receives the block rewards, otherwise the daemon will not

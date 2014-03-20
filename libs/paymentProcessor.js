@@ -387,7 +387,9 @@ function SetupForPool(logger, poolOptions){
 
 
     var withdrawalProfit = function(){
-        try{
+
+        if (!processingConfig.feeWithdrawalThreshold) return;
+
         daemon.cmd('getbalance', [], function(results){
 
             var totalBalance = results[0].response;
@@ -404,10 +406,7 @@ function SetupForPool(logger, poolOptions){
             }
 
         });
-        }
-        catch(e){
-            throw e;
-        }
+
     };
 
 
