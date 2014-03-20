@@ -2,8 +2,8 @@
 #### Node Open Mining Portal
 
 This portal is an extremely efficient, highly scalable, all-in-one, easy to setup cryptocurrency mining pool written
-entirely in Node.js. It contains a stratum poolserver, reward/payment/share processor, and
-front-end website (*not yet completed*).
+entirely in Node.js. It contains a stratum poolserver, reward/payment/share processor, and a (*not yet completed*)
+front-end website.
 
 #### Features
 
