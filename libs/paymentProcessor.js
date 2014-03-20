@@ -357,18 +357,30 @@ function SetupForPool(logger, poolOptions){
                 console.log(JSON.stringify(sendManyCmd, null, 4));
 
                 return; //not yet...
-                daemon.cmd(sendManyCmd, function(error, result){
-                    //if successful then do finalRedisCommands
+                daemon.cmd('sendmany', sendManyCmd, function(results){
+                    if (results[0].error){
+                        callback('done - error with sendmany ' + JSON.stringify(results[0].error));
+                        return;
+                    }
+                    redisClient.multi(finalRedisCommands).exec(function(error, results){
+                        if (error){
+                            callback('done - error with final redis commands for cleaning up ' + JSON.stringify(error));
+                            return;
+                        }
+                        callback(null, 'Payments sent');
+                    });
                 });
-
-
 
 
 
             }
         ], function(error, result){
-            console.log(error);
-            //log error completion
+            if (error)
+                logger.debug(error)
+
+            else{
+                logger.debug(result);
+            }
         });
     };
 
