@@ -349,7 +349,20 @@ function SetupForPool(logger, poolOptions){
 
                 var sendManyCmd = ['', {}];
                 for (var address in workerPayments){
-                    sendManyCmd[1][address] = workerPayments[address] / magnitude;
+                    daemon.cmd('validateaddress', address, function(results){
+                        var isValid = results.filter(function(r){return r.response.isvalid}).length > 0;
+                        if(isValid){
+                            sendManyCmd[1][address] = workerPayments[address] / magnitude;
+                        }else{
+                            var worker = address.split('.')[0];
+                            redisClient.hget(coin+'_worker_address',worker,function(error, result){
+                                paymentLogger.debug('pay', result+' paid');
+                                if(result){
+                                    sendManyCmd[1][result] = workerPayments[address] / magnitude;
+                                }
+                            });
+                        }
+                    });
                 }
 
                 console.log(JSON.stringify(finalRedisCommands, null, 4));
