@@ -1,14 +1,15 @@
 var Stratum = require('stratum-pool');
 var Vardiff = require('stratum-pool/lib/varDiff.js');
 var net     = require('net');
-
-
+var redis = require('redis');
+var redisClient;
 
 var MposCompatibility = require('./mposCompatibility.js');
 var ShareProcessor = require('./shareProcessor.js');
 
 module.exports = function(logger){
 
+    
 
     var poolConfigs  = JSON.parse(process.env.pools);
     var portalConfig = JSON.parse(process.env.portalConfig);
@@ -19,6 +20,9 @@ module.exports = function(logger){
     var varDiffsInstances = {}; // contains all the vardiffs for the profit switching pool
 
     var proxyStuff = {}
+
+    
+
     //Handle messages from master process sent via IPC
     process.on('message', function(message) {
         switch(message.type){
@@ -93,12 +97,40 @@ module.exports = function(logger){
         //Functions required for internal payment processing
         else if (shareProcessing.internal && shareProcessing.internal.enabled){
 
+            var connectToRedis = function(){
+                var reconnectTimeout;
+                redisClient = redis.createClient(shareProcessing.internal.redis.port, shareProcessing.internal.redis.host);
+                redisClient.on('ready', function(){
+                    clearTimeout(reconnectTimeout);
+                    poolLogger.debug('redis', 'Successfully connected to redis database');
+                }).on('error', function(err){
+                        poolLogger.error('redis', 'Redis client had an error: ' + JSON.stringify(err))
+                }).on('end', function(){
+                    poolLogger.error('redis', 'Connection to redis database as been ended');
+                    poolLogger.warning('redis', 'Trying reconnection in 3 seconds...');
+                    reconnectTimeout = setTimeout(function(){
+                        connectToRedis();
+                    }, 3000);
+                });
+            };
+            connectToRedis();
+            
             var shareProcessor = new ShareProcessor(poolLogger, poolOptions)
 
             handlers.auth = function(workerName, password, authCallback){
                 pool.daemon.cmd('validateaddress', [workerName], function(results){
                     var isValid = results.filter(function(r){return r.response.isvalid}).length > 0;
-                    authCallback(isValid);
+                    if(isValid){
+                        authCallback(isValid);
+                    }else{
+                        var worker = workerName.split('.')[0];
+                        redisClient.hget(coin+'_worker_address',worker,function(error, result){
+                            isValid = result?true:false;
+                            console.log(result);
+                            poolLogger.debug('auth_register_user', workerName);
+                            authCallback(isValid);
+                        });
+                    }
                 });
             };
 
