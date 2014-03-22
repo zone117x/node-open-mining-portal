@@ -374,7 +374,7 @@ BTC: 1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR
 Credits
 -------
 * [vekexasia](https://github.com/vekexasia) - co-developer & great tester
-* [TheSeven](https://github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful and king gentleman
+* [TheSeven](https://github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
 * Those that contributed to [node-stratum](/zone117x/node-stratum)
 
 

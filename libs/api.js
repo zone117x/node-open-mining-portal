@@ -1,0 +1,1 @@
+//create the stats object in here. then let the website use this object. that way we can have a config for stats and website separate :D

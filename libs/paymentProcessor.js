@@ -335,7 +335,7 @@ function SetupForPool(logger, poolOptions){
                     );
 
                     finalRedisCommands.push(deleteRoundsCommand);
-                    finalRedisCommands.push(['hincrby', coin + '_stats', 'totalPaid', toBePaid]);
+                    finalRedisCommands.push(['hincrby', coin + '_stats', 'totalPaid', toBePaid / magnitude]);
 
 
                     callback(null, magnitude, workerPayments, finalRedisCommands);
@@ -356,18 +356,21 @@ function SetupForPool(logger, poolOptions){
                 console.log(JSON.stringify(workerPayments, null, 4));
                 console.log(JSON.stringify(sendManyCmd, null, 4));
 
-                //return callback('not yet...');
                 daemon.cmd('sendmany', sendManyCmd, function(results){
                     if (results[0].error){
                         callback('done - error with sendmany ' + JSON.stringify(results[0].error));
                         return;
                     }
+
+                    //This does the final all-or-nothing atom transaction if block deamon sent payments
                     redisClient.multi(finalRedisCommands).exec(function(error, results){
                         if (error){
                             callback('done - error with final redis commands for cleaning up ' + JSON.stringify(error));
                             return;
                         }
-                        callback(null, 'Payments sent');
+                        var totalWorkers = Object.keys(workerPayments).length;
+                        var totalAmount = Object.keys(workerPayments).reduce(function(p, c){return p + workerPayments[c]}, 0);
+                        callback(null, 'Payments sent, a total of ' + totalAmount + ' was sent to ' + totalWorkers);
                     });
                 });
 

@@ -183,6 +183,9 @@ module.exports = function(logger){
                     res.end(requestedPage);
                     return;
                 }
+            case 'stats':
+                res.end(portalStats.statsString);
+                return;
             case 'live_stats':
                 res.writeHead(200, {
                     'Content-Type': 'text/event-stream',
