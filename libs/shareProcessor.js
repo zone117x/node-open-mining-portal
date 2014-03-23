@@ -60,7 +60,8 @@ module.exports = function(logger, poolConfig){
             /* Stores share diff, worker, and unique value with a score that is the timestamp. Unique value ensures it
                doesn't overwrite an existing entry, and timestamp as score lets us query shares from last X minutes to
                generate hashrate for each worker and pool. */
-            redisCommands.push(['zadd', coin + '_hashrate', Date.now() / 1000 | 0, [shareData.difficulty, shareData.worker, Math.random()].join(':')]);
+            var dateNow = Date.now();
+            redisCommands.push(['zadd', coin + '_hashrate', dateNow / 1000 | 0, [shareData.difficulty, shareData.worker, dateNow].join(':')]);
         }
         else{
             redisCommands.push(['hincrby', coin + '_stats', 'invalidShares', 1]);
