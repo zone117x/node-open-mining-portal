@@ -131,7 +131,6 @@ module.exports = function(logger, portalConfig, poolConfigs){
 
             _this.stats = portalStats;
             _this.statsString = JSON.stringify(portalStats);
-            console.log(JSON.stringify(portalStats, null, 4));
             callback();
         });
 

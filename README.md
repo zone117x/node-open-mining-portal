@@ -19,7 +19,8 @@ have different properties and hashing algorithms). It can be used to create a po
 coins at once. The pools use clustering to load balance across multiple CPU cores.
 
 * For reward/payment processing, shares are inserted into Redis (a fast NoSQL key/value store). The PROP (proportional)
-reward system is used. Each and every share will be rewarded - even for rounds resulting in orphaned blocks.
+reward system is used with [Redis Transactions](http://redis.io/topics/transactions) for secure and super speedy payouts.
+Each and every share will be rewarded - even for rounds resulting in orphaned blocks.
 
 * This portal does not have user accounts/logins/registrations. Instead, miners simply use their coin address for stratum
 authentication. A minimalistic HTML5 front-end connects to the portals statistics API to display stats from from each
@@ -28,23 +29,11 @@ pool such as connected miners, network/pool difficulty/hash rate, etc.
 
 #### Planned Features
 
-* To knock down the barrier to entry for cryptocurrency and mining for those not programmers or tech-origiented, instead
-of the "help" page on the website being being confusing for non-techies (when most people see a black command prompt screen
-they run away screaming), there will be a simple "Download NOMP Desktop App" to get started mining immediately for your
-platform (use javascript to detect platform and default them to the correct one). I will create this app using C# + Mono
-so runs with ease on all platforms, and it will have its own github repo that NOMP links to. So a pool operator does a
-`git clone --recursive` on NOMP repo, it will download NOMP app executables for each platform. There will be a nomp.ini
-file paired with the executable which the pool operator configures to user their NOMP pool's API url. When the NOMP portal
-initiates creates a zip for each platform with the nomp.ini inside. When user's download the app, it auto-connects to the
-NOMP pool API to get available coins along with the version-byte for each coin so the app can securely generate a local private
-key and valid address to mine with. The app pill prompt printing the private key to paper and also enforce a
-STRONG (uncrackable) password encryption on the file.
-The app will scan their system to get the appropriate mining software - run in background - parse the gibberish (to a noob) output
-into something that makes sense. It will also prompt them to download the coins wallet software and import their private key.
-When using the app they can choose a unique username that is used
-with stratum authentication like "zone117x.mfsm1ckZKTTjDz94KonZZsbZnAbm1UV4BF", so that on a NOMP mobile app, a user can
-enter in the NOMP pool and their username in order to see how their mining rig is doing since the API will report stats
-back for the address such as hashrate and balance.
+* NOMP API - this API be used in several ways.
+  * The website will use the API to display stats and information about the pool(s) on the portal's front-end website.
+  * The NOMP Desktop app will use the API to connect to the portal to display a list of available coins to mine
+     * NOMP server will have to send the desktop app each coin's version-byte so that a wallet (private key & address) can be
+     generated securely and locally then used to mine on the pool.
 
 * To reduce variance for pools just starting out which have little to no hashing power a feature is planned which will
 allow your own pool to connect upstream to a larger pool server. It will request work from the larger pool then
@@ -285,10 +274,13 @@ Description of options:
         }
     },
 
-
     /* Recommended to have at least two daemon instances running in case one drops out-of-sync
        or offline. For redundancy, all instances will be polled for block/transaction updates
-       and be used for submitting blocks. */
+       and be used for submitting blocks. Creating a backup daemon involves spawning a daemon
+       using the "-datadir=/backup" argument which creates a new daemon instance with it's own
+       RPC config. For more info on this see:
+          - https://en.bitcoin.it/wiki/Data_directory
+          - https://en.bitcoin.it/wiki/Running_bitcoind */
     "daemons": [
         {   //Main daemon instance
             "host": "localhost",
