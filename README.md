@@ -31,9 +31,9 @@ pool such as connected miners, network/pool difficulty/hash rate, etc.
 
 * NOMP API - this API be used in several ways.
   * The website will use the API to display stats and information about the pool(s) on the portal's front-end website.
-  * The NOMP Desktop app will use the API to connect to the portal to display a list of available coins to mine
-     * NOMP server will have to send the desktop app each coin's version-byte so that a wallet (private key & address) can be
-     generated securely and locally then used to mine on the pool.
+  * The NOMP Desktop app will use the API to connect to the portal to display a list of available coins to mine and
+  NOMP server will have to send the desktop app each coin's version-byte so that a wallet (private key & address) can be
+  generated securely and locally then used to mine on the pool.
 
 * To reduce variance for pools just starting out which have little to no hashing power a feature is planned which will
 allow your own pool to connect upstream to a larger pool server. It will request work from the larger pool then
