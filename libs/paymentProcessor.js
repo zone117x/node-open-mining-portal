@@ -80,11 +80,11 @@ function SetupForPool(logger, poolOptions){
 
                     if (error){
                         logger.error(logSystem, logComponent, 'Could get blocks from redis ' + JSON.stringify(error));
-                        callback('check finished - redis error for getting blocks');
+                        callback('Check finished - redis error for getting blocks');
                         return;
                     }
                     if (results.length === 0){
-                        callback('check finished - no pending blocks in redis');
+                        callback('Check finished - no pending blocks in redis');
                         return;
                     }
 
@@ -115,7 +115,7 @@ function SetupForPool(logger, poolOptions){
                 daemon.batchCmd(batchRPCcommand, function(error, txDetails){
 
                     if (error || !txDetails){
-                        callback('check finished - daemon rpc error with batch gettransactions ' + JSON.stringify(error));
+                        callback('Check finished - daemon rpc error with batch gettransactions ' + JSON.stringify(error));
                         return;
                     }
 
@@ -162,7 +162,7 @@ function SetupForPool(logger, poolOptions){
 
 
                     if (rounds.length === 0){
-                        callback('check finished - no confirmed or orphaned blocks found');
+                        callback('Check finished - no confirmed or orphaned blocks found');
                     }
                     else{
                         callback(null, rounds, magnitude);
@@ -183,7 +183,7 @@ function SetupForPool(logger, poolOptions){
 
                 redisClient.multi(shareLookups).exec(function(error, allWorkerShares){
                     if (error){
-                        callback('check finished - redis error with multi get rounds share')
+                        callback('Check finished - redis error with multi get rounds share')
                         return;
                     }
 
@@ -228,7 +228,7 @@ function SetupForPool(logger, poolOptions){
 
                 redisClient.hmget([coin + '_balances'].concat(workers), function(error, results){
                     if (error && workers.length !== 0){
-                        callback('check finished - redis error with multi get balances ' + JSON.stringify(error));
+                        callback('Check finished - redis error with multi get balances ' + JSON.stringify(error));
                         return;
                     }
 
@@ -297,7 +297,7 @@ function SetupForPool(logger, poolOptions){
                     var minReserveSatoshis = processingConfig.minimumReserve * magnitude;
                     if (balanceLeftOver < minReserveSatoshis){
 
-                        callback('check finished - payments would wipe out minimum reserve, tried to pay out ' + toBePaid +
+                        callback('Check finished - payments would wipe out minimum reserve, tried to pay out ' + toBePaid +
                             ' but only have ' + totalBalance + '. Left over balance would be ' + balanceLeftOver +
                             ', needs to be at least ' + minReserveSatoshis);
                         return;
@@ -349,7 +349,7 @@ function SetupForPool(logger, poolOptions){
                 var finalizeRedisTx = function(){
                     redisClient.multi(finalRedisCommands).exec(function(error, results){
                         if (error){
-                            callback('check finished - error with final redis commands for cleaning up ' + JSON.stringify(error));
+                            callback('Check finished - error with final redis commands for cleaning up ' + JSON.stringify(error));
                             return;
                         }
                         callback(null, 'Payments processing performed an interval');
@@ -373,7 +373,7 @@ function SetupForPool(logger, poolOptions){
                     logger.debug(logSystem, logComponent, 'Payments about to be sent to: ' + JSON.stringify(addressAmounts));
                     daemon.cmd('sendmany', ['', addressAmounts], function(results){
                         if (results[0].error){
-                            callback('check finished - error with sendmany ' + JSON.stringify(results[0].error));
+                            callback('Check finished - error with sendmany ' + JSON.stringify(results[0].error));
                             return;
                         }
                         finalizeRedisTx();

@@ -3,7 +3,7 @@ var os = require('os');
 var cluster = require('cluster');
 
 
-
+var async                    = require('async');
 var posix                    = require('posix');
 var PoolLogger               = require('./libs/logUtil.js');
 var BlocknotifyListener      = require('./libs/blocknotifyListener.js');
@@ -112,19 +112,25 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
             workerType   : 'pool',
             forkId       : forkId,
             pools        : serializedConfigs,
-            portalConfig : JSON.stringify(portalConfig),
+            portalConfig : JSON.stringify(portalConfig)
         });
         worker.on('exit', function(code, signal){
-            logger.error('Master', 'Pool Worker', 'Fork ' + forkId + ' died, spawning replacement worker...');
+            logger.error('Master', 'PoolSpanwer', 'Fork ' + forkId + ' died, spawning replacement worker...');
             setTimeout(function(){
                 createPoolWorker(forkId);
             }, 2000);
         });
     };
 
-    for (var i = 0; i < numForks; i++) {
+    var i = 0;
+    var spawnInterval = setInterval(function(){
         createPoolWorker(i);
-    }
+        i++;
+        if (i === numForks){
+            clearInterval(spawnInterval);
+            logger.debug('Master', 'PoolSpawner', 'Spawned pools for all ' + numForks + ' configured forks');
+        }
+    }, 250);
 
 };
 
