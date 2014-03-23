@@ -125,7 +125,7 @@ function SetupForPool(logger, poolOptions){
 
                     txDetails = txDetails.filter(function(tx){
                         if (tx.error || !tx.result){
-                            console.log('error with requesting transaction from block daemon: ' + JSON.stringify(t));
+                            console.log('error with requesting transaction from block daemon: ' + JSON.stringify(tx));
                             return false;
                         }
                         return true;
@@ -348,44 +348,50 @@ function SetupForPool(logger, poolOptions){
             function(magnitude, workerPayments, finalRedisCommands, callback){
 
                 var sendManyCmd = ['', {}];
-                for (var address in workerPayments){
-                    daemon.cmd('validateaddress', address, function(results){
-                        var isValid = results.filter(function(r){return r.response.isvalid}).length > 0;
-                        if(isValid){
+                async.each(Object.keys(workerPayments), function(address, callback){
+                    daemon.cmd('validateaddress', [address], function(results){
+                        if(results[0].response.isvalid == true){
                             sendManyCmd[1][address] = workerPayments[address] / magnitude;
+                            callback();
                         }else{
                             var worker = address.split('.')[0];
+                            paymentLogger.debug('pay', worker+' worker');
                             redisClient.hget(coin+'_worker_address',worker,function(error, result){
-                                paymentLogger.debug('pay', result+' paid');
                                 if(result){
-                                    sendManyCmd[1][result] = workerPayments[address] / magnitude;
+                                    paymentLogger.debug('pay', result+' paid');
+                                    if(!sendManyCmd[1][result]){
+                                        sendManyCmd[1][result] = 0;
+                                    }
+                                    sendManyCmd[1][result] += workerPayments[address] / magnitude;
+                                    callback();
                                 }
                             });
                         }
                     });
-                }
+                }, function(err){
+                    if (err){
+                        console.log('error reading files for creating dot templates: '+ JSON.stringify(err));
+                    }else{
+                        console.log(JSON.stringify(finalRedisCommands, null, 4));
+                        console.log(JSON.stringify(workerPayments, null, 4));
+                        console.log(JSON.stringify(sendManyCmd, null, 4));
 
-                console.log(JSON.stringify(finalRedisCommands, null, 4));
-                console.log(JSON.stringify(workerPayments, null, 4));
-                console.log(JSON.stringify(sendManyCmd, null, 4));
-
-                //return callback('not yet...');
-                daemon.cmd('sendmany', sendManyCmd, function(results){
-                    if (results[0].error){
-                        callback('done - error with sendmany ' + JSON.stringify(results[0].error));
-                        return;
+                        //return callback('not yet...');
+                        daemon.cmd('sendmany', sendManyCmd, function(results){
+                            if (results[0].error){
+                                callback('done - error with sendmany ' + JSON.stringify(results[0].error));
+                                return;
+                            }
+                            redisClient.multi(finalRedisCommands).exec(function(error, results){
+                                if (error){
+                                    callback('done - error with final redis commands for cleaning up ' + JSON.stringify(error));
+                                    return;
+                                }
+                                callback(null, 'Payments sent');
+                            });
+                        });
                     }
-                    redisClient.multi(finalRedisCommands).exec(function(error, results){
-                        if (error){
-                            callback('done - error with final redis commands for cleaning up ' + JSON.stringify(error));
-                            return;
-                        }
-                        callback(null, 'Payments sent');
-                    });
-                });
-
-
-
+                });             
             }
         ], function(error, result){
             if (error)
