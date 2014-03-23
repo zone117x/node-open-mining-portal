@@ -25,33 +25,23 @@ function SetupForPool(logger, poolOptions){
 
     if (!processingConfig.enabled) return;
 
-    var logIdentify = 'Payment Processor (' + coin + ')';
+    var logSystem = 'Payments';
+    var logComponent = coin;
 
-    var paymentLogger = {
-        debug: function(key, text){
-            logger.logDebug(logIdentify, key, text);
-        },
-        warning: function(key, text){
-            logger.logWarning(logIdentify, key, text);
-        },
-        error: function(key, text){
-            logger.logError(logIdentify, key, text);
-        }
-    };
 
     var daemon = new Stratum.daemon.interface([processingConfig.daemon]);
     daemon.once('online', function(){
-        paymentLogger.debug('system', 'Connected to daemon for payment processing');
+        logger.debug(logSystem, logComponent, 'Connected to daemon for payment processing');
 
         daemon.cmd('validateaddress', [poolOptions.address], function(result){
             if (!result[0].response.ismine){
-                paymentLogger.error('system', 'Daemon does not own pool address - payment processing can not be done with this daemon');
+                logger.error(logSystem, logComponent, 'Daemon does not own pool address - payment processing can not be done with this daemon');
             }
         });
     }).once('connectionFailed', function(error){
-        paymentLogger.error('system', 'Failed to connect to daemon for payment processing: ' + JSON.stringify(error));
+        logger.error(logSystem, logComponent, 'Failed to connect to daemon for payment processing: ' + JSON.stringify(error));
     }).on('error', function(error){
-        paymentLogger.error('system', error);
+        logger.error(logSystem, logComponent);
     }).init();
 
 
@@ -64,12 +54,12 @@ function SetupForPool(logger, poolOptions){
         redisClient = redis.createClient(processingConfig.redis.port, processingConfig.redis.host);
         redisClient.on('ready', function(){
             clearTimeout(reconnectTimeout);
-            paymentLogger.debug('redis', 'Successfully connected to redis database');
+            logger.debug(logSystem, logComponent, 'Successfully connected to redis database');
         }).on('error', function(err){
                 paymentLogger.error('redis', 'Redis client had an error: ' + JSON.stringify(err))
         }).on('end', function(){
-            paymentLogger.error('redis', 'Connection to redis database as been ended');
-            paymentLogger.warning('redis', 'Trying reconnection in 3 seconds...');
+            logger.error(logSystem, logComponent, 'Connection to redis database as been ended');
+            logger.warning(logSystem, logComponent, 'Trying reconnection to redis in 3 seconds...');
             reconnectTimeout = setTimeout(function(){
                 connectToRedis();
             }, 3000);
@@ -89,12 +79,12 @@ function SetupForPool(logger, poolOptions){
                 redisClient.smembers(coin + '_blocksPending', function(error, results){
 
                     if (error){
-                        paymentLogger.error('redis', 'Could get blocks from redis ' + JSON.stringify(error));
-                        callback('done - redis error for getting blocks');
+                        logger.error(logSystem, logComponent, 'Could get blocks from redis ' + JSON.stringify(error));
+                        callback('check finished - redis error for getting blocks');
                         return;
                     }
                     if (results.length === 0){
-                        callback('done - no pending blocks in redis');
+                        callback('check finished - no pending blocks in redis');
                         return;
                     }
 
@@ -125,13 +115,13 @@ function SetupForPool(logger, poolOptions){
                 daemon.batchCmd(batchRPCcommand, function(error, txDetails){
 
                     if (error || !txDetails){
-                        callback('done - daemon rpc error with batch gettransactions ' + JSON.stringify(error));
+                        callback('check finished - daemon rpc error with batch gettransactions ' + JSON.stringify(error));
                         return;
                     }
 
                     txDetails = txDetails.filter(function(tx){
                         if (tx.error || !tx.result){
-                            paymentLogger.error('error with requesting transaction from block daemon: ' + JSON.stringify(t));
+                            logger.error(logSystem, logComponent, 'error with requesting transaction from block daemon: ' + JSON.stringify(t));
                             return false;
                         }
                         return true;
@@ -144,7 +134,7 @@ function SetupForPool(logger, poolOptions){
                         var tx = txDetails.filter(function(tx){return tx.result.txid === r.txHash})[0];
 
                         if (!tx){
-                            paymentLogger.error('system', 'daemon did not give us back a transaction that we asked for: ' + r.txHash);
+                            logger.error(logSystem, logComponent, 'daemon did not give us back a transaction that we asked for: ' + r.txHash);
                             return;
                         }
 
@@ -158,10 +148,10 @@ function SetupForPool(logger, poolOptions){
                                 magnitude = roundMagnitude;
 
                                 if (roundMagnitude % 10 !== 0)
-                                    paymentLogger.error('system', 'Satosihis in coin is not divisible by 10 which is very odd');
+                                    logger.error(logSystem, logComponent, 'Satosihis in coin is not divisible by 10 which is very odd');
                             }
                             else if (magnitude != roundMagnitude){
-                                paymentLogger.error('system', 'Magnitude in a round was different than in another round. HUGE PROBLEM.');
+                                logger.error(logSystem, logComponent, 'Magnitude in a round was different than in another round. HUGE PROBLEM.');
                             }
                             return true;
                         }
@@ -172,7 +162,7 @@ function SetupForPool(logger, poolOptions){
 
 
                     if (rounds.length === 0){
-                        callback('done - no confirmed or orphaned rounds');
+                        callback('check finished - no confirmed or orphaned blocks found');
                     }
                     else{
                         callback(null, rounds, magnitude);
@@ -193,7 +183,7 @@ function SetupForPool(logger, poolOptions){
 
                 redisClient.multi(shareLookups).exec(function(error, allWorkerShares){
                     if (error){
-                        callback('done - redis error with multi get rounds share')
+                        callback('check finished - redis error with multi get rounds share')
                         return;
                     }
 
@@ -238,7 +228,7 @@ function SetupForPool(logger, poolOptions){
 
                 redisClient.hmget([coin + '_balances'].concat(workers), function(error, results){
                     if (error && workers.length !== 0){
-                        callback('done - redis error with multi get balances ' + JSON.stringify(error));
+                        callback('check finished - redis error with multi get balances ' + JSON.stringify(error));
                         return;
                     }
 
@@ -246,7 +236,7 @@ function SetupForPool(logger, poolOptions){
                     var workerBalances = {};
 
                     for (var i = 0; i < workers.length; i++){
-                        workerBalances[workers[i]] = (parseInt(results[i]) || 0) * magnitude;
+                        workerBalances[workers[i]] = (parseInt(results[i]) || 0);
                     }
 
 
@@ -307,7 +297,7 @@ function SetupForPool(logger, poolOptions){
                     var minReserveSatoshis = processingConfig.minimumReserve * magnitude;
                     if (balanceLeftOver < minReserveSatoshis){
 
-                        callback('done - payments would wipe out minimum reserve, tried to pay out ' + toBePaid +
+                        callback('check finished - payments would wipe out minimum reserve, tried to pay out ' + toBePaid +
                             ' but only have ' + totalBalance + '. Left over balance would be ' + balanceLeftOver +
                             ', needs to be at least ' + minReserveSatoshis);
                         return;
@@ -355,12 +345,11 @@ function SetupForPool(logger, poolOptions){
 
             function(magnitude, workerPayments, finalRedisCommands, callback){
 
-
                 //This does the final all-or-nothing atom transaction if block deamon sent payments
                 var finalizeRedisTx = function(){
                     redisClient.multi(finalRedisCommands).exec(function(error, results){
                         if (error){
-                            callback('done - error with final redis commands for cleaning up ' + JSON.stringify(error));
+                            callback('check finished - error with final redis commands for cleaning up ' + JSON.stringify(error));
                             return;
                         }
                         callback(null, 'Payments processing performed an interval');
@@ -372,36 +361,35 @@ function SetupForPool(logger, poolOptions){
                 }
                 else{
 
-
                     var coinPrecision = magnitude.toString().length - 1;
                     var addressAmounts = {};
+                    var totalAmountUnits = 0;
                     for (var address in workerPayments){
-                        addressAmounts[address] = parseFloat((workerPayments[address] / magnitude).toFixed(coinPrecision));
+                        var coiUnits = parseFloat((workerPayments[address] / magnitude).toFixed(coinPrecision));;
+                        addressAmounts[address] = coiUnits;
+                        totalAmountUnits += coiUnits;
                     }
 
-                    paymentLogger.debug('system', 'Payments about to be sent to: ' + JSON.stringify(addressAmounts));
+                    logger.debug(logSystem, logComponent, 'Payments about to be sent to: ' + JSON.stringify(addressAmounts));
                     daemon.cmd('sendmany', ['', addressAmounts], function(results){
                         if (results[0].error){
-                            callback('done - error with sendmany ' + JSON.stringify(results[0].error));
+                            callback('check finished - error with sendmany ' + JSON.stringify(results[0].error));
                             return;
                         }
                         finalizeRedisTx();
                         var totalWorkers = Object.keys(workerPayments).length;
-                        var totalAmount = Object.keys(workerPayments).reduce(function(p, c){return p + workerPayments[c]}, 0);
-                        paymentLogger.debug('system', 'Payments sent, a total of ' + totalAmount +
+                        logger.debug(logSystem, logComponent, 'Payments sent, a total of ' + totalAmountUnits +
                             ' was sent to ' + totalWorkers + ' miners');
                     });
                 }
 
-
-
             }
         ], function(error, result){
             if (error)
-                paymentLogger.debug('system', error)
+                logger.debug(logSystem, logComponent, error);
 
             else{
-                paymentLogger.debug('system', result);
+                logger.debug(logSystem, logComponent, result);
                 withdrawalProfit();
             }
         });
@@ -420,11 +408,11 @@ function SetupForPool(logger, poolOptions){
 
 
             if (leftOverBalance < processingConfig.minimumReserve || withdrawalAmount < processingConfig.feeWithdrawalThreshold){
-                paymentLogger.debug('system', 'Not enough profit to withdrawal yet');
+                logger.debug(logSystem, logComponent, 'Not enough profit to withdrawal yet');
             }
             else{
                 //Need to figure out how much of the balance is profit... ???
-                paymentLogger.debug('system', 'Can send profit');
+                logger.debug(logSystem, logComponent, 'Can send profit');
             }
 
         });

@@ -7,7 +7,7 @@
             "enabled": true,
             "validateWorkerAddress": true,
             "paymentInterval": 10,
-            "minimumPayment": 0.001,
+            "minimumPayment": 100.001,
             "minimumReserve": 10,
             "feePercent": 0.02,
             "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",

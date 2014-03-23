@@ -16,7 +16,6 @@ module.exports = function(logger){
     var forkId       = process.env.forkId;
     
     var pools        = {};
-    var varDiffsInstances = {}; // contains all the vardiffs for the profit switching pool
 
     var proxyStuff = {}
     //Handle messages from master process sent via IPC
@@ -51,19 +50,10 @@ module.exports = function(logger){
 
         var poolOptions = poolConfigs[coin];
 
-        var logIdentify = 'Pool Fork ' + forkId + ' (' + coin + ')';
+        var logSystem = 'Pool';
+        var logComponent = coin;
+        var logSubCat = 'Fork ' + forkId;
 
-        var poolLogger = {
-            debug: function(key, text){
-                logger.logDebug(logIdentify, key, text);
-            },
-            warning: function(key, text){
-                logger.logWarning(logIdentify, key, text);
-            },
-            error: function(key, text){
-                logger.logError(logIdentify, key, text);
-            }
-        };
 
         var handlers = {
             auth: function(){},
@@ -75,7 +65,7 @@ module.exports = function(logger){
 
         //Functions required for MPOS compatibility
         if (shareProcessing.mpos && shareProcessing.mpos.enabled){
-            var mposCompat = new MposCompatibility(poolLogger, poolOptions)
+            var mposCompat = new MposCompatibility(logger, poolOptions)
 
             handlers.auth = function(workerName, password, authCallback){
                 mposCompat.handleAuth(workerName, password, authCallback);
@@ -93,7 +83,7 @@ module.exports = function(logger){
         //Functions required for internal payment processing
         else if (shareProcessing.internal && shareProcessing.internal.enabled){
 
-            var shareProcessor = new ShareProcessor(poolLogger, poolOptions)
+            var shareProcessor = new ShareProcessor(logger, poolOptions)
 
             handlers.auth = function(workerName, password, authCallback){
                 pool.daemon.cmd('validateaddress', [workerName], function(results){
@@ -112,7 +102,7 @@ module.exports = function(logger){
 
                 var authString = authorized ? 'Authorized' : 'Unauthorized ';
 
-                poolLogger.debug('client', authString + ' [' + ip + '] ' + workerName + ':' + password);
+                logger.debug(logSystem, logComponent, logSubCat, authString + ' ' + workerName + ':' + password + ' [' + ip + ']');
                 callback({
                     error: null,
                     authorized: authorized,
@@ -122,20 +112,20 @@ module.exports = function(logger){
         };
 
 
-        var pool = Stratum.createPool(poolOptions, authorizeFN);
+        var pool = Stratum.createPool(poolOptions, authorizeFN, logger);
         pool.on('share', function(isValidShare, isValidBlock, data){
 
             var shareData = JSON.stringify(data);
 
             if (data.solution && !isValidBlock)
-                poolLogger.debug('client', 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
+                logger.debug(logSystem, logComponent, logSubCat, 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
             else if (isValidBlock)
-                poolLogger.debug('client', 'Block found, solution: ' + data.solution);
+                logger.debug(logSystem, logComponent, logSubCat, 'Block found, solution: ' + data.solution);
 
             if (isValidShare)
-                poolLogger.debug('client', 'Valid share submitted, share data: ' + shareData);
+                logger.debug(logSystem, logComponent, logSubCat, 'Valid share submitted, share data: ' + shareData);
             else if (!isValidShare)
-                poolLogger.debug('client', 'Invalid share submitted, share data: ' + shareData)
+                logger.debug(logSystem, logComponent, logSubCat, 'Invalid share submitted, share data: ' + shareData)
 
 
             handlers.share(isValidShare, isValidBlock, data)
@@ -143,14 +133,8 @@ module.exports = function(logger){
 
         }).on('difficultyUpdate', function(workerName, diff){
             handlers.diff(workerName, diff);
-        }).on('log', function(severity, logKey, logText) {
-            if (severity == 'debug') {
-                poolLogger.debug(logKey, logText);
-            } else if (severity == 'warning') {
-                poolLogger.warning(logKey, logText);
-            } else if (severity == 'error') {
-                poolLogger.error(logKey, logText);
-            }
+        }).on('log', function(severity, text) {
+            logger[severity](logSystem, logComponent, logSubCat, text);
         });
         pool.start();
         pools[poolOptions.coin.name.toLowerCase()] = pool;

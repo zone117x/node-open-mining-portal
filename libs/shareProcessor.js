@@ -20,6 +20,8 @@ module.exports = function(logger, poolConfig){
     var redisConfig = internalConfig.redis;
     var coin = poolConfig.coin.name;
 
+    var logSystem = 'Shares';
+
     var connection;
 
     function connect(){
@@ -29,14 +31,14 @@ module.exports = function(logger, poolConfig){
         connection = redis.createClient(redisConfig.port, redisConfig.host);
         connection.on('ready', function(){
             clearTimeout(reconnectTimeout);
-            logger.debug('redis', 'Successfully connected to redis database');
+            logger.debug(logSystem, 'redis', 'Successfully connected to redis database');
         });
         connection.on('error', function(err){
-            logger.error('redis', 'Redis client had an error: ' + JSON.stringify(err))
+            logger.error(logSystem, 'redis', 'Redis client had an error: ' + JSON.stringify(err))
         });
         connection.on('end', function(){
-            logger.error('redis', 'Connection to redis database as been ended');
-            logger.warning('redis', 'Trying reconnection in 3 seconds...');
+            logger.error(logSystem, 'redis', 'Connection to redis database as been ended');
+            logger.warning(logSystem, 'redis', 'Trying reconnection in 3 seconds...');
             reconnectTimeout = setTimeout(function(){
                 connect();
             }, 3000);
@@ -75,7 +77,9 @@ module.exports = function(logger, poolConfig){
 
         connection.multi(redisCommands).exec(function(err, replies){
             if (err)
-                logger.error('redis', 'error with share processor multi ' + JSON.stringify(err));
+                logger.error(logSystem, 'redis', 'error with share processor multi ' + JSON.stringify(err));
+            else
+                logger.debug(logSystem, 'redis', 'share related data recorded');
         });
 
 

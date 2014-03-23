@@ -43,19 +43,7 @@ module.exports = function(logger){
 
     var portalStats = new stats(logger, portalConfig, poolConfigs);
 
-    var logIdentify = 'Website';
-
-    var websiteLogger = {
-        debug: function(key, text){
-            logger.logDebug(logIdentify, key, text);
-        },
-        warning: function(key, text){
-            logger.logWarning(logIdentify, key, text);
-        },
-        error: function(key, text){
-            logger.logError(logIdentify, key, text);
-        }
-    };
+    var logSystem = 'Website';
 
 
     var pageFiles = {
@@ -89,6 +77,7 @@ module.exports = function(logger){
                 portalConfig: portalConfig
             });
         }
+        logger.debug(logSystem, 'Stats', 'Website updated to latest stats');
     };
 
 
@@ -148,17 +137,6 @@ module.exports = function(logger){
 
     var route = function(req, res, next){
         var pageId = req.params.page || '';
-        /*var requestedPage = getPage(pageId);
-        if (requestedPage){
-            var data = pageTemplates.index({
-                page: requestedPage,
-                selected: pageId,
-                stats: portalStats.stats,
-                poolConfigs: poolConfigs,
-                portalConfig: portalConfig
-            });
-            res.end(data);
-        }*/
         if (pageId in indexesProcessed){
             res.end(indexesProcessed[pageId]);
         }
@@ -215,7 +193,7 @@ module.exports = function(logger){
     });
 
     app.listen(portalConfig.website.port, function(){
-        websiteLogger.debug('system', 'Website started on port ' + portalConfig.website.port);
+        logger.debug(logSystem, 'Server', 'Website started on port ' + portalConfig.website.port);
     });
 
 

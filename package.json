@@ -39,7 +39,8 @@
         "mysql": "*",
         "async": "*",
         "express": "*",
-        "dot": "*"
+        "dot": "*",
+        "colors": "*"
     },
     "engines": {
         "node": ">=0.10"
