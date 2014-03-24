@@ -2,6 +2,5 @@
     "name"       : "Reddcoin",
     "symbol"     : "REDD",
     "algorithm"  : "scrypt",
-    "reward"     : "POW",
     "txMessages" : false
 }

@@ -2,6 +2,5 @@
     "name"       : "Earthcoin",
     "symbol"     : "EAC",
     "algorithm"  : "scrypt",
-    "reward"     : "POW",
     "txMessages" : false
 }

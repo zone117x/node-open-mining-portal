@@ -1,0 +1,6 @@
+{
+    "name"       : "Hobonickels",
+    "symbol"     : "HBN",
+    "algorithm"  : "scrypt",
+    "txMessages" : false
+}

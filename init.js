@@ -109,10 +109,10 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
 
     var createPoolWorker = function(forkId){
         var worker = cluster.fork({
-            workerType   : 'pool',
-            forkId       : forkId,
-            pools        : serializedConfigs,
-            portalConfig : JSON.stringify(portalConfig)
+            workerType: 'pool',
+            forkId: forkId,
+            pools: serializedConfigs,
+            portalConfig: JSON.stringify(portalConfig)
         });
         worker.on('exit', function(code, signal){
             logger.error('Master', 'PoolSpanwer', 'Fork ' + forkId + ' died, spawning replacement worker...');

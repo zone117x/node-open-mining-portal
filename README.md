@@ -29,11 +29,8 @@ pool such as connected miners, network/pool difficulty/hash rate, etc.
 
 #### Planned Features
 
-* NOMP API - this API be used in several ways.
-  * The website will use the API to display stats and information about the pool(s) on the portal's front-end website.
-  * The NOMP Desktop app will use the API to connect to the portal to display a list of available coins to mine and
-  NOMP server will have to send the desktop app each coin's version-byte so that a wallet (private key & address) can be
-  generated securely and locally then used to mine on the pool.
+* NOMP API - Used by the website to display stats and information about the pool(s) on the portal's front-end website,
+and by the NOMP Desktop app to retrieve a list of available coins (and version-bytes for local wallet/address generation).
 
 * To reduce variance for pools just starting out which have little to no hashing power a feature is planned which will
 allow your own pool to connect upstream to a larger pool server. It will request work from the larger pool then
@@ -74,6 +71,21 @@ Usage
 * [Node.js](http://nodejs.org/) v0.10+ ([follow these installation instructions](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager))
 * [Redis](http://redis.io/) key-value store v2.6+ ([follow these instructions](http://redis.io/topics/quickstart))
 
+
+#### 0) Setting up coin daemon
+Follow the build/install instructions for your coin daemon. Your coin.conf file should end up looking something like this:
+```
+daemon=1
+rpcuser=litecoinrpc
+rpcpassword=securepassword
+rpcport=19332
+```
+For redundancy, its recommended to have at least two daemon instances running in case one drops out-of-sync or offline,
+all instances will be polled for block/transaction updates and be used for submitting blocks. Creating a backup daemon
+involves spawning a daemon using the "-datadir=/backup" argument which creates a new daemon instance with it's own
+config directory and coin.conf file. For more info on this see:
+   * https://en.bitcoin.it/wiki/Data_directory
+   * https://en.bitcoin.it/wiki/Running_bitcoind
 
 #### 1) Downloading & Installing
 
@@ -135,7 +147,6 @@ Here is an example of the required fields:
     "name": "Litecoin",
     "symbol": "ltc",
     "algorithm": "scrypt", //or "sha256", "scrypt-jane", "quark", "x11"
-    "reward": "POW", //or "POS"
     "txMessages": false //or true
 }
 ````
@@ -274,13 +285,8 @@ Description of options:
         }
     },
 
-    /* Recommended to have at least two daemon instances running in case one drops out-of-sync
-       or offline. For redundancy, all instances will be polled for block/transaction updates
-       and be used for submitting blocks. Creating a backup daemon involves spawning a daemon
-       using the "-datadir=/backup" argument which creates a new daemon instance with it's own
-       RPC config. For more info on this see:
-          - https://en.bitcoin.it/wiki/Data_directory
-          - https://en.bitcoin.it/wiki/Running_bitcoind */
+    /* For redundancy, recommended to have at least two daemon instances running in case one
+       drops out-of-sync or offline. */
     "daemons": [
         {   //Main daemon instance
             "host": "localhost",

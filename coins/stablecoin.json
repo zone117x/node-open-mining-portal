@@ -2,6 +2,5 @@
     "name"       : "Stablecoin",
     "symbol"     : "SBC",
     "algorithm"  : "scrypt",
-    "reward"     : "POW",
     "txMessages" : false
 }

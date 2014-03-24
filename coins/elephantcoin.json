@@ -2,6 +2,5 @@
     "name"       : "Elephantcoin",
     "symbol"     : "ELP",
     "algorithm"  : "scrypt",
-    "reward"     : "POW",
     "txMessages" : false
 }

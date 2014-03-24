@@ -2,6 +2,5 @@
     "name"       : "Noirbits",
     "symbol"     : "NRB",
     "algorithm"  : "scrypt",
-    "reward"     : "POW",
     "txMessages" : false
 }

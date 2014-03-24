@@ -2,6 +2,5 @@
     "name"       : "Bottlecaps",
     "symbol"     : "CAP",
     "algorithm"  : "scrypt",
-    "reward"     : "POS",
     "txMessages" : false
 }

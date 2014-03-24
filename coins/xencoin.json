@@ -2,6 +2,5 @@
     "name"       : "Xencoin",
     "symbol"     : "XNC",
     "algorithm"  : "scrypt",
-    "reward"     : "POW",
     "txMessages" : false
 }

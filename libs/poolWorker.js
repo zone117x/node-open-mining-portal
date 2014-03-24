@@ -119,13 +119,16 @@ module.exports = function(logger){
 
             if (data.solution && !isValidBlock)
                 logger.debug(logSystem, logComponent, logSubCat, 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
+
             else if (isValidBlock)
                 logger.debug(logSystem, logComponent, logSubCat, 'Block solution found: ' + data.solution);
 
+
             if (isValidShare)
-                logger.debug(logSystem, logComponent, logSubCat, 'Valid share diff of ' + data.difficultiy + ' submitted by worker ' + data.worker + ' [ ' + data.ip + ']' );
+                logger.debug(logSystem, logComponent, logSubCat, 'Valid share of difficulty ' + data.difficulty + ' by ' + data.worker + ' [' + data.ip + ']' );
+
             else if (!isValidShare)
-                logger.debug(logSystem, logComponent, logSubCat, 'Invalid share submitted, share data: ' + shareData)
+                logger.debug(logSystem, logComponent, logSubCat, 'Invalid share submitted, share data: ' + shareData);
 
 
             handlers.share(isValidShare, isValidBlock, data)

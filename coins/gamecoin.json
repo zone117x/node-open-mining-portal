@@ -2,6 +2,5 @@
     "name"       : "Gamecoin",
     "symbol"     : "GME",
     "algorithm"  : "scrypt",
-    "reward"     : "POW",
     "txMessages" : false
 }

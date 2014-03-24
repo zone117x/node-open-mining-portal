@@ -2,6 +2,5 @@
     "name"       : "Ezcoin",
     "symbol"     : "EZC",
     "algorithm"  : "scrypt",
-    "reward"     : "POW",
     "txMessages" : false
 }

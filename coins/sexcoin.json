@@ -2,6 +2,5 @@
     "name"       : "Sexcoin",
     "symbol"     : "SXC",
     "algorithm"  : "scrypt",
-    "reward"     : "POW",
     "txMessages" : false
 }
