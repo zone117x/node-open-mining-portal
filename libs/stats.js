@@ -76,7 +76,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                         var coinName = client.coins[i / commandsPerCoin | 0];
                         var coinStats = {
                             name: coinName,
-                            symbol: poolConfigs[coinName].coin.symbol,
+                            symbol: poolConfigs[coinName].coin.symbol.toUpperCase(),
                             algorithm: poolConfigs[coinName].coin.algorithm,
                             hashrates: replies[i + 1],
                             poolStats: replies[i + 2],

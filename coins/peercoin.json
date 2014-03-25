@@ -1,6 +1,6 @@
 {
     "name": "Peercoin",
-    "symbol": "ppc",
+    "symbol": "PPC",
     "algorithm": "sha256",
     "txMessages": false
 }
