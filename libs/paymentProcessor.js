@@ -121,7 +121,7 @@ function SetupForPool(logger, poolOptions){
 
                     txDetails = txDetails.filter(function(tx){
                         if (tx.error || !tx.result){
-                            logger.error(logSystem, logComponent, 'error with requesting transaction from block daemon: ' + JSON.stringify(t));
+                            logger.error(logSystem, logComponent, 'error with requesting transaction from block daemon: ' + JSON.stringify(tx));
                             return false;
                         }
                         return true;

@@ -1,6 +1,6 @@
 {
     "name": "Quarkcoin",
-    "symbol": "qrk",
+    "symbol": "QRK",
     "algorithm": "quark",
     "txMessages": false
 }

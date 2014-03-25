@@ -31,7 +31,7 @@
         "url": "https://github.com/zone117x/node-open-mining-portal.git"
     },
     "dependencies": {
-        "stratum-pool": "https://github.com/zone117x/node-stratum/archive/master.tar.gz",
+        "stratum-pool": "https://github.com/zone117x/node-stratum-pool/archive/master.tar.gz",
         "dateformat": "*",
         "node-json-minify": "*",
         "posix": "*",

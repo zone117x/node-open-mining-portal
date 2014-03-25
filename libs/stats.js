@@ -11,7 +11,9 @@ module.exports = function(logger, portalConfig, poolConfigs){
     var redisClients = [];
 
     var algoMultipliers = {
+        'x11': Math.pow(2, 16),
         'scrypt': Math.pow(2, 16),
+        'scrypt-jane': Math.pow(2,16),
         'sha256': Math.pow(2, 32)
     };
 
@@ -38,7 +40,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
     this.statsString = '';
 
 
-    this.getStats = function(callback){
+    this.getGlobalStats = function(callback){
 
         var allCoinStats = {};
 
@@ -76,7 +78,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                         var coinName = client.coins[i / commandsPerCoin | 0];
                         var coinStats = {
                             name: coinName,
-                            symbol: poolConfigs[coinName].coin.symbol,
+                            symbol: poolConfigs[coinName].coin.symbol.toUpperCase(),
                             algorithm: poolConfigs[coinName].coin.algorithm,
                             hashrates: replies[i + 1],
                             poolStats: replies[i + 2],

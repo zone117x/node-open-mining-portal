@@ -1,6 +1,6 @@
 {
     "name": "Yacoin",
-    "symbol": "yac",
+    "symbol": "YAC",
     "algorithm": "scrypt-jane",
     "txMessages": false
 }

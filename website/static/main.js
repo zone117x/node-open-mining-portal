@@ -5,7 +5,7 @@ $(function(){
         if (pushSate) history.pushState(null, null, '/' + page);
         $('.selected').removeClass('selected');
         $('a[href="/' + page + '"]').parent().addClass('selected')
-        $.get("/api/get_page", {id: page}, function(data){
+        $.get("/get_page", {id: page}, function(data){
             $('#page').html(data);
         }, 'html')
     };

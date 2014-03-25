@@ -31,7 +31,7 @@ var async = require('async');
 var dot = require('dot');
 var express = require('express');
 
-var stats = require('./stats.js');
+var api = require('./api.js');
 
 
 module.exports = function(logger){
@@ -41,7 +41,8 @@ module.exports = function(logger){
 
     var websiteConfig = portalConfig.website;
 
-    var portalStats = new stats(logger, portalConfig, poolConfigs);
+    var portalApi = new api(logger, portalConfig, poolConfigs);
+    var portalStats = portalApi.stats;
 
     var logSystem = 'Website';
 
@@ -106,17 +107,17 @@ module.exports = function(logger){
 
     });
 
-    portalStats.getStats(function(){
+    portalStats.getGlobalStats(function(){
         readPageFiles(Object.keys(pageFiles));
     });
 
     var buildUpdatedWebsite = function(){
-        portalStats.getStats(function(){
+        portalStats.getGlobalStats(function(){
             processTemplates();
 
             var statData = 'data: ' + JSON.stringify(portalStats.stats) + '\n\n';
-            for (var uid in liveStatConnections){
-                var res = liveStatConnections[uid];
+            for (var uid in portalApi.liveStatConnections){
+                var res = portalApi.liveStatConnections[uid];
                 res.write(statData);
             }
 
@@ -146,43 +147,21 @@ module.exports = function(logger){
     };
 
 
-    var liveStatConnections = {};
 
+    app.get('/get_page', function(req, res, next){
+        var requestedPage = getPage(req.query.id);
+        if (requestedPage){
+            res.end(requestedPage);
+            return;
+        }
+        next();
+    });
 
     app.get('/:page', route);
     app.get('/', route);
 
     app.get('/api/:method', function(req, res, next){
-
-        switch(req.params.method){
-            case 'get_page':
-                var requestedPage = getPage(req.query.id);
-                if (requestedPage){
-                    res.end(requestedPage);
-                    return;
-                }
-            case 'stats':
-                res.end(portalStats.statsString);
-                return;
-            case 'live_stats':
-                res.writeHead(200, {
-                    'Content-Type': 'text/event-stream',
-                    'Cache-Control': 'no-cache',
-                    'Connection': 'keep-alive'
-                });
-                res.write('\n');
-                var uid = Math.random().toString();
-                liveStatConnections[uid] = res;
-                req.on("close", function() {
-                    delete liveStatConnections[uid];
-                });
-
-                return;
-            default:
-                next();
-        }
-
-        //res.send('you did api method ' + req.params.method);
+        portalApi.handleApiRequest(req, res, next);
     });
 
     app.use('/static', express.static('website/static'));

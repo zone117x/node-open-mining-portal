@@ -7,7 +7,7 @@ front-end website.
 
 #### Features
 
-* For the pool server it uses the highly efficient [node-stratum](https://github.com/zone117x/node-stratum) module which
+* For the pool server it uses the highly efficient [node-stratum-pool](https://github.com/zone117x/node-stratum-pool) module which
 supports vardiff, POW & POS, transaction messages, anti-DDoS, IP banning, several hashing algorithms.
 
 * The portal has an [MPOS](https://github.com/MPOS/php-mpos) compatibility mode so that the it can
@@ -328,7 +328,7 @@ Description of options:
 You can create as many of these pool config files as you want (such as one pool per coin you which to operate).
 If you are creating multiple pools, ensure that they have unique stratum ports.
 
-For more information on these configuration options see the [pool module documentation](https://github.com/zone117x/node-stratum#module-usage)
+For more information on these configuration options see the [pool module documentation](https://github.com/zone117x/node-stratum-pool#module-usage)
 
 
 
@@ -373,7 +373,7 @@ Credits
 -------
 * [vekexasia](https://github.com/vekexasia) - co-developer & great tester
 * [TheSeven](https://github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
-* Those that contributed to [node-stratum](/zone117x/node-stratum)
+* Those that contributed to [node-stratum-pool](/zone117x/node-stratum-pool)
 
 
 License
