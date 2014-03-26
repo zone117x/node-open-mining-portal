@@ -1,0 +1,33 @@
+{
+    "disabled": false,
+    "coin": "helixcoin.json",
+
+    "address": "H9xyrh45LzLX4uXCP6jG6ZGrWho8srUgiG",
+    "blockRefreshInterval": 1000,
+    "txRefreshInterval": 20000,
+    "connectionTimeout": 600,
+
+
+    "ports": {
+        "3737": {
+            "diff": 0.2
+        }
+    },
+
+    "daemons": [
+        {
+            "host": "localhost",
+            "port": 16385,
+            "user": "testuser",
+            "password": "testpass"
+        }
+    ],
+
+    "p2p": {
+        "enabled": false,
+        "host": "localhost",
+        "port": 19333,
+        "protocolVersion": 70002,
+        "magic": "fcc1b7dc"
+    }
+}
