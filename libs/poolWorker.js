@@ -64,7 +64,7 @@ module.exports = function(logger){
         var shareProcessing = poolOptions.shareProcessing;
 
         //Functions required for MPOS compatibility
-        if (shareProcessing.mpos && shareProcessing.mpos.enabled){
+        if (shareProcessing && shareProcessing.mpos && shareProcessing.mpos.enabled){
             var mposCompat = new MposCompatibility(logger, poolOptions)
 
             handlers.auth = function(workerName, password, authCallback){
@@ -81,7 +81,7 @@ module.exports = function(logger){
         }
 
         //Functions required for internal payment processing
-        else if (shareProcessing.internal && shareProcessing.internal.enabled){
+        else if (shareProcessing && shareProcessing.internal && shareProcessing.internal.enabled){
 
             var shareProcessor = new ShareProcessor(logger, poolOptions)
 
