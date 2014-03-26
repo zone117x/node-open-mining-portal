@@ -418,7 +418,7 @@ function SetupForPool(logger, poolOptions){
 
         if (!processingConfig.feeWithdrawalThreshold) return;
 
-        logger.debug(logSystem, logComponent, 'Trying to withdrawal profit');
+        logger.debug(logSystem, logComponent, 'Profit withdrawal started');
         daemon.cmd('getbalance', [processingConfig.feeCollectAccount], function(results){
 
             // We have to pay some tx fee here too but maybe we shoudn't really care about it too much as long as fee is less 
@@ -438,7 +438,7 @@ function SetupForPool(logger, poolOptions){
                 var withdrawalAmount = results[0].response - paytxfee;
 
                 if (withdrawalAmount < processingConfig.feeWithdrawalThreshold){
-                    logger.debug(logSystem, logComponent, 'Not enough profit to withdrawal yet');
+                    logger.debug(logSystem, logComponent, 'Not enough profit to withdraw yet');
                 }
                 else{
 
@@ -447,7 +447,7 @@ function SetupForPool(logger, poolOptions){
 
                     daemon.cmd('sendmany', [processingConfig.feeCollectAccount, withdrawal], function(results){
                         if (results[0].error){
-                            logger.debug(logSystem, logComponent, 'Withdrawal profit finished - error with sendmany ' + JSON.stringify(results[0].error));
+                            logger.debug(logSystem, logComponent, 'Profit withdrawal finished - error with sendmany ' + JSON.stringify(results[0].error));
                             return;
                         }
                         logger.debug(logSystem, logComponent, 'Profit sent, a total of ' + withdrawalAmount + ' ' + poolOptions.coin.symbol +
