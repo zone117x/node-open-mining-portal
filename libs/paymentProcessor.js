@@ -365,9 +365,9 @@ function SetupForPool(logger, poolOptions){
                     var addressAmounts = {};
                     var totalAmountUnits = 0;
                     for (var address in workerPayments){
-                        var coiUnits = parseFloat((workerPayments[address] / magnitude).toFixed(coinPrecision));;
-                        addressAmounts[address] = coiUnits;
-                        totalAmountUnits += coiUnits;
+                        var coinUnits = parseFloat((workerPayments[address] / magnitude).toFixed(coinPrecision));;
+                        addressAmounts[address] = coinUnits;
+                        totalAmountUnits += coinUnits;
                     }
 
                     logger.debug(logSystem, logComponent, 'Payments about to be sent to: ' + JSON.stringify(addressAmounts));
