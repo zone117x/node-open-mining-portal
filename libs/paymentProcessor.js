@@ -257,7 +257,7 @@ function SetupForPool(logger, poolOptions){
                 //number of satoshis in a single coin unit - this can be different for coins so we calculate it :)
 
 
-                daemon.cmd('getbalance', [], function(results){
+                daemon.cmd('getbalance', [''], function(results){
 
                     var totalBalance = results[0].response * magnitude;
                     var toBePaid = 0;
@@ -365,10 +365,11 @@ function SetupForPool(logger, poolOptions){
                     var addressAmounts = {};
                     var totalAmountUnits = 0;
                     for (var address in workerPayments){
-                        var coinUnits = parseFloat((workerPayments[address] / magnitude).toFixed(coinPrecision));;
+                        var coinUnits = parseFloat((workerPayments[address] / magnitude).toFixed(coinPrecision));
                         addressAmounts[address] = coinUnits;
                         totalAmountUnits += coinUnits;
                     }
+                    var feeAmountUnits = parseFloat((totalAmountUnits / (1 - processingConfig.feePercent) * processingConfig.feePercent).toFixed(coinPrecision));
 
                     logger.debug(logSystem, logComponent, 'Payments about to be sent to: ' + JSON.stringify(addressAmounts));
                     daemon.cmd('sendmany', ['', addressAmounts], function(results){
@@ -380,9 +381,16 @@ function SetupForPool(logger, poolOptions){
                         var totalWorkers = Object.keys(workerPayments).length;
                         logger.debug(logSystem, logComponent, 'Payments sent, a total of ' + totalAmountUnits +
                             ' was sent to ' + totalWorkers + ' miners');
+                        daemon.cmd('move', ['', processingConfig.feeCollectAccount, feeAmountUnits], function(results){
+                            if (results[0].error){
+                                callback('Check finished - error with move ' + JSON.stringify(results[0].error));
+                                return;
+                            }
+                            var totalWorkers = Object.keys(workerPayments).length;
+                            logger.debug(logSystem, logComponent, feeAmountUnits + ' collected as fee');
+                        });
                     });
                 }
-
             }
         ], function(error, result){
             if (error)
@@ -400,19 +408,26 @@ function SetupForPool(logger, poolOptions){
 
         if (!processingConfig.feeWithdrawalThreshold) return;
 
-        daemon.cmd('getbalance', [], function(results){
+        daemon.cmd('getbalance', [processingConfig.feeCollectAccount], function(results){
 
-            var totalBalance = results[0].response;
-            var withdrawalAmount = totalBalance - processingConfig.minimumReserve;
-            var leftOverBalance = totalBalance - withdrawalAmount;
+            var withdrawalAmount = results[0].response;
 
-
-            if (leftOverBalance < processingConfig.minimumReserve || withdrawalAmount < processingConfig.feeWithdrawalThreshold){
+            if (withdrawalAmount < processingConfig.feeWithdrawalThreshold){
                 logger.debug(logSystem, logComponent, 'Not enough profit to withdrawal yet');
             }
             else{
-                //Need to figure out how much of the balance is profit... ???
-                logger.debug(logSystem, logComponent, 'Can send profit');
+
+                var withdrawal = {};
+                withdrawal[processingConfig.feeReceiveAddress] = withdrawalAmount;
+
+                daemon.cmd('sendmany', [processingConfig.feeCollectAccount, withdrawal], function(results){
+                    if (results[0].error){
+                        logger.debug(logSystem, logComponent, 'Withdrawal profit finished - error with sendmany ' + JSON.stringify(results[0].error));
+                        return;
+                    }
+                    logger.debug(logSystem, logComponent, 'Profit sent, a total of ' + withdrawalAmount +
+                        ' was sent to ' + processingConfig.feeReceiveAddress);
+                });
             }
 
         });
