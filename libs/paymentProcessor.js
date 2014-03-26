@@ -27,6 +27,7 @@ function SetupForPool(logger, poolOptions){
 
     var logSystem = 'Payments';
     var logComponent = coin;
+    var paytxfee;
 
 
     var daemon = new Stratum.daemon.interface([processingConfig.daemon]);
@@ -37,6 +38,14 @@ function SetupForPool(logger, poolOptions){
             if (!result[0].response || !result[0].response.ismine){
                 logger.error(logSystem, logComponent, 'Daemon does not own pool address - payment processing can not be done with this daemon');
             }
+        });
+        daemon.cmd('getinfo', [], function(result){
+            if (!result[0].response || !result[0].response.paytxfee){
+                paytxfee = 0;
+                logger.error(logSystem, logComponent, 'Daemon does not have paytxfee property on getinfo method results - payment processing could be broken with this daemon');
+                return;
+            }
+            paytxfee = result[0].response.paytxfee;
         });
     }).once('connectionFailed', function(error){
         logger.error(logSystem, logComponent, 'Failed to connect to daemon for payment processing: ' + JSON.stringify(error));
@@ -293,7 +302,9 @@ function SetupForPool(logger, poolOptions){
 
                     }
 
-                    var balanceLeftOver = totalBalance - toBePaid;
+                    var feeAmountToBeCollected = parseFloat((toBePaid / (1 - processingConfig.feePercent) * processingConfig.feePercent).toFixed(coinPrecision));
+                    var txFee = Object.keys(workerPayments).length * paytxfee;
+                    var balanceLeftOver = totalBalance - toBePaid - feeAmountToBeCollected - txFee;
                     var minReserveSatoshis = processingConfig.minimumReserve * magnitude;
                     if (balanceLeftOver < minReserveSatoshis){
 
@@ -369,7 +380,6 @@ function SetupForPool(logger, poolOptions){
                         addressAmounts[address] = coinUnits;
                         totalAmountUnits += coinUnits;
                     }
-                    var feeAmountUnits = parseFloat((totalAmountUnits / (1 - processingConfig.feePercent) * processingConfig.feePercent).toFixed(coinPrecision));
 
                     logger.debug(logSystem, logComponent, 'Payments about to be sent to: ' + JSON.stringify(addressAmounts));
                     daemon.cmd('sendmany', ['', addressAmounts], function(results){
@@ -381,12 +391,14 @@ function SetupForPool(logger, poolOptions){
                         var totalWorkers = Object.keys(workerPayments).length;
                         logger.debug(logSystem, logComponent, 'Payments sent, a total of ' + totalAmountUnits +
                             ' was sent to ' + totalWorkers + ' miners');
-                        daemon.cmd('move', ['', processingConfig.feeCollectAccount, feeAmountUnits], function(results){
+                        var feeAmountUnits = parseFloat((totalAmountUnits / (1 - processingConfig.feePercent) * processingConfig.feePercent).toFixed(coinPrecision));
+                        var txFee = totalWorkers * paytxfee;
+                        var collectableFee = feeAmountUnits - txFee;
+                        daemon.cmd('move', ['', processingConfig.feeCollectAccount, collectableFee], function(results){
                             if (results[0].error){
                                 callback('Check finished - error with move ' + JSON.stringify(results[0].error));
                                 return;
                             }
-                            var totalWorkers = Object.keys(workerPayments).length;
                             logger.debug(logSystem, logComponent, feeAmountUnits + ' collected as fee');
                         });
                     });
@@ -410,7 +422,7 @@ function SetupForPool(logger, poolOptions){
 
         daemon.cmd('getbalance', [processingConfig.feeCollectAccount], function(results){
 
-            var withdrawalAmount = results[0].response;
+            var withdrawalAmount = results[0].response - paytxfee;
 
             if (withdrawalAmount < processingConfig.feeWithdrawalThreshold){
                 logger.debug(logSystem, logComponent, 'Not enough profit to withdrawal yet');
