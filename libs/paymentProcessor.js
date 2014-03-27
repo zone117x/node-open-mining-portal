@@ -20,7 +20,7 @@ module.exports = function(logger){
 function SetupForPool(logger, poolOptions){
 
     if (!poolOptions.shareProcessing ||
-        poolOptions.shareProcessing.internal ||
+        !poolOptions.shareProcessing.internal ||
         !poolOptions.shareProcessing.internal.enabled)
         return;
 
