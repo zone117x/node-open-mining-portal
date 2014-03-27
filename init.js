@@ -184,7 +184,7 @@ var startPaymentProcessor = function(poolConfigs){
     var enabledForAny = false;
     for (var pool in poolConfigs){
         var p = poolConfigs[pool];
-        var enabled = p.shareProcessing && p.shareProcessing.internal && p.shareProcessing.internal.enabled;
+        var enabled = !p.disabled && p.shareProcessing && p.shareProcessing.internal && p.shareProcessing.internal.enabled;
         if (enabled){
             enabledForAny = true;
             break;
