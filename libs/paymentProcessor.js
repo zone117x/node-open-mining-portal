@@ -137,13 +137,24 @@ function SetupForPool(logger, poolOptions){
                         return;
                     }
 
-                    txDetails = txDetails.filter(function(tx){
-                        if (tx.error || !tx.result){
+                    txDetails.forEach(function(tx, i){
+                        if (tx.error && tx.error.code === -5){
+                            /* Block was dropped from coin daemon even after it happily accepted it earlier.
+                               Must be a bug in the daemon code or maybe only something that happens in testnet.
+                               We handle this by treating it like an orphaned block. */
+                            logger.error(logSystem, logComponent,
+                                'Daemon dropped a previously valid block - we are treating it as an orphaned block');
+
+                            //These changes to the tx will convert it from dropped to orphan
+                            tx.result = {
+                                txid: rounds[i].txHash,
+                                details: [{category: 'orphan'}]
+                            };
+                        }
+                        else if (tx.error || !tx.result){
                             logger.error(logSystem, logComponent,
                                     'error with requesting transaction from block daemon: ' + JSON.stringify(tx));
-                            return false;
                         }
-                        return true;
                     });
 
 
