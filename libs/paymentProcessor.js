@@ -62,9 +62,9 @@ function SetupForPool(logger, poolOptions){
         redisClient.on('ready', function(){
             clearTimeout(reconnectTimeout);
             logger.debug(logSystem, logComponent, 'Successfully connected to redis database');
-        }).on('error', function(err){
+        })/*).on('error', function(err){
             logger.error(logSystem, logComponent, 'Redis client had an error: ' + JSON.stringify(err))
-        }).on('end', function(){
+        })*/.on('end', function(){
             logger.error(logSystem, logComponent, 'Connection to redis database as been ended');
             logger.warning(logSystem, logComponent, 'Trying reconnection to redis in 3 seconds...');
             reconnectTimeout = setTimeout(function(){
@@ -86,6 +86,10 @@ function SetupForPool(logger, poolOptions){
        when rounding and whatnot. When we are storing numbers for only humans to see, store in whole coin units. */
 
     var processPayments = function(){
+
+
+        var startPaymentProcess = Date.now();
+
         async.waterfall([
 
             /* Call redis to get an array of rounds - which are coinbase transactions and block heights from submitted
@@ -108,10 +112,10 @@ function SetupForPool(logger, poolOptions){
                         var details = r.split(':');
                         return {
                             category: details[0].category,
-                            txHash: details[0],
-                            height: details[1],
-                            reward: details[2],
-                            solution: details[3],
+                            solution: details[0],
+                            txHash: details[1],
+                            height: details[2],
+                            reward: details[3],
                             serialized: r
                         };
                     });
@@ -120,6 +124,29 @@ function SetupForPool(logger, poolOptions){
                 });
             },
 
+            /* First get data from all pending blocks via batch RPC call, we need the coinbase txHash. */
+            /*(function(rounds, callback){
+                var batchRPCcommand = rounds.map(function(r){
+                    return ['getblock', [r.solution]];
+                });
+
+                daemon.batchCmd(batchRPCcommand, function(error, blocks) {
+
+                    if (error || !blocks) {
+                        callback('Check finished - daemon rpc error with batch gettransactions ' +
+                            JSON.stringify(error));
+                        return;
+                    }
+                    blocks.forEach(function (b, i) {
+                        if (b.error || b.result.hash !== rounds[i].solution){
+                            logger.error(logSystem, logComponent, "Did daemon drop a block? " + rounds[i].solution);
+                            return;
+                        }
+                        rounds[i].txHash = b.result.tx[0];
+                    });
+                    callback(null, rounds);
+                });
+            },*/
 
             /* Does a batch rpc call to daemon with all the transaction hashes to see if they are confirmed yet.
                It also adds the block reward amount to the round object - which the daemon gives also gives us. */
@@ -138,22 +165,38 @@ function SetupForPool(logger, poolOptions){
                     }
 
                     txDetails.forEach(function(tx, i){
-                        if (tx.error && tx.error.code === -5){
-                            /* Block was dropped from coin daemon even after it happily accepted it earlier.
-                               Must be a bug in the daemon code or maybe only something that happens in testnet.
-                               We handle this by treating it like an orphaned block. */
-                            logger.error(logSystem, logComponent,
-                                'Daemon dropped a previously valid block - we are treating it as an orphaned block');
+                        var round = rounds[i];
 
-                            //These changes to the tx will convert it from dropped to orphan
-                            tx.result = {
-                                txid: rounds[i].txHash,
-                                details: [{category: 'orphan'}]
-                            };
+                        if (tx.error && tx.error.code === -5){
+
+                            /* Block was dropped from coin daemon even after it happily accepted it earlier. */
+
+                            //If we find another block at the same height then this block was drop-kicked orphaned
+                            var dropKicked = !!rounds.filter(function(r){
+                                return r.height === round.height && r.solution !== round.solution && r.category !== 'dropkicked';
+                            }).length;
+
+                            if (dropKicked){
+                                logger.warning(logSystem, logComponent,
+                                        'A block was drop-kicked orphaned'
+                                        + ' - we found a better block at the same height, solution '
+                                        + round.solution + " round " + round.height);
+                                round.category = 'dropkicked';
+                            }
+                            else{
+                                /* We have no other blocks that match this height so convert to orphan in order for
+                                   shares from the round to be rewarded. */
+                                round.category = 'orphan';
+                            }
                         }
                         else if (tx.error || !tx.result){
                             logger.error(logSystem, logComponent,
                                     'error with requesting transaction from block daemon: ' + JSON.stringify(tx));
+                        }
+                        else{
+                            round.category = tx.result.details[0].category;
+                            if (round.category === 'generate')
+                                round.amount = tx.result.amount;
                         }
                     });
 
@@ -162,44 +205,37 @@ function SetupForPool(logger, poolOptions){
 
                     //Filter out all rounds that are immature (not confirmed or orphaned yet)
                     rounds = rounds.filter(function(r){
-                        var tx = txDetails.filter(function(tx){return tx.result.txid === r.txHash})[0];
+                        switch (r.category) {
 
-                        if (!tx){
-                            logger.error(logSystem, logComponent,
-                                    'daemon did not give us back a transaction that we asked for: ' + r.txHash);
-                            return;
-                        }
+                            case 'generate':
+                                /* Here we calculate the smallest unit in this coin's currency; the 'satoshi'.
+                                 The rpc.getblocktemplate.amount tells us how much we get in satoshis, while the
+                                 rpc.gettransaction.amount tells us how much we get in whole coin units. Therefore,
+                                 we simply divide the two to get the magnitude. I don't know math, there is probably
+                                 a better term than 'magnitude'. Sue me or do a pull request to fix it. */
+                                var roundMagnitude = r.reward / r.amount;
 
-                        r.category = tx.result.details[0].category;
+                                if (!magnitude) {
+                                    magnitude = roundMagnitude;
 
-                        if (r.category === 'generate'){
-                            r.amount = tx.result.amount;
-
-                            /* Here we calculate the smallest unit in this coin's currency; the 'satoshi'.
-                               The rpc.getblocktemplate.amount tells us how much we get in satoshis, while the
-                               rpc.gettransaction.amount tells us how much we get in whole coin units. Therefore,
-                               we simply divide the two to get the magnitude. I don't know math, there is probably
-                               a better term than 'magnitude'. Sue me or do a pull request to fix it. */
-                            var roundMagnitude = r.reward / r.amount;
-
-                            if (!magnitude){
-                                magnitude = roundMagnitude;
-
-                                if (roundMagnitude % 10 !== 0)
+                                    if (roundMagnitude % 10 !== 0)
+                                        logger.error(logSystem, logComponent,
+                                            'Satosihis in coin is not divisible by 10 which is very odd');
+                                }
+                                else if (magnitude != roundMagnitude) {
+                                    /* Magnitude for a coin should ALWAYS be the same. For BTC and most coins there are
+                                     100,000,000 satoshis in one coin unit. */
                                     logger.error(logSystem, logComponent,
-                                        'Satosihis in coin is not divisible by 10 which is very odd');
-                            }
-                            else if (magnitude != roundMagnitude){
-                                /* Magnitude for a coin should ALWAYS be the same. For BTC and most coins there are
-                                   100,000,000 satoshis in one coin unit. */
-                                logger.error(logSystem, logComponent,
-                                    'Magnitude in a round was different than in another round. HUGE PROBLEM.');
-                            }
-                            return true;
-                        }
-                        else if (r.category === 'orphan')
-                            return true;
+                                        'Magnitude in a round was different than in another round. HUGE PROBLEM.');
+                                }
+                                return true;
 
+                            case 'dropkicked':
+                            case 'orphan':
+                                return true;
+                            default:
+                                return false;
+                        }
                     });
 
 
@@ -236,32 +272,42 @@ function SetupForPool(logger, poolOptions){
                     rounds.forEach(function(round, i){
                         var workerShares = allWorkerShares[i];
 
-                        if (round.category === 'orphan'){
-                            /* Each block that gets orphaned, all the shares go into the current round so that miners
-                               still get a reward for their work. This seems unfair to those that just started mining
-                               during this current round, but over time it balances out and rewards loyal miners. */
-                            Object.keys(workerShares).forEach(function(worker){
-                                orphanMergeCommands.push(['hincrby', coin + '_shares:roundCurrent',
-                                    worker, workerShares[worker]]);
-                            });
+                        if (!workerShares){
+                            logger.error(logSystem, logComponent, 'No worker shares for round: '
+                                + round.height + ' solution: ' + round.solution);
+                            return;
                         }
-                        else if (round.category === 'generate'){
 
-                            /* We found a confirmed block! Now get the reward for it and calculate how much
-                               we owe each miner based on the shares they submitted during that block round. */
-                            var reward = round.reward * (1 - processingConfig.feePercent);
+                        switch (round.category){
+                            case 'orphan':
+                                /* Each block that gets orphaned, all the shares go into the current round so that
+                                   miners still get a reward for their work. This seems unfair to those that just
+                                   started mining during this current round, but over time it balances out and rewards
+                                   loyal miners. */
+                                Object.keys(workerShares).forEach(function(worker){
+                                    orphanMergeCommands.push(['hincrby', coin + '_shares:roundCurrent',
+                                        worker, workerShares[worker]]);
+                                });
+                                break;
 
-                            var totalShares = Object.keys(workerShares).reduce(function(p, c){
-                                return p + parseInt(workerShares[c])
-                            }, 0);
+                            case 'generate':
+                                /* We found a confirmed block! Now get the reward for it and calculate how much
+                                   we owe each miner based on the shares they submitted during that block round. */
+                                var reward = round.reward * (1 - processingConfig.feePercent);
 
-                            for (var worker in workerShares){
-                                var percent = parseInt(workerShares[worker]) / totalShares;
-                                var workerRewardTotal = Math.floor(reward * percent);
-                                if (!(worker in workerRewards)) workerRewards[worker] = 0;
-                                workerRewards[worker] += workerRewardTotal;
-                            }
+                                var totalShares = Object.keys(workerShares).reduce(function(p, c){
+                                    return p + parseInt(workerShares[c])
+                                }, 0);
+
+                                for (var worker in workerShares){
+                                    var percent = parseInt(workerShares[worker]) / totalShares;
+                                    var workerRewardTotal = Math.floor(reward * percent);
+                                    if (!(worker in workerRewards)) workerRewards[worker] = 0;
+                                    workerRewards[worker] += workerRewardTotal;
+                                }
+                                break;
                         }
+
                     });
 
                     callback(null, rounds, magnitude, workerRewards, orphanMergeCommands);
@@ -380,7 +426,14 @@ function SetupForPool(logger, poolOptions){
                     var movePendingCommands = [];
                     var roundsToDelete = [];
                     rounds.forEach(function(r){
-                        var destinationSet = r.category === 'orphan' ? '_blocksOrphaned' : '_blocksConfirmed';
+
+                        var destinationSet = (function(){
+                            switch(r.category){
+                                case 'orphan': return '_blocksOrphaned';
+                                case 'generate': return '_blocksConfirmed';
+                                case 'dropkicked': return '_blocksDropKicked';
+                            }
+                        })();
                         movePendingCommands.push(['smove', coin + '_blocksPending', coin + destinationSet, r.serialized]);
                         roundsToDelete.push(coin + '_shares:round' + r.height)
                     });
@@ -477,11 +530,15 @@ function SetupForPool(logger, poolOptions){
                 }
             }
         ], function(error, result){
+
+
+            var paymentProcessTime = Date.now() - startPaymentProcess;
+
             if (error)
-                logger.debug(logSystem, logComponent, error);
+                logger.debug(logSystem, logComponent, '[' + paymentProcessTime + 'ms] ' + error);
 
             else{
-                logger.debug(logSystem, logComponent, result);
+                logger.debug(logSystem, logComponent, '[' + paymentProcessTime + 'ms] ' + result);
                 // not sure if we need some time to let daemon update the wallet balance
                 setTimeout(withdrawalProfit, 1000);
             }
@@ -523,7 +580,13 @@ function SetupForPool(logger, poolOptions){
     };
 
 
-    setInterval(processPayments, processingConfig.paymentInterval * 1000);
+    setInterval(function(){
+        try {
+            processPayments();
+        } catch(e){
+            throw e;
+        }
+    }, processingConfig.paymentInterval * 1000);
     setTimeout(processPayments, 100);
 
 };
