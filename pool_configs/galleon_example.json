@@ -7,6 +7,28 @@
     "txRefreshInterval": 20000,
     "connectionTimeout": 600,
 
+    "shareProcessing": {
+        "internal": {
+            "enabled": true,
+            "validateWorkerAddress": true,
+            "paymentInterval": 10,
+            "minimumPayment": 100.001,
+            "minimumReserve": 10,
+            "feePercent": 0.02,
+            "feeReceiveAddress": "GRAiuGCWLrL8Psdr6pkhLpxrQGHdYfrSEz",
+            "feeWithdrawalThreshold": 5,
+            "daemon": {
+                "host": "localhost",
+                "port": 19632,
+                "user": "testuser",
+                "password": "testpass"
+            },
+            "redis": {
+                "host": "localhost",
+                "port": 6379
+            }
+        }
+    },
 
     "ports": {
         "3537": {

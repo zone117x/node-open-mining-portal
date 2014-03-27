@@ -20,7 +20,7 @@
         "enabled": true,
         "siteTitle": "Cryppit",
         "port": 80,
-        "statUpdateInterval": 3,
+        "statUpdateInterval": 5,
         "hashrateWindow": 600
     },
     "proxy": {

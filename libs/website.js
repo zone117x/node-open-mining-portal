@@ -55,7 +55,8 @@ module.exports = function(logger){
                 portalConfig: portalConfig
             });
         }
-        logger.debug(logSystem, 'Stats', 'Website updated to latest stats');
+
+        //logger.debug(logSystem, 'Stats', 'Website updated to latest stats');
     };
 
 
