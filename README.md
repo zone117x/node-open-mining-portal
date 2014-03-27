@@ -372,11 +372,11 @@ BTC: 1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR
 
 Credits
 -------
-* [Tony Dobbs](anthonydobbs.com) - graphical help with logo and front-end design
-* [vekexasia](github.com/vekexasia) - co-developer & great tester
-* [TheSeven](github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
-* [UdjinM6](github.com/UdjinM6) - helped implement fee withdrawal in payment processing
-* Those that contributed to [node-stratum-pool](github.com/zone117x/node-stratum-pool)
+* [Tony Dobbs](//anthonydobbs.com) - graphical help with logo and front-end design
+* [vekexasia](http://github.com/vekexasia) - co-developer & great tester
+* [TheSeven](http://github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
+* [UdjinM6](http://github.com/UdjinM6) - helped implement fee withdrawal in payment processing
+* Those that contributed to [node-stratum-pool](http://github.com/zone117x/node-stratum-pool)
 
 
 License
