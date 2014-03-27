@@ -19,11 +19,16 @@ module.exports = function(logger){
 
 function SetupForPool(logger, poolOptions){
 
-    var coin = poolOptions.coin.name;
+    if (!poolOptions.shareProcessing ||
+        poolOptions.shareProcessing.internal ||
+        !poolOptions.shareProcessing.internal.enabled)
+        return;
 
+
+    var coin = poolOptions.coin.name;
     var processingConfig = poolOptions.shareProcessing.internal;
 
-    if (!processingConfig.enabled) return;
+
 
     var logSystem = 'Payments';
     var logComponent = coin;

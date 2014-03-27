@@ -179,6 +179,20 @@ var startRedisBlockListener = function(portalConfig){
 
 
 var startPaymentProcessor = function(poolConfigs){
+
+    var enabledForAny = false;
+    for (var pool in poolConfigs){
+        var p = poolConfigs[pool];
+        var enabled = p.shareProcessing && p.shareProcessing.internal && p.shareProcessing.internal.enabled;
+        if (enabled){
+            enabledForAny = true;
+            break;
+        }
+    }
+
+    if (!enabledForAny)
+        return;
+
     var worker = cluster.fork({
         workerType: 'paymentProcessor',
         pools: JSON.stringify(poolConfigs)

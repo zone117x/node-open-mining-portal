@@ -8,6 +8,8 @@ module.exports = function(logger, portalConfig, poolConfigs){
 
     var _this = this;
 
+    var logSystem = 'Stats';
+
     var redisClients = [];
 
     var algoMultipliers = {
@@ -17,8 +19,20 @@ module.exports = function(logger, portalConfig, poolConfigs){
         'sha256': Math.pow(2, 32)
     };
 
+    var canDoStats = true;
+
     Object.keys(poolConfigs).forEach(function(coin){
+
+        if (!canDoStats) return;
+
         var poolConfig = poolConfigs[coin];
+
+        if (!poolConfig.shareProcessing || !poolConfig.shareProcessing.internal){
+            logger.error(logSystem, coin, 'Cannot do stats without internal share processing setup');
+            canDoStats = false;
+            return;
+        }
+
         var internalConfig = poolConfig.shareProcessing.internal;
         var redisConfig = internalConfig.redis;
 
@@ -125,10 +139,10 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 var shareMultiplier = algoMultipliers[coinStats.algorithm];
                 var hashratePre = shareMultiplier * coinStats.shares / portalConfig.website.hashrateWindow;
                 coinStats.hashrate = hashratePre / 1e3 | 0;
-                delete coinStats.hashrates;
-                delete coinStats.shares;
                 portalStats.global.hashrate += coinStats.hashrate;
                 portalStats.global.workers += Object.keys(coinStats.workers).length;
+                delete coinStats.hashrates;
+                delete coinStats.shares;
             });
 
             _this.stats = portalStats;

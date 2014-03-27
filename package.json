@@ -40,7 +40,8 @@
         "async": "*",
         "express": "*",
         "dot": "*",
-        "colors": "*"
+        "colors": "*",
+        "node-watch": "*"
     },
     "engines": {
         "node": ">=0.10"

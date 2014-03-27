@@ -92,7 +92,8 @@ config directory and coin.conf file. For more info on this see:
 Clone the repository and run `npm update` for all the dependencies to be installed:
 
 ```bash
-git clone https://github.com/zone117x/node-stratum-portal.git
+git clone https://github.com/zone117x/node-stratum-portal.git nomp
+cd nomp
 npm update
 ```
 
