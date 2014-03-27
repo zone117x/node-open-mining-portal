@@ -429,38 +429,25 @@ function SetupForPool(logger, poolOptions){
             // We have to pay some tx fee here too but maybe we shoudn't really care about it too much as long as fee is less 
             // then minimumReserve value. Because in this case even if feeCollectAccount account will have negative balance
             // total wallet balance will be positive and feeCollectAccount account will be refilled during next payment processing.
-            // But to be as much accurate as we can we use getinfo command to retrieve minimum tx fee (paytxfee).
-            daemon.cmd('getinfo', [], function(result){
+            var withdrawalAmount = results[0].response;
 
-                var paytxfee;
-                if (!result[0].response || !result[0].response.paytxfee){
-                    logger.error(logSystem, logComponent, 'Daemon does not have paytxfee property on getinfo method results - withdrawal processing could be broken with this daemon');
-                    paytxfee = 0;
-                } else {
-                    paytxfee = result[0].response.paytxfee;
-                }
+            if (withdrawalAmount < processingConfig.feeWithdrawalThreshold){
+                logger.debug(logSystem, logComponent, 'Not enough profit to withdraw yet');
+            }
+            else{
 
-                var withdrawalAmount = results[0].response - paytxfee;
+                var withdrawal = {};
+                withdrawal[processingConfig.feeReceiveAddress] = withdrawalAmount;
 
-                if (withdrawalAmount < processingConfig.feeWithdrawalThreshold){
-                    logger.debug(logSystem, logComponent, 'Not enough profit to withdraw yet');
-                }
-                else{
-
-                    var withdrawal = {};
-                    withdrawal[processingConfig.feeReceiveAddress] = withdrawalAmount;
-
-                    daemon.cmd('sendmany', [processingConfig.feeCollectAccount, withdrawal], function(results){
-                        if (results[0].error){
-                            logger.debug(logSystem, logComponent, 'Profit withdrawal finished - error with sendmany ' + JSON.stringify(results[0].error));
-                            return;
-                        }
-                        logger.debug(logSystem, logComponent, 'Profit sent, a total of ' + withdrawalAmount + ' ' + poolOptions.coin.symbol +
-                            ' was sent to ' + processingConfig.feeReceiveAddress);
-                    });
-                }
-            });
-
+                daemon.cmd('sendmany', [processingConfig.feeCollectAccount, withdrawal], function(results){
+                    if (results[0].error){
+                        logger.debug(logSystem, logComponent, 'Profit withdrawal finished - error with sendmany ' + JSON.stringify(results[0].error));
+                        return;
+                    }
+                    logger.debug(logSystem, logComponent, 'Profit sent, a total of ' + withdrawalAmount + ' ' + poolOptions.coin.symbol +
+                        ' was sent to ' + processingConfig.feeReceiveAddress);
+                });
+            }
         });
 
     };
