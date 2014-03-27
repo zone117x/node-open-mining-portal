@@ -40,11 +40,13 @@ function SetupForPool(logger, poolOptions){
 
         daemon.cmd('validateaddress', [poolOptions.address], function(result){
             if (!result[0].response || !result[0].response.ismine){
-                logger.error(logSystem, logComponent, 'Daemon does not own pool address - payment processing can not be done with this daemon');
+                logger.error(logSystem, logComponent,
+                    'Daemon does not own pool address - payment processing can not be done with this daemon');
             }
         });
     }).once('connectionFailed', function(error){
-        logger.error(logSystem, logComponent, 'Failed to connect to daemon for payment processing: ' + JSON.stringify(error));
+        logger.error(logSystem, logComponent, 'Failed to connect to daemon for payment processing: ' +
+            JSON.stringify(error));
     }).on('error', function(error){
         logger.error(logSystem, logComponent);
     }).init();
@@ -73,6 +75,15 @@ function SetupForPool(logger, poolOptions){
     connectToRedis();
 
 
+    /* Number.toFixed gives us the decimal places we want, but as a string. parseFloat turns it back into number
+       we don't care about trailing zeros in this case. */
+    var toPrecision = function(value, precision){
+        return parseFloat(value.toFixed(precision));
+    };
+
+
+    /* Deal with numbers in smallest possible units (satoshis) as much as possible. This greatly helps with accuracy
+       when rounding and whatnot. When we are storing numbers for only humans to see, store in whole coin units. */
 
     var processPayments = function(){
         async.waterfall([
@@ -120,13 +131,15 @@ function SetupForPool(logger, poolOptions){
                 daemon.batchCmd(batchRPCcommand, function(error, txDetails){
 
                     if (error || !txDetails){
-                        callback('Check finished - daemon rpc error with batch gettransactions ' + JSON.stringify(error));
+                        callback('Check finished - daemon rpc error with batch gettransactions ' +
+                            JSON.stringify(error));
                         return;
                     }
 
                     txDetails = txDetails.filter(function(tx){
                         if (tx.error || !tx.result){
-                            logger.error(logSystem, logComponent, 'error with requesting transaction from block daemon: ' + JSON.stringify(tx));
+                            logger.error(logSystem, logComponent,
+                                    'error with requesting transaction from block daemon: ' + JSON.stringify(tx));
                             return false;
                         }
                         return true;
@@ -135,11 +148,13 @@ function SetupForPool(logger, poolOptions){
 
                     var magnitude;
 
+                    //Filter out all rounds that are immature (not confirmed or orphaned yet)
                     rounds = rounds.filter(function(r){
                         var tx = txDetails.filter(function(tx){return tx.result.txid === r.txHash})[0];
 
                         if (!tx){
-                            logger.error(logSystem, logComponent, 'daemon did not give us back a transaction that we asked for: ' + r.txHash);
+                            logger.error(logSystem, logComponent,
+                                    'daemon did not give us back a transaction that we asked for: ' + r.txHash);
                             return;
                         }
 
@@ -148,15 +163,25 @@ function SetupForPool(logger, poolOptions){
                         if (r.category === 'generate'){
                             r.amount = tx.result.amount;
 
+                            /* Here we calculate the smallest unit in this coin's currency; the 'satoshi'.
+                               The rpc.getblocktemplate.amount tells us how much we get in satoshis, while the
+                               rpc.gettransaction.amount tells us how much we get in whole coin units. Therefore,
+                               we simply divide the two to get the magnitude. I don't know math, there is probably
+                               a better term than 'magnitude'. Sue me or do a pull request to fix it. */
                             var roundMagnitude = r.reward / r.amount;
+
                             if (!magnitude){
                                 magnitude = roundMagnitude;
 
                                 if (roundMagnitude % 10 !== 0)
-                                    logger.error(logSystem, logComponent, 'Satosihis in coin is not divisible by 10 which is very odd');
+                                    logger.error(logSystem, logComponent,
+                                        'Satosihis in coin is not divisible by 10 which is very odd');
                             }
                             else if (magnitude != roundMagnitude){
-                                logger.error(logSystem, logComponent, 'Magnitude in a round was different than in another round. HUGE PROBLEM.');
+                                /* Magnitude for a coin should ALWAYS be the same. For BTC and most coins there are
+                                   100,000,000 satoshis in one coin unit. */
+                                logger.error(logSystem, logComponent,
+                                    'Magnitude in a round was different than in another round. HUGE PROBLEM.');
                             }
                             return true;
                         }
@@ -200,12 +225,18 @@ function SetupForPool(logger, poolOptions){
                         var workerShares = allWorkerShares[i];
 
                         if (round.category === 'orphan'){
+                            /* Each block that gets orphaned, all the shares go into the current round so that miners
+                               still get a reward for their work. This seems unfair to those that just started mining
+                               during this current round, but over time it balances out and rewards loyal miners. */
                             Object.keys(workerShares).forEach(function(worker){
-                                orphanMergeCommands.push(['hincrby', coin + '_shares:roundCurrent', worker, workerShares[worker]]);
+                                orphanMergeCommands.push(['hincrby', coin + '_shares:roundCurrent',
+                                    worker, workerShares[worker]]);
                             });
                         }
                         else if (round.category === 'generate'){
 
+                            /* We found a confirmed block! Now get the reward for it and calculate how much
+                               we owe each miner based on the shares they submitted during that block round. */
                             var reward = round.reward * (1 - processingConfig.feePercent);
 
                             var totalShares = Object.keys(workerShares).reduce(function(p, c){
@@ -272,6 +303,8 @@ function SetupForPool(logger, poolOptions){
                     var balanceUpdateCommands = [];
                     var workerPayoutsCommand = [];
 
+                    /* Here we add up all workers' previous unpaid balances plus their current rewards as we are
+                       about to check if they reach the payout threshold. */
                     for (var worker in workerRewards){
                         workerPayments[worker] = ((workerPayments[worker] || 0) + workerRewards[worker]);
                     }
@@ -279,16 +312,32 @@ function SetupForPool(logger, poolOptions){
                         workerPayments[worker] = ((workerPayments[worker] || 0) + workerBalances[worker]);
                     }
 
+                    /* Here we check if any of the workers reached their payout threshold, or delete them from the
+                       pending payment ledger (the workerPayments object). */
                     if (Object.keys(workerPayments).length > 0){
                         var coinPrecision = magnitude.toString().length - 1;
                         for (var worker in workerPayments){
                             if (workerPayments[worker] < processingConfig.minimumPayment * magnitude){
-                                balanceUpdateCommands.push(['hincrby', coin + '_balances', worker, workerRewards[worker]]);
+                                /* The workers total earnings (balance + current reward) was not enough to warrant
+                                   a transaction, so we will store their balance in the database. Next time they
+                                   are rewarded it might reach the payout threshold. */
+                                balanceUpdateCommands.push([
+                                    'hincrby',
+                                    coin + '_balances',
+                                    worker,
+                                    workerRewards[worker]
+                                ]);
                                 delete workerPayments[worker];
                             }
                             else{
+                                //If worker had a balance that is about to be paid out, subtract it from the database
                                 if (workerBalances[worker] !== 0){
-                                    balanceUpdateCommands.push(['hincrby', coin + '_balances', worker, -1 * workerBalances[worker]]);
+                                    balanceUpdateCommands.push([
+                                        'hincrby',
+                                        coin + '_balances',
+                                        worker,
+                                        -1 * workerBalances[worker]
+                                    ]);
                                 }
                                 var rewardInPrecision = (workerRewards[worker] / magnitude).toFixed(coinPrecision);
                                 workerPayoutsCommand.push(['hincrbyfloat', coin + '_payouts', worker, rewardInPrecision]);
@@ -299,19 +348,23 @@ function SetupForPool(logger, poolOptions){
                     }
 
                     // txfee included in feeAmountToBeCollected
-                    var feeAmountToBeCollected = parseFloat((toBePaid / (1 - processingConfig.feePercent) * processingConfig.feePercent).toFixed(coinPrecision));
+                    var leftOver = toBePaid / (1 - processingConfig.feePercent);
+                    var feeAmountToBeCollected = toPrecision(leftOver * processingConfig.feePercent, coinPrecision);
                     var balanceLeftOver = totalBalance - toBePaid - feeAmountToBeCollected;
                     var minReserveSatoshis = processingConfig.minimumReserve * magnitude;
                     if (balanceLeftOver < minReserveSatoshis){
-
-                        callback('Check finished - payments would wipe out minimum reserve, tried to pay out ' + toBePaid +
-                            ' and collect ' + feeAmountToBeCollected + ' as fees' +
+                        /* TODO: Need to convert all these variables into whole coin units before displaying because
+                           humans aren't good at reading satoshi units. */
+                        callback('Check finished - payments would wipe out minimum reserve, tried to pay out ' +
+                            toBePaid + ' and collect ' + feeAmountToBeCollected + ' as fees' +
                             ' but only have ' + totalBalance + '. Left over balance would be ' + balanceLeftOver +
                             ', needs to be at least ' + minReserveSatoshis);
                         return;
                     }
 
 
+                    /* Move pending blocks into either orphan for confirmed sets, and delete their no longer
+                       required round/shares data. */
                     var movePendingCommands = [];
                     var roundsToDelete = [];
                     rounds.forEach(function(r){
@@ -357,7 +410,7 @@ function SetupForPool(logger, poolOptions){
                 var finalizeRedisTx = function(){
                     redisClient.multi(finalRedisCommands).exec(function(error, results){
                         if (error){
-                            callback('Check finished - error with final redis commands for cleaning up ' + JSON.stringify(error));
+                            callback('Error with final redis commands for cleaning up ' + JSON.stringify(error));
                             return;
                         }
                         logger.debug(logSystem, logComponent, 'Payments processing performed an interval');
@@ -369,30 +422,38 @@ function SetupForPool(logger, poolOptions){
                 }
                 else{
 
+                    //This is how many decimal places to round a coin down to
                     var coinPrecision = magnitude.toString().length - 1;
                     var addressAmounts = {};
                     var totalAmountUnits = 0;
                     for (var address in workerPayments){
-                        var coinUnits = parseFloat((workerPayments[address] / magnitude).toFixed(coinPrecision));
+                        var coinUnits = toPrecision(workerPayments[address] / magnitude, coinPrecision);
                         addressAmounts[address] = coinUnits;
                         totalAmountUnits += coinUnits;
                     }
 
-                    logger.debug(logSystem, logComponent, 'Payments about to be sent to: ' + JSON.stringify(addressAmounts));
+                    logger.debug(logSystem, logComponent, 'Payments to be sent to: ' + JSON.stringify(addressAmounts));
+
                     daemon.cmd('sendmany', ['', addressAmounts], function(results){
+
                         if (results[0].error){
                             callback('Check finished - error with sendmany ' + JSON.stringify(results[0].error));
                             return;
                         }
+
                         finalizeRedisTx();
+
                         var totalWorkers = Object.keys(workerPayments).length;
-                        logger.debug(logSystem, logComponent, 'Payments sent, a total of ' + totalAmountUnits + ' ' + poolOptions.coin.symbol +
-                            ' was sent to ' + totalWorkers + ' miners');
+
+                        logger.debug(logSystem, logComponent, 'Payments sent, a total of ' + totalAmountUnits
+                            + ' ' + poolOptions.coin.symbol + ' was sent to ' + totalWorkers + ' miners');
+
                         setTimeout(function() { // not sure if we need some time to let daemon update the wallet balance
                             daemon.cmd('getbalance', [''], function(results){
                                 var balanceDiff = balanceBefore - results[0].response;
                                 var txFee = balanceDiff - totalAmountUnits;
-                                var feeAmountUnits = parseFloat((totalAmountUnits / (1 - processingConfig.feePercent) * processingConfig.feePercent).toFixed(coinPrecision));
+                                var leftOver = totalAmountUnits / (1 - processingConfig.feePercent);
+                                var feeAmountUnits = toPrecision(leftOver * processingConfig.feePercent, coinPrecision);
                                 var poolFees = feeAmountUnits - txFee;
                                 daemon.cmd('move', ['', processingConfig.feeCollectAccount, poolFees], function(results){
                                     if (results[0].error){
@@ -426,15 +487,17 @@ function SetupForPool(logger, poolOptions){
         logger.debug(logSystem, logComponent, 'Profit withdrawal started');
         daemon.cmd('getbalance', [processingConfig.feeCollectAccount], function(results){
 
-            // We have to pay some tx fee here too but maybe we shoudn't really care about it too much as long as fee is less 
-            // then minimumReserve value. Because in this case even if feeCollectAccount account will have negative balance
-            // total wallet balance will be positive and feeCollectAccount account will be refilled during next payment processing.
-            // But to be as much accurate as we can we use getinfo command to retrieve minimum tx fee (paytxfee).
+            /* We have to pay some tx fee here too but maybe we shoudn't really care about it too much as long as fee
+               is less then minimumReserve value. Because in this case even if feeCollectAccount account will have
+               negative balance total wallet balance will be positive and feeCollectAccount account will be refilled
+               during next payment processing. But to be as much accurate as we can we use getinfo command to retrieve
+               minimum tx fee (paytxfee). */
             daemon.cmd('getinfo', [], function(result){
 
                 var paytxfee;
                 if (!result[0].response || !result[0].response.paytxfee){
-                    logger.error(logSystem, logComponent, 'Daemon does not have paytxfee property on getinfo method results - withdrawal processing could be broken with this daemon');
+                    logger.error(logSystem, logComponent,
+                        'Daemon does not have paytxfee - withdrawal processing could be broken with this daemon');
                     paytxfee = 0;
                 } else {
                     paytxfee = result[0].response.paytxfee;
@@ -452,10 +515,12 @@ function SetupForPool(logger, poolOptions){
 
                     daemon.cmd('sendmany', [processingConfig.feeCollectAccount, withdrawal], function(results){
                         if (results[0].error){
-                            logger.debug(logSystem, logComponent, 'Profit withdrawal finished - error with sendmany ' + JSON.stringify(results[0].error));
+                            logger.debug(logSystem, logComponent,
+                                'Profit withdrawal finished - error with sendmany ' + JSON.stringify(results[0].error));
                             return;
                         }
-                        logger.debug(logSystem, logComponent, 'Profit sent, a total of ' + withdrawalAmount + ' ' + poolOptions.coin.symbol +
+                        logger.debug(logSystem, logComponent,
+                            'Profit sent, a total of ' + withdrawalAmount + ' ' + poolOptions.coin.symbol +
                             ' was sent to ' + processingConfig.feeReceiveAddress);
                     });
                 }
