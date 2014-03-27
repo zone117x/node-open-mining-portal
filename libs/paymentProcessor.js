@@ -355,7 +355,7 @@ function SetupForPool(logger, poolOptions){
                             callback('Check finished - error with final redis commands for cleaning up ' + JSON.stringify(error));
                             return;
                         }
-                        callback(null, 'Payments processing performed an interval');
+                        logger.debug(logSystem, logComponent, 'Payments processing performed an interval');
                     });
                 };
 
