@@ -7,11 +7,11 @@ front-end website.
 
 #### Features
 
-* For the pool server it uses the highly efficient [node-stratum-pool](https://github.com/zone117x/node-stratum-pool) module which
+* For the pool server it uses the highly efficient [node-stratum-pool](//github.com/zone117x/node-stratum-pool) module which
 supports vardiff, POW & POS, transaction messages, anti-DDoS, IP banning, several hashing algorithms.
 
-* The portal has an [MPOS](https://github.com/MPOS/php-mpos) compatibility mode so that the it can
-function as a drop-in-replacement for [python-stratum-mining](https://github.com/Crypto-Expert/stratum-mining). This
+* The portal has an [MPOS](//github.com/MPOS/php-mpos) compatibility mode so that the it can
+function as a drop-in-replacement for [python-stratum-mining](//github.com/Crypto-Expert/stratum-mining). This
 mode can be enabled in the configuration and will insert shares into a MySQL database in the format which MPOS expects.
 
 * Multi-pool ability - this software was built from the ground up to run with multiple coins simultaneously (which can
@@ -372,11 +372,11 @@ BTC: 1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR
 
 Credits
 -------
-* [Tony Dobbs](//anthonydobbs.com) - graphical help with logo and front-end design
-* [vekexasia](http://github.com/vekexasia) - co-developer & great tester
-* [TheSeven](http://github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
-* [UdjinM6](http://github.com/UdjinM6) - helped implement fee withdrawal in payment processing
-* Those that contributed to [node-stratum-pool](http://github.com/zone117x/node-stratum-pool)
+* [Tony Dobbs](http://anthonydobbs.com) - graphical help with logo and front-end design
+* [vekexasia](//github.com/vekexasia) - co-developer & great tester
+* [TheSeven](//github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
+* [UdjinM6](//github.com/UdjinM6) - helped implement fee withdrawal in payment processing
+* Those that contributed to [node-stratum-pool](//github.com/zone117x/node-stratum-pool)
 
 
 License
