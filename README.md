@@ -82,8 +82,8 @@ rpcport=19332
 ```
 For redundancy, its recommended to have at least two daemon instances running in case one drops out-of-sync or offline,
 all instances will be polled for block/transaction updates and be used for submitting blocks. Creating a backup daemon
-involves spawning a daemon using the "-datadir=/backup" argument which creates a new daemon instance with it's own
-config directory and coin.conf file. For more info on this see:
+involves spawning a daemon using the `-datadir=/backup` command-line argument which creates a new daemon instance with
+it's own config directory and coin.conf file. For more info on this see:
    * https://en.bitcoin.it/wiki/Data_directory
    * https://en.bitcoin.it/wiki/Running_bitcoind
 
