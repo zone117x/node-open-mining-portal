@@ -4,7 +4,7 @@
 
     "shareProcessing": {
         "internal": {
-            "enabled": true,
+            "enabled": false,
             "validateWorkerAddress": true,
             "paymentInterval": 10,
             "minimumPayment": 100.001,

@@ -7,11 +7,11 @@
             "enabled": true,
             "validateWorkerAddress": true,
             "paymentInterval": 10,
-            "minimumPayment": 100.001,
+            "minimumPayment": 70,
             "minimumReserve": 10,
-            "feePercent": 0.02,
+            "feePercent": 0.05,
             "feeCollectAccount": "feesCollected",
-            "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
+            "feeReceiveAddress": "mppaGeNaSbG1Q7S6V3gL5uJztMhucgL9Vh",
             "feeWithdrawalThreshold": 5,
             "daemon": {
                 "host": "localhost",
@@ -36,7 +36,7 @@
     },
 
 
-    "address": "mfsm1ckZKTTjDz94KonZZsbZnAbm1UV4BF",
+    "address": "n4jSe18kZMCdGcZqaYprShXW6EH1wivUK1",
     "blockRefreshInterval": 1000,
     "txRefreshInterval": 20000,
     "connectionTimeout": 600,

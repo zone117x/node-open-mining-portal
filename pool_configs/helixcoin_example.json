@@ -2,6 +2,30 @@
     "disabled": true,
     "coin": "helixcoin.json",
 
+    "shareProcessing": {
+        "internal": {
+            "enabled": true,
+            "validateWorkerAddress": true,
+            "paymentInterval": 10,
+            "minimumPayment": 70,
+            "minimumReserve": 10,
+            "feePercent": 0.05,
+            "feeCollectAccount": "feesCollected",
+            "feeReceiveAddress": "mppaGeNaSbG1Q7S6V3gL5uJztMhucgL9Vh",
+            "feeWithdrawalThreshold": 5,
+            "daemon": {
+                "host": "localhost",
+                "port": 19332,
+                "user": "litecoinrpc",
+                "password": "testnet"
+            },
+            "redis": {
+                "host": "localhost",
+                "port": 6379
+            }
+        }
+    },
+
     "address": "H9xyrh45LzLX4uXCP6jG6ZGrWho8srUgiG",
     "blockRefreshInterval": 1000,
     "txRefreshInterval": 20000,
