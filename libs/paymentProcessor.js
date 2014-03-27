@@ -399,13 +399,13 @@ function SetupForPool(logger, poolOptions){
                         finalRedisCommands.push(['hincrbyfloat', coin + '_stats', 'totalPaid', (toBePaid / magnitude).toFixed(coinPrecision)]);
 
 
-                    callback(null, magnitude, results[0].response, workerPayments, finalRedisCommands);
+                    callback(null, magnitude, workerPayments, finalRedisCommands);
 
 
                 });
             },
 
-            function(magnitude, balanceBefore, workerPayments, finalRedisCommands, callback){
+            function(magnitude, workerPayments, finalRedisCommands, callback){
 
                 //This does the final all-or-nothing atom transaction if block deamon sent payments
                 var finalizeRedisTx = function(){
@@ -445,26 +445,23 @@ function SetupForPool(logger, poolOptions){
                         finalizeRedisTx();
 
                         var totalWorkers = Object.keys(workerPayments).length;
-
-                        logger.debug(logSystem, logComponent, 'Payments sent, a total of ' + totalAmountUnits
-                            + ' ' + poolOptions.coin.symbol + ' was sent to ' + totalWorkers + ' miners');
-
-                        setTimeout(function() { // not sure if we need some time to let daemon update the wallet balance
-                            daemon.cmd('getbalance', [''], function(results){
-                                var balanceDiff = balanceBefore - results[0].response;
-                                var txFee = balanceDiff - totalAmountUnits;
-                                var leftOver = totalAmountUnits / (1 - processingConfig.feePercent);
-                                var feeAmountUnits = toPrecision(leftOver * processingConfig.feePercent, coinPrecision);
-                                var poolFees = feeAmountUnits - txFee;
-                                daemon.cmd('move', ['', processingConfig.feeCollectAccount, poolFees], function(results){
-                                    if (results[0].error){
-                                        callback('Check finished - error with move ' + JSON.stringify(results[0].error));
-                                        return;
-                                    }
-                                    callback(null, poolFees + ' ' + poolOptions.coin.symbol + ' collected as pool fee');
-                                });
+                        logger.debug(logSystem, logComponent, 'Payments sent, a total of ' + totalAmountUnits + ' ' + poolOptions.coin.symbol +
+                            ' was sent to ' + totalWorkers + ' miners');
+                        daemon.cmd('gettransaction', [results[0].response], function(results){
+                            if (results[0].error){
+                                callback('Check finished - error with gettransaction ' + JSON.stringify(results[0].error));
+                                return;
+                            }
+                            var feeAmountUnits = parseFloat((totalAmountUnits / (1 - processingConfig.feePercent) * processingConfig.feePercent).toFixed(coinPrecision));
+                            var poolFees = feeAmountUnits - results[0].response.fee;
+                            daemon.cmd('move', ['', processingConfig.feeCollectAccount, poolFees], function(results){
+                                if (results[0].error){
+                                    callback('Check finished - error with move ' + JSON.stringify(results[0].error));
+                                    return;
+                                }
+                                callback(null, poolFees + ' ' + poolOptions.coin.symbol + ' collected as pool fee');
                             });
-                        }, 1000);
+                        });
                     });
                 }
             }
@@ -488,45 +485,28 @@ function SetupForPool(logger, poolOptions){
         logger.debug(logSystem, logComponent, 'Profit withdrawal started');
         daemon.cmd('getbalance', [processingConfig.feeCollectAccount], function(results){
 
-            /* We have to pay some tx fee here too but maybe we shoudn't really care about it too much as long as fee
-               is less then minimumReserve value. Because in this case even if feeCollectAccount account will have
-               negative balance total wallet balance will be positive and feeCollectAccount account will be refilled
-               during next payment processing. But to be as much accurate as we can we use getinfo command to retrieve
-               minimum tx fee (paytxfee). */
-            daemon.cmd('getinfo', [], function(result){
+            // We have to pay some tx fee here too but maybe we shoudn't really care about it too much as long as fee is less 
+            // then minimumReserve value. Because in this case even if feeCollectAccount account will have negative balance
+            // total wallet balance will be positive and feeCollectAccount account will be refilled during next payment processing.
+            var withdrawalAmount = results[0].response;
 
-                var paytxfee;
-                if (!result[0].response || !result[0].response.paytxfee){
-                    logger.error(logSystem, logComponent,
-                        'Daemon does not have paytxfee - withdrawal processing could be broken with this daemon');
-                    paytxfee = 0;
-                } else {
-                    paytxfee = result[0].response.paytxfee;
-                }
+            if (withdrawalAmount < processingConfig.feeWithdrawalThreshold){
+                logger.debug(logSystem, logComponent, 'Not enough profit to withdraw yet');
+            }
+            else{
 
-                var withdrawalAmount = results[0].response - paytxfee;
+                var withdrawal = {};
+                withdrawal[processingConfig.feeReceiveAddress] = withdrawalAmount;
 
-                if (withdrawalAmount < processingConfig.feeWithdrawalThreshold){
-                    logger.debug(logSystem, logComponent, 'Not enough profit to withdraw yet');
-                }
-                else{
-
-                    var withdrawal = {};
-                    withdrawal[processingConfig.feeReceiveAddress] = withdrawalAmount;
-
-                    daemon.cmd('sendmany', [processingConfig.feeCollectAccount, withdrawal], function(results){
-                        if (results[0].error){
-                            logger.debug(logSystem, logComponent,
-                                'Profit withdrawal finished - error with sendmany ' + JSON.stringify(results[0].error));
-                            return;
-                        }
-                        logger.debug(logSystem, logComponent,
-                            'Profit sent, a total of ' + withdrawalAmount + ' ' + poolOptions.coin.symbol +
-                            ' was sent to ' + processingConfig.feeReceiveAddress);
-                    });
-                }
-            });
-
+                daemon.cmd('sendmany', [processingConfig.feeCollectAccount, withdrawal], function(results){
+                    if (results[0].error){
+                        logger.debug(logSystem, logComponent, 'Profit withdrawal finished - error with sendmany ' + JSON.stringify(results[0].error));
+                        return;
+                    }
+                    logger.debug(logSystem, logComponent, 'Profit sent, a total of ' + withdrawalAmount + ' ' + poolOptions.coin.symbol +
+                        ' was sent to ' + processingConfig.feeReceiveAddress);
+                });
+            }
         });
 
     };
