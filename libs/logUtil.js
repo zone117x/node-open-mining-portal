@@ -4,6 +4,8 @@ var colors = require('colors');
 
 var severityToColor = function(severity, text) {
     switch(severity) {
+        case 'special':
+            return text.cyan.underline;
         case 'debug':
             return text.green;
         case 'warning':
@@ -19,7 +21,8 @@ var severityToColor = function(severity, text) {
 var severityValues = {
     'debug': 1,
     'warning': 2,
-    'error': 3
+    'error': 3,
+    'special': 4
 };
 
 

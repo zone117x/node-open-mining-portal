@@ -2,6 +2,7 @@ var fs = require('fs');
 var os = require('os');
 var cluster = require('cluster');
 
+require('./libs/algoProperties.js');
 
 var async                    = require('async');
 var posix                    = require('posix');
