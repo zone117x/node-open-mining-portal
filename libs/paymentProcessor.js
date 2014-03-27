@@ -345,13 +345,13 @@ function SetupForPool(logger, poolOptions){
                         finalRedisCommands.push(['hincrbyfloat', coin + '_stats', 'totalPaid', (toBePaid / magnitude).toFixed(coinPrecision)]);
 
 
-                    callback(null, magnitude, results[0].response, workerPayments, finalRedisCommands);
+                    callback(null, magnitude, workerPayments, finalRedisCommands);
 
 
                 });
             },
 
-            function(magnitude, balanceBefore, workerPayments, finalRedisCommands, callback){
+            function(magnitude, workerPayments, finalRedisCommands, callback){
 
                 //This does the final all-or-nothing atom transaction if block deamon sent payments
                 var finalizeRedisTx = function(){
@@ -388,21 +388,21 @@ function SetupForPool(logger, poolOptions){
                         var totalWorkers = Object.keys(workerPayments).length;
                         logger.debug(logSystem, logComponent, 'Payments sent, a total of ' + totalAmountUnits + ' ' + poolOptions.coin.symbol +
                             ' was sent to ' + totalWorkers + ' miners');
-                        setTimeout(function() { // not sure if we need some time to let daemon update the wallet balance
-                            daemon.cmd('getbalance', [''], function(results){
-                                var balanceDiff = balanceBefore - results[0].response;
-                                var txFee = balanceDiff - totalAmountUnits;
-                                var feeAmountUnits = parseFloat((totalAmountUnits / (1 - processingConfig.feePercent) * processingConfig.feePercent).toFixed(coinPrecision));
-                                var poolFees = feeAmountUnits - txFee;
-                                daemon.cmd('move', ['', processingConfig.feeCollectAccount, poolFees], function(results){
-                                    if (results[0].error){
-                                        callback('Check finished - error with move ' + JSON.stringify(results[0].error));
-                                        return;
-                                    }
-                                    callback(null, poolFees + ' ' + poolOptions.coin.symbol + ' collected as pool fee');
-                                });
+                        daemon.cmd('gettransaction', [results[0].response], function(results){
+                            if (results[0].error){
+                                callback('Check finished - error with gettransaction ' + JSON.stringify(results[0].error));
+                                return;
+                            }
+                            var feeAmountUnits = parseFloat((totalAmountUnits / (1 - processingConfig.feePercent) * processingConfig.feePercent).toFixed(coinPrecision));
+                            var poolFees = feeAmountUnits - results[0].response.fee;
+                            daemon.cmd('move', ['', processingConfig.feeCollectAccount, poolFees], function(results){
+                                if (results[0].error){
+                                    callback('Check finished - error with move ' + JSON.stringify(results[0].error));
+                                    return;
+                                }
+                                callback(null, poolFees + ' ' + poolOptions.coin.symbol + ' collected as pool fee');
                             });
-                        }, 1000);
+                        });
                     });
                 }
             }
