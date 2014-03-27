@@ -1,6 +1,6 @@
 {
     "name"       : "Helixcoin",
     "symbol"     : "HXC",
-    "algorithm"  : "keccak",
+    "algorithm"  : "max",
     "txMessages" : false
 }

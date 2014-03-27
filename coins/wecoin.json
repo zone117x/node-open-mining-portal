@@ -1,6 +1,6 @@
 {
     "name"       : "Wecoin",
     "symbol"     : "WEC",
-    "algorithm"  : "keccak",
+    "algorithm"  : "max",
     "txMessages" : false
 }

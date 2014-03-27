@@ -1,0 +1,6 @@
+{
+    "name"       : "Galleon",
+    "symbol"     : "GLN",
+    "algorithm"  : "keccak",
+    "txMessages" : false
+}
