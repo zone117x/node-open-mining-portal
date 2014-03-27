@@ -63,7 +63,7 @@ function SetupForPool(logger, poolOptions){
             clearTimeout(reconnectTimeout);
             logger.debug(logSystem, logComponent, 'Successfully connected to redis database');
         }).on('error', function(err){
-                paymentLogger.error('redis', 'Redis client had an error: ' + JSON.stringify(err))
+            logger.error(logSystem, logComponent, 'Redis client had an error: ' + JSON.stringify(err))
         }).on('end', function(){
             logger.error(logSystem, logComponent, 'Connection to redis database as been ended');
             logger.warning(logSystem, logComponent, 'Trying reconnection to redis in 3 seconds...');
@@ -111,6 +111,7 @@ function SetupForPool(logger, poolOptions){
                             txHash: details[0],
                             height: details[1],
                             reward: details[2],
+                            solution: details[3],
                             serialized: r
                         };
                     });
