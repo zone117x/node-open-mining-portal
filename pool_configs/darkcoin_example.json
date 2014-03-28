@@ -1,5 +1,5 @@
 {
-    "disabled": true,
+    "enabled": false,
     "coin": "darkcoin.json",
 
     "shareProcessing": {

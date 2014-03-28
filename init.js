@@ -75,7 +75,7 @@ var buildPoolConfigs = function(){
     var configs = {};
     fs.readdirSync('pool_configs').forEach(function(file){
         var poolOptions = JSON.parse(JSON.minify(fs.readFileSync('pool_configs/' + file, {encoding: 'utf8'})));
-        if (poolOptions.disabled) return;
+        if (!poolOptions.enabled) return;
         var coinFilePath = 'coins/' + poolOptions.coin;
         if (!fs.existsSync(coinFilePath)){
             logger.error('Master', poolOptions.coin, 'could not find file: ' + coinFilePath);
@@ -193,7 +193,7 @@ var startPaymentProcessor = function(poolConfigs){
     var enabledForAny = false;
     for (var pool in poolConfigs){
         var p = poolConfigs[pool];
-        var enabled = !p.disabled && p.shareProcessing && p.shareProcessing.internal && p.shareProcessing.internal.enabled;
+        var enabled = p.enabled && p.shareProcessing && p.shareProcessing.internal && p.shareProcessing.internal.enabled;
         if (enabled){
             enabledForAny = true;
             break;

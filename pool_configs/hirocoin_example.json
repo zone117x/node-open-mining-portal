@@ -1,5 +1,5 @@
 {
-    "disabled": true,
+    "enabled": false,
     "coin": "hirocoin.json",
 
     "shareProcessing": {
