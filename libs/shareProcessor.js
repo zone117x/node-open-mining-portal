@@ -54,7 +54,7 @@ module.exports = function(logger, poolConfig){
         var redisCommands = [];
 
         if (isValidShare){
-            redisCommands.push(['hincrby', coin + '_shares:roundCurrent', shareData.worker, shareData.difficulty]);
+            redisCommands.push(['hincrbyfloat', coin + '_shares:roundCurrent', shareData.worker, shareData.difficulty]);
             redisCommands.push(['hincrby', coin + '_stats', 'validShares', 1]);
 
             /* Stores share diff, worker, and unique value with a score that is the timestamp. Unique value ensures it
