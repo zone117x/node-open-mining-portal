@@ -140,12 +140,11 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 });
                 var shareMultiplier = algos[coinStats.algorithm].multiplier || 0;
                 var hashratePre = shareMultiplier * coinStats.shares / portalConfig.website.hashrateWindow;
-                console.log([hashratePre, shareMultiplier, coinStats.shares, portalConfig.website.hashrateWindow]);
                 coinStats.hashrate = hashratePre / 1e3 | 0;
                 portalStats.global.hashrate += coinStats.hashrate;
                 portalStats.global.workers += Object.keys(coinStats.workers).length;
-                coinStats.hashrates;
-                coinStats.shares;
+                delete coinStats.hashrates;
+                delete coinStats.shares;
             });
 
             _this.stats = portalStats;

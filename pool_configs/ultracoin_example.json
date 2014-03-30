@@ -1,11 +1,6 @@
 {
     "enabled": false,
-    "coin": "maxcoin.json",
-
-    "address": "tKWkadAkT2vqK6v2PHLJmV1RTVvF7XZEgN",
-    "blockRefreshInterval": 1000,
-    "txRefreshInterval": 20000,
-    "connectionTimeout": 600,
+    "coin": "ultracoin.json",
 
     "shareProcessing": {
         "internal": {
@@ -15,11 +10,11 @@
             "minimumPayment": 100.001,
             "minimumReserve": 10,
             "feePercent": 0.02,
-            "feeReceiveAddress": "tQ2TKXXk2jh7EX2RJQ4ZxpZYEdRx7fdiaw",
+            "feeReceiveAddress": "UZ3cz7EKjC4eRKbhiN9tA6xcaDGSVoESc8",
             "feeWithdrawalThreshold": 5,
             "daemon": {
                 "host": "localhost",
-                "port": 27932,
+                "port": 18365,
                 "user": "testuser",
                 "password": "testpass"
             },
@@ -27,19 +22,41 @@
                 "host": "localhost",
                 "port": 6379
             }
+        },
+        "mpos": {
+            "enabled": false,
+            "host": "localhost",
+            "port": 3306,
+            "user": "me",
+            "password": "mypass",
+            "database": "ltc",
+            "stratumAuth": "password"
         }
     },
 
+    "address": "UhyKVr4m516TPsrLwm91pYL4f99VGrJ1oC",
+    "blockRefreshInterval": 1000,
+    "txRefreshInterval": 20000,
+    "connectionTimeout": 600,
+
+    "banning": {
+        "enabled": true,
+        "time": 600,
+        "invalidPercent": 50,
+        "checkThreshold": 500,
+        "purgeInterval": 300
+    },
+
     "ports": {
-        "5547": {
-            "diff": 2
+        "6856": {
+            "diff": 8
         }
     },
 
     "daemons": [
         {
             "host": "localhost",
-            "port": 27932,
+            "port": 18365,
             "user": "testuser",
             "password": "testpass"
         }

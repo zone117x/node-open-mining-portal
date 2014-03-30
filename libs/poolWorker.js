@@ -13,11 +13,12 @@ module.exports = function(logger){
     var poolConfigs  = JSON.parse(process.env.pools);
     var portalConfig = JSON.parse(process.env.portalConfig);
 
-    var forkId       = process.env.forkId;
+    var forkId = process.env.forkId;
     
-    var pools        = {};
+    var pools = {};
 
-    var proxyStuff = {}
+    var proxyStuff = {};
+
     //Handle messages from master process sent via IPC
     process.on('message', function(message) {
         switch(message.type){
@@ -52,7 +53,7 @@ module.exports = function(logger){
 
         var logSystem = 'Pool';
         var logComponent = coin;
-        var logSubCat = 'Fork ' + forkId;
+        var logSubCat = 'Thread ' + (parseInt(forkId) + 1);
 
 
         var handlers = {

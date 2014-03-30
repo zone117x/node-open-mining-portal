@@ -6,7 +6,7 @@
         "internal": {
             "enabled": true,
             "validateWorkerAddress": true,
-            "paymentInterval": 10,
+            "paymentInterval": 60,
             "minimumPayment": 100.001,
             "minimumReserve": 10,
             "feePercent": 0.02,

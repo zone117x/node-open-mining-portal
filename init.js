@@ -143,7 +143,7 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
         i++;
         if (i === numForks){
             clearInterval(spawnInterval);
-            logger.debug('Master', 'PoolSpawner', 'Spawned pools for all ' + numForks + ' configured forks');
+            logger.debug('Master', 'PoolSpawner', 'Spawned ' + Object.keys(poolConfigs).length + ' pool(s) on ' + numForks + ' thread(s)');
         }
     }, 250);
 

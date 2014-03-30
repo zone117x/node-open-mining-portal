@@ -20,31 +20,23 @@ module.exports = function(logger, poolConfig){
     var redisConfig = internalConfig.redis;
     var coin = poolConfig.coin.name;
 
-    var logSystem = 'Shares';
+    var forkId = process.env.forkId;
+    var logSystem = 'Pool';
+    var logComponent = coin;
+    var logSubCat = 'Thread ' + (parseInt(forkId) + 1);
 
-    var connection;
+    var connection = redis.createClient(redisConfig.port, redisConfig.host);
 
-    function connect(){
-
-        var reconnectTimeout;
-
-        connection = redis.createClient(redisConfig.port, redisConfig.host);
-        connection.on('ready', function(){
-            clearTimeout(reconnectTimeout);
-            logger.debug(logSystem, 'redis', 'Successfully connected to redis database');
-        });
-        connection.on('error', function(err){
-            logger.error(logSystem, 'redis', 'Redis client had an error: ' + JSON.stringify(err))
-        });
-        connection.on('end', function(){
-            logger.error(logSystem, 'redis', 'Connection to redis database as been ended');
-            logger.warning(logSystem, 'redis', 'Trying reconnection in 3 seconds...');
-            reconnectTimeout = setTimeout(function(){
-                connect();
-            }, 3000);
-        });
-    }
-    connect();
+    connection.on('ready', function(){
+        logger.debug(logSystem, logComponent, logSubCat, 'Share processing setup with redis (' + redisConfig.host +
+            ':' + redisConfig.port  + ')');
+    });
+    connection.on('error', function(err){
+        logger.error(logSystem, logComponent, logSubCat, 'Redis client had an error: ' + JSON.stringify(err))
+    });
+    connection.on('end', function(){
+        logger.error(logSystem, logComponent, logSubCat, 'Connection to redis database as been ended');
+    });
 
 
 
@@ -78,9 +70,9 @@ module.exports = function(logger, poolConfig){
 
         connection.multi(redisCommands).exec(function(err, replies){
             if (err)
-                logger.error(logSystem, 'redis', 'Error with share processor multi ' + JSON.stringify(err));
+                logger.error(logSystem, logComponent, logSubCat, 'Error with share processor multi ' + JSON.stringify(err));
             else
-                logger.debug(logSystem, 'redis', 'Share data and stats recorded');
+                logger.debug(logSystem, logComponent, logSubCat, 'Share data and stats recorded');
         });
 
 

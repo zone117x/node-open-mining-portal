@@ -9,70 +9,120 @@ module.exports = function(logger){
 
     var poolConfigs = JSON.parse(process.env.pools);
 
+    var enabledPools = [];
 
     Object.keys(poolConfigs).forEach(function(coin) {
-        SetupForPool(logger, poolConfigs[coin]);
+        var poolOptions = poolConfigs[coin];
+        if (poolOptions.shareProcessing &&
+            poolOptions.shareProcessing.internal &&
+            poolOptions.shareProcessing.internal.enabled)
+            enabledPools.push(coin);
     });
+
+    async.filter(enabledPools, function(coin, callback){
+        SetupForPool(logger, poolConfigs[coin], function(setupResults){
+            callback(setupResults);
+        });
+    }, function(coins){
+        coins.forEach(function(coin){
+
+            var poolOptions = poolConfigs[coin];
+            var processingConfig = poolOptions.shareProcessing.internal;
+            var logSystem = 'Payments';
+            var logComponent = coin;
+
+            logger.debug(logSystem, logComponent, 'Payment processing setup to run every '
+                + processingConfig.paymentInterval + ' second(s) with daemon ('
+                + processingConfig.daemon.user + '@' + processingConfig.daemon.host + ':' + processingConfig.daemon.port
+                + ') and redis (' + processingConfig.redis.host + ':' + processingConfig.redis.port + ')');
+
+        });
+    });
+
 
 };
 
 
-function SetupForPool(logger, poolOptions){
-
-    if (!poolOptions.shareProcessing ||
-        !poolOptions.shareProcessing.internal ||
-        !poolOptions.shareProcessing.internal.enabled)
-        return;
+function SetupForPool(logger, poolOptions, setupFinished){
 
 
     var coin = poolOptions.coin.name;
     var processingConfig = poolOptions.shareProcessing.internal;
 
-
-
     var logSystem = 'Payments';
     var logComponent = coin;
 
 
-    var daemon = new Stratum.daemon.interface([processingConfig.daemon]);
-    daemon.once('online', function(){
-        logger.debug(logSystem, logComponent, 'Connected to daemon for payment processing');
-
-        daemon.cmd('validateaddress', [poolOptions.address], function(result){
-            if (!result[0].response || !result[0].response.ismine){
-                logger.error(logSystem, logComponent,
-                    'Daemon does not own pool address - payment processing can not be done with this daemon');
-            }
-        });
-    }).once('connectionFailed', function(error){
-        logger.error(logSystem, logComponent, 'Failed to connect to daemon for payment processing: ' +
-            JSON.stringify(error));
-    }).on('error', function(error){
-        logger.error(logSystem, logComponent, 'Daemon error ' + JSON.stringify(error));
-    }).init();
-
-
-
+    var daemon;
     var redisClient;
 
+    async.parallel([
 
-    var connectToRedis = function(){
-        var reconnectTimeout;
-        redisClient = redis.createClient(processingConfig.redis.port, processingConfig.redis.host);
-        redisClient.on('ready', function(){
-            clearTimeout(reconnectTimeout);
-            logger.debug(logSystem, logComponent, 'Successfully connected to redis database');
-        })/*).on('error', function(err){
-            logger.error(logSystem, logComponent, 'Redis client had an error: ' + JSON.stringify(err))
-        })*/.on('end', function(){
-            logger.error(logSystem, logComponent, 'Connection to redis database as been ended');
-            logger.warning(logSystem, logComponent, 'Trying reconnection to redis in 3 seconds...');
-            reconnectTimeout = setTimeout(function(){
-                connectToRedis();
-            }, 3000);
-        });
-    };
-    connectToRedis();
+        function(callback){
+            daemon = new Stratum.daemon.interface([processingConfig.daemon]);
+            daemon.once('online', function(){
+                daemon.cmd('validateaddress', [poolOptions.address], function(result){
+                    if (!result[0].response || !result[0].response.ismine){
+                        logger.error(logSystem, logComponent,
+                            'Daemon does not own pool address - payment processing can not be done with this daemon');
+                        return;
+                    }
+                    callback()
+                });
+            }).once('connectionFailed', function(error){
+                logger.error(logSystem, logComponent, 'Failed to connect to daemon for payment processing: config ' +
+                    JSON.stringify(processingConfig.daemon) + ', error: ' +
+                    JSON.stringify(error));
+                callback('Error connecting to deamon');
+            }).on('error', function(error){
+                logger.error(logSystem, logComponent, 'Daemon error ' + JSON.stringify(error));
+            }).init();
+        },
+        function(callback){
+
+            redisClient = redis.createClient(processingConfig.redis.port, processingConfig.redis.host);
+            redisClient.on('ready', function(){
+                if (callback) {
+                    callback();
+                    callback = null;
+                    return;
+                }
+                logger.debug(logSystem, logComponent, 'Connected to redis at '
+                    + processingConfig.redis.host + ':' + processingConfig.redis.port + ' for payment processing');
+            }).on('end', function(){
+                logger.error(logSystem, logComponent, 'Connection to redis database as been ended');
+            }).once('error', function(){
+                if (callback) {
+                    logger.error(logSystem, logComponent, 'Failed to connect to redis at '
+                        + processingConfig.redis.host + ':' + processingConfig.redis.port + ' for payment processing');
+                    callback('Error connecting to redis');
+                    callback = null;
+                }
+            });
+
+        }
+    ], function(err){
+        if (err){
+            setupFinished(false);
+            return;
+        }
+        setInterval(function(){
+            try {
+                processPayments();
+            } catch(e){
+                throw e;
+            }
+        }, processingConfig.paymentInterval * 1000);
+        setTimeout(processPayments, 100);
+        setupFinished(true);
+    });
+
+
+
+
+
+
+
 
 
     /* Number.toFixed gives us the decimal places we want, but as a string. parseFloat turns it back into number
@@ -123,30 +173,6 @@ function SetupForPool(logger, poolOptions){
                     callback(null, rounds);
                 });
             },
-
-            /* First get data from all pending blocks via batch RPC call, we need the coinbase txHash. */
-            /*(function(rounds, callback){
-                var batchRPCcommand = rounds.map(function(r){
-                    return ['getblock', [r.solution]];
-                });
-
-                daemon.batchCmd(batchRPCcommand, function(error, blocks) {
-
-                    if (error || !blocks) {
-                        callback('Check finished - daemon rpc error with batch gettransactions ' +
-                            JSON.stringify(error));
-                        return;
-                    }
-                    blocks.forEach(function (b, i) {
-                        if (b.error || b.result.hash !== rounds[i].solution){
-                            logger.error(logSystem, logComponent, "Did daemon drop a block? " + rounds[i].solution);
-                            return;
-                        }
-                        rounds[i].txHash = b.result.tx[0];
-                    });
-                    callback(null, rounds);
-                });
-            },*/
 
             /* Does a batch rpc call to daemon with all the transaction hashes to see if they are confirmed yet.
                It also adds the block reward amount to the round object - which the daemon gives also gives us. */
@@ -535,7 +561,7 @@ function SetupForPool(logger, poolOptions){
             var paymentProcessTime = Date.now() - startPaymentProcess;
 
             if (error)
-                logger.debug(logSystem, logComponent, '[' + paymentProcessTime + 'ms] ' + error);
+                logger.debug(logSystem, logComponent, '[Took ' + paymentProcessTime + 'ms] ' + error);
 
             else{
                 logger.debug(logSystem, logComponent, '[' + paymentProcessTime + 'ms] ' + result);
@@ -578,15 +604,5 @@ function SetupForPool(logger, poolOptions){
         });
 
     };
-
-
-    setInterval(function(){
-        try {
-            processPayments();
-        } catch(e){
-            throw e;
-        }
-    }, processingConfig.paymentInterval * 1000);
-    setTimeout(processPayments, 100);
 
 };
