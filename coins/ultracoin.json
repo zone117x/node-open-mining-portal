@@ -1,0 +1,7 @@
+{
+    "name": "Ultracoin",
+    "symbol": "UTC",
+    "algorithm": "scrypt-jane",
+    "chainStartTime": 1388361600,
+    "txMessages": false
+}

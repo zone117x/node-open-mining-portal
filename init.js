@@ -104,6 +104,11 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
         }
     });
 
+    if (Object.keys(poolConfigs).length === 0){
+        logger.warning('Master', 'PoolSpawner', 'No pool configs exists or are enabled in pool_configs folder. No pools spawned.');
+        return;
+    }
+
     var serializedConfigs = JSON.stringify(poolConfigs);
 
     var numForks = (function(){
