@@ -3,6 +3,8 @@ var async = require('async');
 
 var os = require('os');
 
+var algos = require('stratum-pool/lib/algoProperties.js');
+
 
 module.exports = function(logger, portalConfig, poolConfigs){
 
@@ -12,12 +14,12 @@ module.exports = function(logger, portalConfig, poolConfigs){
 
     var redisClients = [];
 
-    var algoMultipliers = {
+    /*var algoMultipliers = {
         'x11': Math.pow(2, 16),
         'scrypt': Math.pow(2, 16),
         'scrypt-jane': Math.pow(2,16),
         'sha256': Math.pow(2, 32)
-    };
+    };*/
 
     var canDoStats = true;
 
@@ -128,7 +130,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 coinStats.shares = 0;
                 coinStats.hashrates.forEach(function(ins){
                     var parts = ins.split(':');
-                    var workerShares = parseInt(parts[0]);
+                    var workerShares = parseFloat(parts[0]);
                     coinStats.shares += workerShares;
                     var worker = parts[1];
                     if (worker in coinStats.workers)
@@ -136,13 +138,14 @@ module.exports = function(logger, portalConfig, poolConfigs){
                     else
                         coinStats.workers[worker] = workerShares
                 });
-                var shareMultiplier = algoMultipliers[coinStats.algorithm];
+                var shareMultiplier = algos[coinStats.algorithm].multiplier || 0;
                 var hashratePre = shareMultiplier * coinStats.shares / portalConfig.website.hashrateWindow;
+                console.log([hashratePre, shareMultiplier, coinStats.shares, portalConfig.website.hashrateWindow]);
                 coinStats.hashrate = hashratePre / 1e3 | 0;
                 portalStats.global.hashrate += coinStats.hashrate;
                 portalStats.global.workers += Object.keys(coinStats.workers).length;
-                delete coinStats.hashrates;
-                delete coinStats.shares;
+                coinStats.hashrates;
+                coinStats.shares;
             });
 
             _this.stats = portalStats;
