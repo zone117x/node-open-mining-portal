@@ -1,0 +1,47 @@
+{
+    "enabled": false,
+    "coin": "maxcoin.json",
+
+    "address": "tKWkadAkT2vqK6v2PHLJmV1RTVvF7XZEgN",
+    "blockRefreshInterval": 1000,
+    "txRefreshInterval": 20000,
+    "connectionTimeout": 600,
+
+    "shareProcessing": {
+        "internal": {
+            "enabled": true,
+            "validateWorkerAddress": true,
+            "paymentInterval": 10,
+            "minimumPayment": 100.001,
+            "minimumReserve": 10,
+            "feePercent": 0.02,
+            "feeReceiveAddress": "tQ2TKXXk2jh7EX2RJQ4ZxpZYEdRx7fdiaw",
+            "feeWithdrawalThreshold": 5,
+            "daemon": {
+                "host": "localhost",
+                "port": 27932,
+                "user": "testuser",
+                "password": "testpass"
+            },
+            "redis": {
+                "host": "localhost",
+                "port": 6379
+            }
+        }
+    },
+
+    "ports": {
+        "5547": {
+            "diff": 2
+        }
+    },
+
+    "daemons": [
+        {
+            "host": "localhost",
+            "port": 27932,
+            "user": "testuser",
+            "password": "testpass"
+        }
+    ]
+}

@@ -48,7 +48,7 @@ function SetupForPool(logger, poolOptions){
         logger.error(logSystem, logComponent, 'Failed to connect to daemon for payment processing: ' +
             JSON.stringify(error));
     }).on('error', function(error){
-        logger.error(logSystem, logComponent);
+        logger.error(logSystem, logComponent, 'Daemon error ' + JSON.stringify(error));
     }).init();
 
 
