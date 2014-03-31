@@ -150,10 +150,13 @@ Here is an example of the required fields:
 {
     "name": "Litecoin",
     "symbol": "ltc",
-    "algorithm": "scrypt", //or "sha256", "scrypt-jane", "quark", "x11"
-    "txMessages": false //or true
+    "algorithm": "scrypt", //or "sha256", "scrypt-jane", "scrypt-n", "quark", "x11"
+    "txMessages": false, //or true (not required, defaults to false)
 }
 ````
+
+For additional documentation how to configure coins __(especially important for scrypt-n and scrypt-jane coins)__
+see these instructions: https://github.com/zone117x/node-stratum-pool/edit/master/README.md#module-usage
 
 
 ##### Pool config

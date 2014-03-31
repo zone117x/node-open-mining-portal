@@ -1,0 +1,6 @@
+{
+    "name": "Velocitycoin",
+    "symbol": "VEL",
+    "algorithm": "scrypt-jane",
+    "chainStartTime": 1387769316
+}
