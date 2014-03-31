@@ -155,7 +155,7 @@ Here is an example of the required fields:
 }
 ````
 
-For additional documentation how to configure coins **(especially important for scrypt-n and scrypt-jane coins)**
+For additional documentation how to configure coins *(especially important for scrypt-n and scrypt-jane coins)*
 see these instructions: https://github.com/zone117x/node-stratum-pool/edit/master/README.md#module-usage
 
 
