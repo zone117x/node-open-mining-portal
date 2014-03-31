@@ -1,4 +1,5 @@
 var fs = require('fs');
+var path = require('path');
 var os = require('os');
 var cluster = require('cluster');
 
@@ -73,8 +74,10 @@ if (cluster.isWorker){
 //Read all pool configs from pool_configs and join them with their coin profile
 var buildPoolConfigs = function(){
     var configs = {};
-    fs.readdirSync('pool_configs').forEach(function(file){
-        var poolOptions = JSON.parse(JSON.minify(fs.readFileSync('pool_configs/' + file, {encoding: 'utf8'})));
+    var configDir = 'pool_configs/';
+    fs.readdirSync(configDir).forEach(function(file){
+        if (!fs.existsSync(configDir + file) || path.extname(configDir + file) !== '.json') return;
+        var poolOptions = JSON.parse(JSON.minify(fs.readFileSync(configDir + file, {encoding: 'utf8'})));
         if (!poolOptions.enabled) return;
         var coinFilePath = 'coins/' + poolOptions.coin;
         if (!fs.existsSync(coinFilePath)){
