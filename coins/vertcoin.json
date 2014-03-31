@@ -1,0 +1,6 @@
+{
+    "name": "Vertcoin",
+    "symbol": "VTC",
+    "algorithm": "scrypt-n",
+    "txMessages": false
+}

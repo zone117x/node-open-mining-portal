@@ -64,7 +64,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
                 daemon.cmd('validateaddress', [poolOptions.address], function(result){
                     if (!result[0].response || !result[0].response.ismine){
                         logger.error(logSystem, logComponent,
-                            'Daemon does not own pool address - payment processing can not be done with this daemon');
+                            'Daemon does not own pool address - payment processing can not be done with this daemon, '
+                         + JSON.stringify(result[0].response));
                         return;
                     }
                     callback()
