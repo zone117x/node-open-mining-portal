@@ -1,6 +1,5 @@
 {
-    "name"       : "Dogecoin",
-    "symbol"     : "DOGE",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Dogecoin",
+    "symbol": "DOGE",
+    "algorithm": "scrypt"
 }

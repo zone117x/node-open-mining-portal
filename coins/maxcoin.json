@@ -1,6 +1,5 @@
 {
-    "name"       : "Maxcoin",
-    "symbol"     : "MAX",
-    "algorithm"  : "keccak",
-    "txMessages" : false
+    "name": "Maxcoin",
+    "symbol": "MAX",
+    "algorithm": "keccak"
 }

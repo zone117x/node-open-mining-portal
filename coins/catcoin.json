@@ -1,6 +1,5 @@
 {
-    "name"       : "Catcoin",
-    "symbol"     : "CAT",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Catcoin",
+    "symbol": "CAT",
+    "algorithm": "scrypt"
 }

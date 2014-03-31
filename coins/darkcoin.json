@@ -1,6 +1,5 @@
 {
     "name": "Darkcoin",
     "symbol": "DRK",
-    "algorithm": "x11",
-    "txMessages": false
+    "algorithm": "x11"
 }

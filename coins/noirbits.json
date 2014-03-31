@@ -1,6 +1,5 @@
 {
-    "name"       : "Noirbits",
-    "symbol"     : "NRB",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Noirbits",
+    "symbol": "NRB",
+    "algorithm": "scrypt"
 }

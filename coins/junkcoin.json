@@ -1,6 +1,5 @@
 {
-    "name"       : "Junkcoin",
-    "symbol"     : "JKC",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Junkcoin",
+    "symbol": "JKC",
+    "algorithm": "scrypt"
 }

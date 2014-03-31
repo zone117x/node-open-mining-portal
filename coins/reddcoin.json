@@ -1,6 +1,5 @@
 {
-    "name"       : "Reddcoin",
-    "symbol"     : "REDD",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Reddcoin",
+    "symbol": "REDD",
+    "algorithm": "scrypt"
 }

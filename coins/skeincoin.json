@@ -1,6 +1,5 @@
 {
     "name": "Skeincoin",
     "symbol": "SKC",
-    "algorithm": "skein",
-    "txMessages": false
+    "algorithm": "skein"
 }

@@ -1,6 +1,5 @@
 {
-    "name"       : "Gamecoin",
-    "symbol"     : "GME",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Gamecoin",
+    "symbol": "GME",
+    "algorithm": "scrypt"
 }

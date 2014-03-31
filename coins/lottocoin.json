@@ -1,6 +1,5 @@
 {
-    "name"       : "Lottocoin",
-    "symbol"     : "LOT",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Lottocoin",
+    "symbol": "LOT",
+    "algorithm": "scrypt"
 }

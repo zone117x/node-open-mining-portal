@@ -1,6 +1,5 @@
 {
-    "name"       : "Ezcoin",
-    "symbol"     : "EZC",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Ezcoin",
+    "symbol": "EZC",
+    "algorithm": "scrypt"
 }

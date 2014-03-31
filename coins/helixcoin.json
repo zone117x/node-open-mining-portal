@@ -1,6 +1,5 @@
 {
-    "name"       : "Helixcoin",
-    "symbol"     : "HXC",
-    "algorithm"  : "max",
-    "txMessages" : false
+    "name": "Helixcoin",
+    "symbol": "HXC",
+    "algorithm": "max"
 }

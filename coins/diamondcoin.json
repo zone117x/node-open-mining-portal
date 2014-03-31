@@ -1,6 +1,6 @@
 {
-    "name"       : "Diamondcoin",
-    "symbol"     : "DMD",
-    "algorithm"  : "scrypt",
-    "txMessages" : true
+    "name": "Diamondcoin",
+    "symbol": "DMD",
+    "algorithm": "scrypt",
+    "txMessages": true
 }

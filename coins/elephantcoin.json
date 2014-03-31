@@ -1,6 +1,5 @@
 {
-    "name"       : "Elephantcoin",
-    "symbol"     : "ELP",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Elephantcoin",
+    "symbol": "ELP",
+    "algorithm": "scrypt"
 }

@@ -1,6 +1,5 @@
 {
-    "name"       : "Emerald",
-    "symbol"     : "EMD",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Emerald",
+    "symbol": "EMD",
+    "algorithm": "scrypt"
 }

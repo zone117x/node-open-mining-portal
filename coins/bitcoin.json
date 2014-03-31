@@ -1,6 +1,5 @@
 {
     "name": "Bitcoin",
     "symbol": "BTC",
-    "algorithm": "sha256",
-    "txMessages": false
+    "algorithm": "sha256"
 }
