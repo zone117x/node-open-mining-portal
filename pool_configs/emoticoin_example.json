@@ -1,0 +1,70 @@
+{
+    "enabled": false,
+    "coin": "emoticoin.json",
+
+    "shareProcessing": {
+        "internal": {
+            "enabled": true,
+            "validateWorkerAddress": true,
+            "paymentInterval": 60,
+            "minimumPayment": 100000,
+            "minimumReserve": 100000,
+            "feePercent": 0.01,
+            "feeReceiveAddress": "6Uivs1TiGHk9CbVGBPWgbgm4TPNTGocSHT",
+            "feeWithdrawalThreshold": 10,
+            "daemon": {
+                "host": "localhost",
+                "port": 20002,
+                "user": "emoticoinrpc",
+                "password": "8rTX7zSJB5szN3oLekP9W1DcitpcPfX2XXbv4Tmi3Wc4"
+            },
+            "redis": {
+                "host": "localhost",
+                "port": 6379
+            }
+        },
+        "mpos": {
+            "enabled": false,
+            "host": "localhost",
+            "port": 3306,
+            "user": "me",
+            "password": "mypass",
+            "database": "ltc",
+            "stratumAuth": "password"
+        }
+    },
+
+    "address": "6cS9GpkZeTxifJ9aiQRRRehiAepP1GDvYE",
+    "blockRefreshInterval": 1000,
+    "txRefreshInterval": 20000,
+    "connectionTimeout": 600,
+
+    "banning": {
+        "enabled": true,
+        "time": 600,
+        "invalidPercent": 50,
+        "checkThreshold": 500,
+        "purgeInterval": 300
+    },
+
+    "ports": {
+        "3002": {
+            "varDiff": {
+                "minDiff": 4, //Minimum difficulty
+                "maxDiff": 512, //Network difficulty will be used if it is lower than this
+                "targetTime": 15, //Try to get 1 share per this many seconds
+                "retargetTime": 90, //Check to see if we should retarget every this many seconds
+                "variancePercent": 30 //Allow time to very this % from target without retargeting
+            }
+        }
+    },
+
+    "daemons": [
+        {
+            "host": "localhost",
+            "port": 20002,
+            "user": "emoticoinrpc",
+            "password": "8rTX7zSJB5szN3oLekP9W1DcitpcPfX2XXbv4Tmi3Wc4"
+        }
+    ]
+}

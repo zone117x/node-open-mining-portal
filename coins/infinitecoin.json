@@ -1,0 +1,6 @@
+{
+    "name"       : "Infinitecoin",
+    "symbol"     : "IFC",
+    "algorithm"  : "scrypt",
+    "txMessages" : false
+}

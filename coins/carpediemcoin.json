@@ -1,0 +1,6 @@
+{
+    "name": "Carpediemcoin",
+    "symbol": "DIEM",
+    "algorithm": "sha256",
+    "txMessages": false
+}
