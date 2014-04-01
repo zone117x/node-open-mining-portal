@@ -5,6 +5,7 @@
     "address": "tKWkadAkT2vqK6v2PHLJmV1RTVvF7XZEgN",
     "blockRefreshInterval": 1000,
     "txRefreshInterval": 20000,
+    "jobRebroadcastTimeout": 55,
     "connectionTimeout": 600,
 
     "shareProcessing": {
@@ -33,7 +34,7 @@
 
     "ports": {
         "5547": {
-            "diff": 2
+            "diff": 6
         }
     },
 

@@ -39,6 +39,7 @@
     "address": "n4jSe18kZMCdGcZqaYprShXW6EH1wivUK1",
     "blockRefreshInterval": 1000,
     "txRefreshInterval": 20000,
+    "jobRebroadcastTimeout": 55,
     "connectionTimeout": 600,
 
     "banning": {

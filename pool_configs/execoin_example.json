@@ -38,6 +38,7 @@
     "address": "EabPhjVKcmus3LKFViAcwq3dfo8kzqpMkQ",
     "blockRefreshInterval": 1000,
     "txRefreshInterval": 20000,
+    "jobRebroadcastTimeout": 55,
     "connectionTimeout": 600,
 
 

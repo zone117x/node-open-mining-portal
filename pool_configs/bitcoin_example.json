@@ -38,6 +38,7 @@
     "address": "mtCiLWzBy9EpuxzkLwizPYiPFDy69HTd4b",
     "blockRefreshInterval": 1000,
     "txRefreshInterval": 20000,
+    "jobRebroadcastTimeout": 55,
     "connectionTimeout": 600,
 
     "banning": {
