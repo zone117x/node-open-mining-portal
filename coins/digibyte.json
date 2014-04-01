@@ -1,6 +1,5 @@
 {
-    "name"       : "Digibyte",
-    "symbol"     : "DGB",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Digibyte",
+    "symbol": "DGB",
+    "algorithm": "scrypt"
 }

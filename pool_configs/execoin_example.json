@@ -1,6 +1,6 @@
 {
     "enabled": false,
-    "coin": "vertcoin.json",
+    "coin": "execoin.json",
 
     "shareProcessing": {
         "internal": {
@@ -11,11 +11,11 @@
             "minimumReserve": 10,
             "feePercent": 0.02,
             "feeCollectAccount": "feesCollected",
-            "feeReceiveAddress": "VrcunuCcNUULMBoiw66v9SAdQq2m1FpP3C",
+            "feeReceiveAddress": "ESfYVyfh1yZx1AkqJnu6rJje5nWE3f2C3r",
             "feeWithdrawalThreshold": 5,
             "daemon": {
                 "host": "localhost",
-                "port": 13295,
+                "port": 19847,
                 "user": "testuser",
                 "password": "testpass"
             },
@@ -35,14 +35,14 @@
         }
     },
 
-    "address": "VrcunuCcNUULMBoiw66v9SAdQq2m1FpP3C",
+    "address": "EabPhjVKcmus3LKFViAcwq3dfo8kzqpMkQ",
     "blockRefreshInterval": 1000,
     "txRefreshInterval": 20000,
     "connectionTimeout": 600,
 
 
     "ports": {
-        "6381": {
+        "6368": {
             "diff": 8
         }
     },
@@ -50,7 +50,7 @@
     "daemons": [
         {
             "host": "localhost",
-            "port": 13295,
+            "port": 19847,
             "user": "testuser",
             "password": "testpass"
         }

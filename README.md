@@ -150,10 +150,13 @@ Here is an example of the required fields:
 {
     "name": "Litecoin",
     "symbol": "ltc",
-    "algorithm": "scrypt", //or "sha256", "scrypt-jane", "quark", "x11"
-    "txMessages": false //or true
+    "algorithm": "scrypt", //or "sha256", "scrypt-jane", "scrypt-n", "quark", "x11"
+    "txMessages": false, //or true (not required, defaults to false)
 }
 ````
+
+For additional documentation how to configure coins *(especially important for scrypt-n and scrypt-jane coins)*
+see [these instructions](https://github.com/zone117x/node-stratum-pool/edit/master/README.md#module-usage).
 
 
 ##### Pool config
@@ -164,7 +167,7 @@ Description of options:
 
 ````javascript
 {
-    "disabled": false, //Set this to true and a pool will not be created from this config file
+    "enabled": true, //Set this to false and a pool will not be created from this config file
     "coin": "litecoin.json", //Reference to coin config file in 'coins' directory
 
 
@@ -201,8 +204,11 @@ Description of options:
             /* (2% default) What percent fee your pool takes from the block reward. */
             "feePercent": 0.02,
 
-            /* (Not implemented yet) Your address that receives pool revenue from fees */
-            //"feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
+            /* Name of the account to use when moving coin profit within daemon wallet. */
+            "feeCollectAccount": "feesCollected",
+
+            /* Your address that receives pool revenue from fees. */
+            "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
 
             /* (Not implemented yet) How many coins from fee revenue must accumulate on top of the
                minimum reserve amount in order to trigger withdrawal to fee address. The higher

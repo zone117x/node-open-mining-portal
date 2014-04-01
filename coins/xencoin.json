@@ -1,6 +1,5 @@
 {
-    "name"       : "Xencoin",
-    "symbol"     : "XNC",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Xencoin",
+    "symbol": "XNC",
+    "algorithm": "scrypt"
 }

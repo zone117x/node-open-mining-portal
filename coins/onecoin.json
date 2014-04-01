@@ -1,0 +1,7 @@
+{
+    "name": "Onecoin",
+    "symbol": "ONC",
+    "algorithm": "scrypt-jane",
+    "chainStartTime": 1371119462,
+    "nMin": 6
+}

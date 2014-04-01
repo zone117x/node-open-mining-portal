@@ -1,6 +1,5 @@
 {
-    "name"       : "Earthcoin",
-    "symbol"     : "EAC",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Earthcoin",
+    "symbol": "EAC",
+    "algorithm": "scrypt"
 }

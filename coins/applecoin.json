@@ -1,0 +1,6 @@
+{
+    "name": "Applecoin",
+    "symbol": "APC",
+    "algorithm": "scrypt-jane",
+    "chainStartTime": 1384720832
+}

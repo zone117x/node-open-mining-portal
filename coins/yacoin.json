@@ -2,6 +2,5 @@
     "name": "Yacoin",
     "symbol": "YAC",
     "algorithm": "scrypt-jane",
-    "chainStartTime": 1367991200,
-    "txMessages": false
+    "chainStartTime": 1367991200
 }

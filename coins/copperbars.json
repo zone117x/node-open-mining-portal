@@ -2,6 +2,5 @@
     "name": "Copperbars",
     "symbol": "CPR",
     "algorithm": "scrypt-jane",
-    "chainStartTime": 1376184687,
-    "txMessages": false
+    "chainStartTime": 1376184687
 }

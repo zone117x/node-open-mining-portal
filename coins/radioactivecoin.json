@@ -1,0 +1,6 @@
+{
+    "name": "Radioactivecoin",
+    "symbol": "RAD",
+    "algorithm": "scrypt-jane",
+    "chainStartTime": 1389196388
+}

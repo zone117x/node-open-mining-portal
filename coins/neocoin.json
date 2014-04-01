@@ -1,6 +1,6 @@
 {
-    "name"       : "Neocoin",
-    "symbol"     : "NEC",
-    "algorithm"  : "scrypt",
-    "txMessages" : true
+    "name": "Neocoin",
+    "symbol": "NEC",
+    "algorithm": "scrypt",
+    "txMessages": true
 }

@@ -1,0 +1,8 @@
+{
+    "name": "Freecoin",
+    "symbol": "FEC",
+    "algorithm": "scrypt-jane",
+    "chainStartTime": 1375801200,
+    "nMin": 6,
+    "nMax": 32
+}

@@ -15,6 +15,7 @@
             "minimumPayment": 100.001,
             "minimumReserve": 10,
             "feePercent": 0.02,
+            "feeCollectAccount": "feesCollected",
             "feeReceiveAddress": "GRAiuGCWLrL8Psdr6pkhLpxrQGHdYfrSEz",
             "feeWithdrawalThreshold": 5,
             "daemon": {

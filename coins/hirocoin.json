@@ -1,6 +1,5 @@
 {
     "name": "Hirocoin",
     "symbol": "hic",
-    "algorithm": "x11",
-    "txMessages": false
+    "algorithm": "x11"
 }

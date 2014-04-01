@@ -1,6 +1,5 @@
 {
-    "name"       : "Sexcoin",
-    "symbol"     : "SXC",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Sexcoin",
+    "symbol": "SXC",
+    "algorithm": "scrypt"
 }

@@ -1,6 +1,5 @@
 {
-    "name"       : "Memecoin",
-    "symbol"     : "MEM",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Memecoin",
+    "symbol": "MEM",
+    "algorithm": "scrypt"
 }

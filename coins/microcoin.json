@@ -1,0 +1,8 @@
+{
+    "name": "Microcoin",
+    "symbol": "MCR",
+    "algorithm": "scrypt-jane",
+    "chainStartTime": 1389028879,
+    "nMin": 6,
+    "nMax": 32
+}

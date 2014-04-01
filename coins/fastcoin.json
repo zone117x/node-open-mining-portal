@@ -1,6 +1,5 @@
 {
-    "name"       : "Fastcoin",
-    "symbol"     : "FST",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
+    "name": "Fastcoin",
+    "symbol": "FST",
+    "algorithm": "scrypt"
 }
