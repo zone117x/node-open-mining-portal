@@ -123,9 +123,6 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
 
 
-
-
-
     /* Number.toFixed gives us the decimal places we want, but as a string. parseFloat turns it back into number
        we don't care about trailing zeros in this case. */
     var toPrecision = function(value, precision){
@@ -194,14 +191,14 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     txDetails.forEach(function(tx, i){
                         var round = rounds[i];
 
-                        if (tx.error && tx.error.code === -5){
+                        if (tx.error && tx.error.code === -5 || round.solution !== tx.result.blockhash){
 
                             /* Block was dropped from coin daemon even after it happily accepted it earlier. */
 
                             //If we find another block at the same height then this block was drop-kicked orphaned
-                            var dropKicked = !!rounds.filter(function(r){
+                            var dropKicked = rounds.filter(function(r){
                                 return r.height === round.height && r.solution !== round.solution && r.category !== 'dropkicked';
-                            }).length;
+                            }).length > 0;
 
                             if (dropKicked){
                                 logger.warning(logSystem, logComponent,
@@ -536,8 +533,10 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         finalizeRedisTx();
 
                         var totalWorkers = Object.keys(workerPayments).length;
-                        logger.debug(logSystem, logComponent, 'Payments sent, a total of ' + totalAmountUnits + ' ' + poolOptions.coin.symbol +
-                            ' was sent to ' + totalWorkers + ' miners');
+
+                        logger.debug(logSystem, logComponent, 'Payments sent, a total of ' + totalAmountUnits
+                            + ' ' + poolOptions.coin.symbol + ' was sent to ' + totalWorkers + ' miners');
+
                         daemon.cmd('gettransaction', [results[0].response], function(results){
                             if (results[0].error){
                                 callback('Check finished - error with gettransaction ' + JSON.stringify(results[0].error));
@@ -595,11 +594,12 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                 daemon.cmd('sendmany', [processingConfig.feeCollectAccount, withdrawal], function(results){
                     if (results[0].error){
-                        logger.debug(logSystem, logComponent, 'Profit withdrawal finished - error with sendmany ' + JSON.stringify(results[0].error));
+                        logger.debug(logSystem, logComponent, 'Profit withdrawal finished - error with sendmany '
+                            + JSON.stringify(results[0].error));
                         return;
                     }
-                    logger.debug(logSystem, logComponent, 'Profit sent, a total of ' + withdrawalAmount + ' ' + poolOptions.coin.symbol +
-                        ' was sent to ' + processingConfig.feeReceiveAddress);
+                    logger.debug(logSystem, logComponent, 'Profit sent, a total of ' + withdrawalAmount
+                        + ' ' + poolOptions.coin.symbol + ' was sent to ' + processingConfig.feeReceiveAddress);
                 });
             }
         });
