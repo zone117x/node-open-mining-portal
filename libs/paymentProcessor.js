@@ -220,15 +220,13 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             logger.error(logSystem, logComponent,
                                     'Error with requesting transaction from block daemon: ' + JSON.stringify(tx));
                         }
-                        else{
-                            if (round.blockhash === tx.result.blockhash) {
-                                round.category = tx.result.details[0].category;
-                                if (round.category === 'generate')
-                                    round.amount = tx.result.amount;
-                            } else{
-                                //same txid but different blockhash - orphan?
-                                round.category = 'orphan';
-                            }
+                        else if (round.blockhash !== tx.result.blockhash) {
+                            //same txid but different blockhash - this block is drop-kicked orphan
+                            round.category = 'dropkicked';
+                        } else{
+                            round.category = tx.result.details[0].category;
+                            if (round.category === 'generate')
+                                round.amount = tx.result.amount;
                         }
                     });
 
