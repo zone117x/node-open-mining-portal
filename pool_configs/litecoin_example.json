@@ -6,7 +6,7 @@
         "internal": {
             "enabled": true,
             "validateWorkerAddress": true,
-            "paymentInterval": 60,
+            "paymentInterval": 20,
             "minimumPayment": 70,
             "minimumReserve": 10,
             "feePercent": 0.05,
@@ -35,7 +35,6 @@
         }
     },
 
-
     "address": "n4jSe18kZMCdGcZqaYprShXW6EH1wivUK1",
     "blockRefreshInterval": 1000,
     "txRefreshInterval": 20000,
@@ -51,7 +50,7 @@
     },
 
     "ports": {
-        "3008":{
+        "3008": {
             "diff": 8,
             "varDiff": {
                 "minDiff": 8,
