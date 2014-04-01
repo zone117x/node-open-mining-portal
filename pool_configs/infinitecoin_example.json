@@ -1,0 +1,70 @@
+{
+    "enabled": false,
+    "coin": "infinitecoin.json",
+
+    "shareProcessing": {
+        "internal": {
+            "enabled": true,
+            "validateWorkerAddress": true,
+            "paymentInterval": 60,
+            "minimumPayment": 100000,
+            "minimumReserve": 100000,
+            "feePercent": 0.01,
+            "feeReceiveAddress": "i6yDb6Fa4wLvS11pniGixUVM3WupE5Bego",
+            "feeWithdrawalThreshold": 10,
+            "daemon": {
+                "host": "localhost",
+                "port": 20001,
+                "user": "infinitecoinrpc",
+                "password": "7g9HDJVH2S6iDWvYyMuzuKCuuHj6NfTk6cYvk5eurPme"
+            },
+            "redis": {
+                "host": "localhost",
+                "port": 6379
+            }
+        },
+        "mpos": {
+            "enabled": false,
+            "host": "localhost",
+            "port": 3306,
+            "user": "me",
+            "password": "mypass",
+            "database": "ltc",
+            "stratumAuth": "password"
+        }
+    },
+
+    "address": "i82jdH89PuxHUmXKCRckea9cey5CJsQjpJ",
+    "blockRefreshInterval": 1000,
+    "txRefreshInterval": 20000,
+    "connectionTimeout": 600,
+
+    "banning": {
+        "enabled": true,
+        "time": 600,
+        "invalidPercent": 50,
+        "checkThreshold": 500,
+        "purgeInterval": 300
+    },
+
+    "ports": {
+        "3001": {
+            "varDiff": {
+                "minDiff": 4, //Minimum difficulty
+                "maxDiff": 512, //Network difficulty will be used if it is lower than this
+                "targetTime": 15, //Try to get 1 share per this many seconds
+                "retargetTime": 90, //Check to see if we should retarget every this many seconds
+                "variancePercent": 30 //Allow time to very this % from target without retargeting
+            }
+        }
+    },
+
+    "daemons": [
+        {
+            "host": "localhost",
+            "port": 20001,
+            "user": "infinitecoinrpc",
+            "password": "7g9HDJVH2S6iDWvYyMuzuKCuuHj6NfTk6cYvk5eurPme"
+        }
+    ]
+}
