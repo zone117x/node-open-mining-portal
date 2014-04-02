@@ -103,7 +103,7 @@ npm update
 #### 2) Configuration
 
 ##### Portal config
-Inside the `config.json` file, ensure the default configuration will work for your environment.
+Inside the `config_example.json` file, ensure the default configuration will work for your environment, then copy the file to `config.json`.
 
 Explanation for each field:
 ````javascript
@@ -156,7 +156,7 @@ Here is an example of the required fields:
 ````
 
 For additional documentation how to configure coins *(especially important for scrypt-n and scrypt-jane coins)*
-see [these instructions](https://github.com/zone117x/node-stratum-pool/edit/master/README.md#module-usage).
+see [these instructions](//github.com/zone117x/node-stratum-pool#module-usage).
 
 
 ##### Pool config
@@ -204,16 +204,16 @@ Description of options:
             /* (2% default) What percent fee your pool takes from the block reward. */
             "feePercent": 0.02,
 
-            /* Name of the account to use when moving coin profit within daemon wallet. */
+            /* Name of the daemon account to use when moving coin profit within daemon wallet. */
             "feeCollectAccount": "feesCollected",
 
             /* Your address that receives pool revenue from fees. */
             "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
 
-            /* (Not implemented yet) How many coins from fee revenue must accumulate on top of the
+            /* How many coins from fee revenue must accumulate on top of the
                minimum reserve amount in order to trigger withdrawal to fee address. The higher
                this threshold, the less of your profit goes to transactions fees. */
-            //"feeWithdrawalThreshold": 5,
+            "feeWithdrawalThreshold": 5,
 
             /* This daemon is used to send out payments. It MUST be for the daemon that owns the
                configured 'address' that receives the block rewards, otherwise the daemon will not
@@ -232,7 +232,9 @@ Description of options:
             }
         },
 
-        "mpos": { //Enabled this and shares will be inserted into share table in a MySQL database
+        /* Enabled mpos and shares will be inserted into share table in a MySQL database. You may 
+           also want to use the "emitInvalidBlockHashes" option below if you require it. */
+        "mpos": { 
             "enabled": false,
             "host": "localhost", //MySQL db host
             "port": 3306, //MySQL db port
@@ -255,6 +257,10 @@ Description of options:
        job broadcast. */
     "txRefreshInterval": 20000,
 
+    /* Some miner software is bugged and will consider the pool offline if it doesn't receive
+       anything for around a minute, so every time we broadcast jobs, set a timeout to rebroadcast
+       in this many seconds unless we find a new job. Set to zero or remove to disable this. */
+    "jobRebroadcastTimeout": 55,
 
     //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
 
@@ -262,6 +268,9 @@ Description of options:
        usually the workers are zombies and don't submit shares after connecting. This feature
        detects those and disconnects them. */
     "connectionTimeout": 600, //Remove workers that haven't been in contact for this many seconds
+
+    /* Sometimes you want the block hashes even for shares that aren't block candidates. */
+    "emitInvalidBlockHashes": false,
 
     /* If a worker is submitting a high threshold of invalid shares we can temporarily ban them
        to reduce system/network load. Also useful to fight against flooding attacks. */
