@@ -493,6 +493,33 @@ function SetupForPool(logger, poolOptions, setupFinished){
                 });
             },
 
+            /* Call redis to check if previous sendmany and/or redis cleanout commands completed successfully.
+            If sendmany worked fine but redis commands failed you HAVE TO run redis commands again 
+            (manually) to prevent double payments. If sendmany failed too you can safely delete 
+            coin + '_finalRedisCommands' string from redis to let pool calculate payments again. */
+            function(magnitude, workerPayments, finalRedisCommands, callback) {
+                redisClient.get(coin + '_finalRedisCommands', function(error, reply) {
+                    if (error){
+                        callback('Check finished - error with redis getting finalRedisCommands' + JSON.stringify(error));
+                        return;
+                    }
+                    if (reply) {
+                        callback('Check finished - previous sendmany and/or redis cleanout commands failed - ' + reply);
+                        return;
+                    } else {
+                        /* There was no error in previous sendmany and/or redis cleanout commands
+                        so we can safely continue */
+                        redisClient.set(coin + '_finalRedisCommands', JSON.stringify(finalRedisCommands), function(error, reply) {
+                            if (error){
+                                callback('Check finished - error with saving finalRedisCommands' + JSON.stringify(error));
+                                return;
+                            }
+                            callback(null, magnitude, workerPayments, finalRedisCommands);
+                        });
+                    }
+                });
+            },
+
             function(magnitude, workerPayments, finalRedisCommands, callback){
 
                 //This does the final all-or-nothing atom transaction if block deamon sent payments
