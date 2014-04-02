@@ -1,6 +1,0 @@
-{
-    "name"       : "Emoticoin",
-    "symbol"     : "EMO",
-    "algorithm"  : "scrypt",
-    "txMessages" : false
-}
