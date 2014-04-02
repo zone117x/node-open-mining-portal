@@ -115,7 +115,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                     workers: 0,
                     hashrate: 0
                 },
-				algos: {},
+                algos: {},
                 pools: allCoinStats
             };
 
@@ -139,19 +139,25 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 portalStats.global.hashrate += coinStats.hashrate;
                 portalStats.global.workers += Object.keys(coinStats.workers).length;
 
-				/* algorithm specific global stats */
- 				var algo = coinStats.algorithm;
-				if (!portalStats.algos.hasOwnProperty(algo)){
-					portalStats.algos[algo] = {
-						workers: 0,
-					    hashrate: 0
-					};
-				} 
+                /* algorithm specific global stats */
+                 var algo = coinStats.algorithm;
+                if (!portalStats.algos.hasOwnProperty(algo)){
+                    portalStats.algos[algo] = {
+                        workers: 0,
+                        hashrate: 0,
+                        hashrateString: null
+                    };
+                } 
                 portalStats.algos[algo].hashrate += coinStats.hashrate;
                 portalStats.algos[algo].workers += Object.keys(coinStats.workers).length;
 
                 delete coinStats.hashrates;
                 delete coinStats.shares;
+                coinStats.hashrateString = _this.getReadableHashRateString(coinStats.hashrate);
+            });
+
+            Object.keys(portalStats.algos).forEach(function(algo){
+                algo.hashrateString = _this.getReadableHashRateString(algo.hashrate);
             });
 
             _this.stats = portalStats;
@@ -160,5 +166,16 @@ module.exports = function(logger, portalConfig, poolConfigs){
         });
 
     };
+
+    this.getReadableHashRateString = function(hashrate){
+        var i = -1;
+        var byteUnits = [' KH', ' MH', ' GH', ' TH', 'PH' ];
+        do {
+            hashrate = hashrate / 1024;
+            i++;
+        } while (hashrate > 1024);
+        return hashrate.toFixed(2) + byteUnits[i];
+    };
+
 };
 
