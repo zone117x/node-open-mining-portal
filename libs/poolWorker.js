@@ -118,11 +118,11 @@ module.exports = function(logger){
 
             var shareData = JSON.stringify(data);
 
-            if (data.solution && !isValidBlock)
-                logger.debug(logSystem, logComponent, logSubCat, 'We thought a block solution was found but it was rejected by the daemon, share data: ' + shareData);
+            if (data.blockHash && !isValidBlock)
+                logger.debug(logSystem, logComponent, logSubCat, 'We thought a block was found but it was rejected by the daemon, share data: ' + shareData);
 
             else if (isValidBlock)
-                logger.debug(logSystem, logComponent, logSubCat, 'Block solution found: ' + data.solution);
+                logger.debug(logSystem, logComponent, logSubCat, 'Block found: ' + data.blockHash);
 
 
             if (isValidShare)

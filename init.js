@@ -3,15 +3,18 @@ var path = require('path');
 var os = require('os');
 var cluster = require('cluster');
 
-var async                    = require('async');
-var posix                    = require('posix');
-var PoolLogger               = require('./libs/logUtil.js');
-var BlocknotifyListener      = require('./libs/blocknotifyListener.js');
+var async = require('async');
+var posix = require('posix');
+var PoolLogger = require('./libs/logUtil.js');
+var BlocknotifyListener = require('./libs/blocknotifyListener.js');
 var RedisBlocknotifyListener = require('./libs/redisblocknotifyListener.js');
-var WorkerListener           = require('./libs/workerListener.js');
-var PoolWorker               = require('./libs/poolWorker.js');
-var PaymentProcessor         = require('./libs/paymentProcessor.js');
-var Website                  = require('./libs/website.js');
+var WorkerListener = require('./libs/workerListener.js');
+var PoolWorker = require('./libs/poolWorker.js');
+var PaymentProcessor = require('./libs/paymentProcessor.js');
+var Website = require('./libs/website.js');
+
+var algos = require('stratum-pool/lib/algoProperties.js');
+
 JSON.minify = JSON.minify || require("node-json-minify");
 
 var portalConfig = JSON.parse(JSON.minify(fs.readFileSync("config.json", {encoding: 'utf8'})));
@@ -88,6 +91,12 @@ var buildPoolConfigs = function(){
         var coinProfile = JSON.parse(JSON.minify(fs.readFileSync(coinFilePath, {encoding: 'utf8'})));
         poolOptions.coin = coinProfile;
         configs[poolOptions.coin.name] = poolOptions;
+
+        if (!(coinProfile.algorithm in algos)){
+            logger.error('Master', coinProfile.name, 'Cannot run a pool for unsupported algorithm "' + coinProfile.algorithm + '"');
+            delete configs[poolOptions.coin.name];
+        }
+
     });
     return configs;
 };

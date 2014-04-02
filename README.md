@@ -103,7 +103,7 @@ npm update
 #### 2) Configuration
 
 ##### Portal config
-Inside the `config.json` file, ensure the default configuration will work for your environment.
+Inside the `config_example.json` file, ensure the default configuration will work for your environment, then copy the file to `config.json`.
 
 Explanation for each field:
 ````javascript
@@ -232,7 +232,9 @@ Description of options:
             }
         },
 
-        "mpos": { //Enabled this and shares will be inserted into share table in a MySQL database
+        /* Enabled mpos and shares will be inserted into share table in a MySQL database. You may 
+           also want to use the "emitInvalidBlockHashes" option below if you require it. */
+        "mpos": { 
             "enabled": false,
             "host": "localhost", //MySQL db host
             "port": 3306, //MySQL db port
@@ -266,6 +268,9 @@ Description of options:
        usually the workers are zombies and don't submit shares after connecting. This feature
        detects those and disconnects them. */
     "connectionTimeout": 600, //Remove workers that haven't been in contact for this many seconds
+
+    /* Sometimes you want the block hashes even for shares that aren't block candidates. */
+    "emitInvalidBlockHashes": false,
 
     /* If a worker is submitting a high threshold of invalid shares we can temporarily ban them
        to reduce system/network load. Also useful to fight against flooding attacks. */
