@@ -14,13 +14,6 @@ module.exports = function(logger, portalConfig, poolConfigs){
 
     var redisClients = [];
 
-    /*var algoMultipliers = {
-        'x11': Math.pow(2, 16),
-        'scrypt': Math.pow(2, 16),
-        'scrypt-jane': Math.pow(2,16),
-        'sha256': Math.pow(2, 32)
-    };*/
-
     var canDoStats = true;
 
     Object.keys(poolConfigs).forEach(function(coin){
@@ -55,7 +48,6 @@ module.exports = function(logger, portalConfig, poolConfigs){
     this.stats = {};
     this.statsString = '';
 
-
     this.getGlobalStats = function(callback){
 
         var allCoinStats = {};
@@ -76,6 +68,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
 
             var commandsPerCoin = redisComamndTemplates.length;
 
+
             client.coins.map(function(coin){
                 redisComamndTemplates.map(function(t){
                     var clonedTemplates = t.slice(0);
@@ -83,6 +76,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                     redisCommands.push(clonedTemplates);
                 });
             });
+
 
             client.client.multi(redisCommands).exec(function(err, replies){
                 if (err){
@@ -121,6 +115,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                     workers: 0,
                     hashrate: 0
                 },
+				algos: {},
                 pools: allCoinStats
             };
 
@@ -143,6 +138,18 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 coinStats.hashrate = hashratePre / 1e3 | 0;
                 portalStats.global.hashrate += coinStats.hashrate;
                 portalStats.global.workers += Object.keys(coinStats.workers).length;
+
+				/* algorithm specific global stats */
+ 				var algo = coinStats.algorithm;
+				if (!portalStats.algos.hasOwnProperty(algo)){
+					portalStats.algos[algo] = {
+						workers: 0,
+					    hashrate: 0
+					};
+				} 
+                portalStats.algos[algo].hashrate += coinStats.hashrate;
+                portalStats.algos[algo].workers += Object.keys(coinStats.workers).length;
+
                 delete coinStats.hashrates;
                 delete coinStats.shares;
             });
