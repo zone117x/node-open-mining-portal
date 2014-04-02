@@ -470,26 +470,23 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     if (orphanMergeCommands.length > 0)
                         finalRedisCommands = finalRedisCommands.concat(orphanMergeCommands);
 
-
                     if (balanceUpdateCommands.length > 0)
                         finalRedisCommands = finalRedisCommands.concat(balanceUpdateCommands);
-
 
                     if (workerPayoutsCommand.length > 0)
                         finalRedisCommands = finalRedisCommands.concat(workerPayoutsCommand);
 
-
                     if (roundsToDelete.length > 0)
                         finalRedisCommands.push(['del'].concat(roundsToDelete));
-
 
                     if (toBePaid !== 0)
                         finalRedisCommands.push(['hincrbyfloat', coin + '_stats', 'totalPaid', (toBePaid / magnitude).toFixed(coinPrecision)]);
 
+                    finalRedisCommands.push(['del', coin + '_finalRedisCommands']);
+
                     finalRedisCommands.push(['bgsave']);
 
                     callback(null, magnitude, workerPayments, finalRedisCommands);
-
 
                 });
             },
