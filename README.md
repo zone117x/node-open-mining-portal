@@ -103,7 +103,7 @@ npm update
 #### 2) Configuration
 
 ##### Portal config
-Inside the `config.json` file, ensure the default configuration will work for your environment.
+Inside the `config_example.json` file, ensure the default configuration will work for your environment, then copy the file to `config.json`.
 
 Explanation for each field:
 ````javascript
@@ -232,7 +232,9 @@ Description of options:
             }
         },
 
-        "mpos": { //Enabled this and shares will be inserted into share table in a MySQL database
+        /* Enabled mpos and shares will be inserted into share table in a MySQL database. You may 
+           also want to use the "emitInvalidBlockHashes" option below if you require it. */
+        "mpos": { 
             "enabled": false,
             "host": "localhost", //MySQL db host
             "port": 3306, //MySQL db port
