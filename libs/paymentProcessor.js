@@ -160,7 +160,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         var details = r.split(':');
                         return {
                             category: details[0].category,
-                            solution: details[0],
+                            blockHash: details[0],
                             txHash: details[1],
                             height: details[2],
                             reward: details[3],
@@ -191,20 +191,20 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     txDetails.forEach(function(tx, i){
                         var round = rounds[i];
 
-                        if (tx.error && tx.error.code === -5 || round.solution !== tx.result.blockhash){
+                        if (tx.error && tx.error.code === -5 || round.blockHash !== tx.result.blockhash){
 
                             /* Block was dropped from coin daemon even after it happily accepted it earlier. */
 
                             //If we find another block at the same height then this block was drop-kicked orphaned
                             var dropKicked = rounds.filter(function(r){
-                                return r.height === round.height && r.solution !== round.solution && r.category !== 'dropkicked';
+                                return r.height === round.height && r.blockHash !== round.blockHash && r.category !== 'dropkicked';
                             }).length > 0;
 
                             if (dropKicked){
                                 logger.warning(logSystem, logComponent,
                                         'A block was drop-kicked orphaned'
-                                        + ' - we found a better block at the same height, solution '
-                                        + round.solution + " round " + round.height);
+                                        + ' - we found a better block at the same height, blockHash '
+                                        + round.blockHash + " round " + round.height);
                                 round.category = 'dropkicked';
                             }
                             else{
@@ -298,7 +298,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                         if (!workerShares){
                             logger.error(logSystem, logComponent, 'No worker shares for round: '
-                                + round.height + ' solution: ' + round.solution);
+                                + round.height + ' blockHash: ' + round.blockHash);
                             return;
                         }
 
@@ -486,6 +486,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     if (toBePaid !== 0)
                         finalRedisCommands.push(['hincrbyfloat', coin + '_stats', 'totalPaid', (toBePaid / magnitude).toFixed(coinPrecision)]);
 
+                    finalRedisCommands.push(['bgsave']);
 
                     callback(null, magnitude, workerPayments, finalRedisCommands);
 

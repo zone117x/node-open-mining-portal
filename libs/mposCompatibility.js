@@ -70,7 +70,7 @@ module.exports = function(logger, poolConfig){
             isValidBlock ? 'Y' : 'N',
             shareData.difficulty,
             typeof(shareData.error) === 'undefined' ? null : shareData.error,
-            typeof(shareData.solution) === 'undefined' ? '' : shareData.solution
+            shareData.blockHash ? shareData.blockHash : (shareData.blockHashInvalid ? shareData.blockHashInvalid : '')
         ];
         connection.query(
             'INSERT INTO `shares` SET time = NOW(), rem_host = ?, username = ?, our_result = ?, upstream_result = ?, difficulty = ?, reason = ?, solution = ?',

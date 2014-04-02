@@ -267,6 +267,9 @@ Description of options:
        detects those and disconnects them. */
     "connectionTimeout": 600, //Remove workers that haven't been in contact for this many seconds
 
+    /* Sometimes you want the block hashes even for shares that aren't block candidates. */
+    "emitInvalidBlockHashes": false,
+
     /* If a worker is submitting a high threshold of invalid shares we can temporarily ban them
        to reduce system/network load. Also useful to fight against flooding attacks. */
     "banning": {
