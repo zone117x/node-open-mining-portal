@@ -157,7 +157,8 @@ module.exports = function(logger, portalConfig, poolConfigs){
             });
 
             Object.keys(portalStats.algos).forEach(function(algo){
-                algo.hashrateString = _this.getReadableHashRateString(algo.hashrate);
+                var algoStats = portalStats.algos[algo];
+                algoStats.hashrateString = _this.getReadableHashRateString(algoStats.hashrate);
             });
 
             _this.stats = portalStats;
@@ -169,10 +170,10 @@ module.exports = function(logger, portalConfig, poolConfigs){
 
     this.getReadableHashRateString = function(hashrate){
         var i = -1;
-        var byteUnits = [' KH', ' MH', ' GH', ' TH', 'PH' ];
+        var byteUnits = [ ' KH', ' MH', ' GH', ' TH', ' PH' ];
         do {
             hashrate = hashrate / 1024;
-            i++;
+			i++;
         } while (hashrate > 1024);
         return hashrate.toFixed(2) + byteUnits[i];
     };
