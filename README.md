@@ -170,6 +170,34 @@ Description of options:
     "enabled": true, //Set this to false and a pool will not be created from this config file
     "coin": "litecoin.json", //Reference to coin config file in 'coins' directory
 
+    "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
+
+    "blockRefreshInterval": 1000, //How often to poll RPC daemons for new blocks, in milliseconds
+
+    /* How many milliseconds should have passed before new block transactions will trigger a new
+       job broadcast. */
+    "txRefreshInterval": 20000,
+
+    /* Some miner software is bugged and will consider the pool offline if it doesn't receive
+       anything for around a minute, so every time we broadcast jobs, set a timeout to rebroadcast
+       in this many seconds unless we find a new job. Set to zero or remove to disable this. */
+    "jobRebroadcastTimeout": 55,
+
+    //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
+
+    /* Some attackers will create thousands of workers that use up all available socket connections,
+       usually the workers are zombies and don't submit shares after connecting. This feature
+       detects those and disconnects them. */
+    "connectionTimeout": 600, //Remove workers that haven't been in contact for this many seconds
+
+    /* Sometimes you want the block hashes even for shares that aren't block candidates. */
+    "emitInvalidBlockHashes": false,
+
+    /* We use proper maximum algorithm difficulties found in the coin daemon source code. Most
+       miners/pools that deal with scrypt use a guesstimated one that is about 5.86% off from the
+       actual one. So here we can set a tolerable threshold for if a share is slightly too low
+       due to mining apps using incorrect max diffs and this pool using correct max diffs. */
+    "shareVariancePercent": 10,
 
     /* This determines what to do with submitted shares (and stratum worker authentication).
        You have two options: 
@@ -248,29 +276,6 @@ Description of options:
             "stratumAuth": "password"
         }
     },
-
-    "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
-
-    "blockRefreshInterval": 1000, //How often to poll RPC daemons for new blocks, in milliseconds
-
-    /* How many milliseconds should have passed before new block transactions will trigger a new
-       job broadcast. */
-    "txRefreshInterval": 20000,
-
-    /* Some miner software is bugged and will consider the pool offline if it doesn't receive
-       anything for around a minute, so every time we broadcast jobs, set a timeout to rebroadcast
-       in this many seconds unless we find a new job. Set to zero or remove to disable this. */
-    "jobRebroadcastTimeout": 55,
-
-    //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
-
-    /* Some attackers will create thousands of workers that use up all available socket connections,
-       usually the workers are zombies and don't submit shares after connecting. This feature
-       detects those and disconnects them. */
-    "connectionTimeout": 600, //Remove workers that haven't been in contact for this many seconds
-
-    /* Sometimes you want the block hashes even for shares that aren't block candidates. */
-    "emitInvalidBlockHashes": false,
 
     /* If a worker is submitting a high threshold of invalid shares we can temporarily ban them
        to reduce system/network load. Also useful to fight against flooding attacks. */

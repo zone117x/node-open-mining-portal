@@ -126,7 +126,7 @@ module.exports = function(logger){
 
 
             if (isValidShare)
-                logger.debug(logSystem, logComponent, logSubCat, 'Share accepted at ' + data.difficulty + ' with diff ' + data.shareDiff + ' by ' + data.worker + ' [' + data.ip + ']' );
+                logger.debug(logSystem, logComponent, logSubCat, 'Share accepted at diff ' + data.difficulty + ' with diff ' + data.shareDiff + ' by ' + data.worker + ' [' + data.ip + ']' );
 
             else if (!isValidShare)
                 logger.debug(logSystem, logComponent, logSubCat, 'Share rejected: ' + shareData);
