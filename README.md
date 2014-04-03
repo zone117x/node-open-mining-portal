@@ -385,8 +385,14 @@ Donations
 ---------
 To support development of this project feel free to donate :)
 
-BTC: 1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR
-
+* BTC: 1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR
+* LTC: LKfavSDJmwiFdcgaP1bbu46hhyiWw5oFhE
+* VTC: VgW4uFTZcimMSvcnE4cwS3bjJ6P8bcTykN
+* MAX: mWexUXRCX5PWBmfh34p11wzS5WX2VWvTRT
+* QRK: QehPDAhzVQWPwDPQvmn7iT3PoFUGT7o8bC
+* DRK: XcQmhp8ANR7okWAuArcNFZ2bHSB81jpapQ
+* DOGE: DBGGVtwAAit1NPZpRm5Nz9VUFErcvVvHYW
+* Cryptsy Trade Key: 254ca13444be14937b36c44ba29160bd8f02ff76
 
 Credits
 -------
