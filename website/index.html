@@ -50,10 +50,12 @@
             </li>
         </ul>
 
-        <div class="stats">
-            <div><i class="fa fa-users"></i>&nbsp;<span id="statsMiners">{{=it.stats.global.workers}}</span> Miners</div>
-            <div><i class="fa fa-tachometer"></i>&nbsp;<span id="statsHashrate">{{=it.stats.global.hashrate}}</span> KH/s</div>
-        </div>
+        {{ for(var algo in it.stats.algos) { }}
+                {{=algo}}: <div class="stats">
+                    <div><i class="fa fa-users"></i>&nbsp;<span id="statsMiners{{=algo}}">{{=it.stats.algos[algo].workers}}</span> Miners</div>
+                    <div><i class="fa fa-tachometer"></i>&nbsp;<span id="statsHashrate{{=algo}}">{{=it.stats.algos[algo].hashrateString}}</span></div>
+                </div>&nbsp;
+        {{ } }}
 
     </div>
 </header>

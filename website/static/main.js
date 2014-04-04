@@ -1,6 +1,5 @@
 $(function(){
 
-
     var hotSwap = function(page, pushSate){
         if (pushSate) history.pushState(null, null, '/' + page);
         $('.selected').removeClass('selected');
@@ -29,8 +28,10 @@ $(function(){
     var statsSource = new EventSource("/api/live_stats");
     statsSource.addEventListener('message', function(e){
         var stats = JSON.parse(e.data);
-        $('#statsMiners').text(stats.global.workers);
-        $('#statsHashrate').text(stats.global.hashrate);
+        for (algo in algos) {
+                $('#statsMiners'+algo).text(stats.algos[algo].workers);
+                $('#statsHashrate'+algo).text(stats.algos[algo].hashrateString);
+        }
     });
 
 });
