@@ -4,7 +4,6 @@ var os = require('os');
 var cluster = require('cluster');
 
 var async = require('async');
-var posix = require('posix');
 var PoolLogger = require('./libs/logUtil.js');
 var BlocknotifyListener = require('./libs/blocknotifyListener.js');
 var RedisBlocknotifyListener = require('./libs/redisblocknotifyListener.js');
@@ -41,10 +40,18 @@ try {
 
 //Try to give process ability to handle 100k concurrent connections
 try{
-    posix.setrlimit('nofile', { soft: 100000, hard: 100000 });
+    var posix = require('posix');
+    try {
+        posix.setrlimit('nofile', { soft: 100000, hard: 100000 });
+    }
+    catch(e){
+        if (cluster.isMaster)
+            logger.warning('POSIX', 'Connection Limit', '(Safe to ignore) Must be ran as root to increase resource limits');
+    }
 }
 catch(e){
-    logger.warning('POSIX', 'Connection Limit', '(Safe to ignore) Must be ran as root to increase resource limits');
+    if (cluster.isMaster)
+        logger.debug('POSIX', 'Connection Limit', '(Safe to ignore) POSIX module not installed and resource (connection) limit was not raised');
 }
 
 
