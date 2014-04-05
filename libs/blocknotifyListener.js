@@ -32,7 +32,16 @@ var listener = module.exports = function listener(options){
 
                     emitLog('Block listener connection ended');
 
-                    var message = JSON.parse(data);
+                    var message;
+
+                    try{
+                        message = JSON.parse(data);
+                    }
+                    catch(e){
+                        emitLog('Block listener failed to parse message ' + data);
+                        return;
+                    }
+
                     if (message.password === options.password) {
                         _this.emit('hash', message);
                     }
@@ -42,7 +51,7 @@ var listener = module.exports = function listener(options){
                 });
             }
             catch(e){
-                emitLog('Block listener failed to parse message ' + data);
+                emitLog('Block listener had an error: ' + e);
             }
 
         });
