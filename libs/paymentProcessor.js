@@ -52,6 +52,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
     var logSystem = 'Payments';
     var logComponent = coin;
 
+    var processingPayments = true;
 
     var daemon;
     var redisClient;
@@ -119,8 +120,28 @@ function SetupForPool(logger, poolOptions, setupFinished){
     });
 
 
-
-
+    /* Call redis to check if previous sendmany and/or redis cleanout commands completed successfully.
+    If sendmany worked fine but redis commands failed you HAVE TO run redis commands again 
+    (manually) to prevent double payments. If sendmany failed too you can safely delete 
+    coin + '_finalRedisCommands' string from redis to let pool calculate payments again. */
+    function checkPreviousPaymentsStatus(callback) {
+        redisClient.get(coin + '_finalRedisCommands', function(error, reply) {
+            if (error){
+                callback('Could not get finalRedisCommands - ' + JSON.stringify(error));
+                return;
+            }
+            if (reply) {
+                callback('Payments stopped because of the critical error - failed commands saved in '
+                    + coin + '_finalRedisCommands redis set:\n' + reply);
+                return;
+            } else {
+                /* There was no error in previous sendmany and/or redis cleanout commands
+                so we can safely continue */
+                processingPayments = false;
+                callback();
+            }
+        });
+    }
 
 
     /* Number.toFixed gives us the decimal places we want, but as a string. parseFloat turns it back into number
@@ -140,6 +161,21 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
         async.waterfall([
 
+            function(callback) {
+                if (processingPayments) {
+                    checkPreviousPaymentsStatus(function(error){
+                        if (error) {
+                            logger.error(logSystem, logComponent, error);
+                            callback('Check finished - previous payments processing error');
+                            return;
+                        }
+                        callback();
+                    });
+                    return;
+                }
+                callback();
+            },
+
             /* Call redis to get an array of rounds - which are coinbase transactions and block heights from submitted
                blocks. */
             function(callback){
@@ -147,7 +183,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                 redisClient.smembers(coin + '_blocksPending', function(error, results){
 
                     if (error){
-                        logger.error(logSystem, logComponent, 'Could get blocks from redis ' + JSON.stringify(error));
+                        logger.error(logSystem, logComponent, 'Could not get blocks from redis ' + JSON.stringify(error));
                         callback('Check finished - redis error for getting blocks');
                         return;
                     }
@@ -470,27 +506,35 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     if (orphanMergeCommands.length > 0)
                         finalRedisCommands = finalRedisCommands.concat(orphanMergeCommands);
 
-
                     if (balanceUpdateCommands.length > 0)
                         finalRedisCommands = finalRedisCommands.concat(balanceUpdateCommands);
-
 
                     if (workerPayoutsCommand.length > 0)
                         finalRedisCommands = finalRedisCommands.concat(workerPayoutsCommand);
 
-
                     if (roundsToDelete.length > 0)
                         finalRedisCommands.push(['del'].concat(roundsToDelete));
 
-
                     if (toBePaid !== 0)
                         finalRedisCommands.push(['hincrbyfloat', coin + '_stats', 'totalPaid', (toBePaid / magnitude).toFixed(coinPrecision)]);
+
+                    finalRedisCommands.push(['del', coin + '_finalRedisCommands']);
 
                     finalRedisCommands.push(['bgsave']);
 
                     callback(null, magnitude, workerPayments, finalRedisCommands);
 
+                });
+            },
 
+            function(magnitude, workerPayments, finalRedisCommands, callback) {
+                /* Save final redis cleanout commands in case something goes wrong during payments */
+                redisClient.set(coin + '_finalRedisCommands', JSON.stringify(finalRedisCommands), function(error, reply) {
+                    if (error){
+                        callback('Check finished - error with saving finalRedisCommands' + JSON.stringify(error));
+                        return;
+                    }
+                    callback(null, magnitude, workerPayments, finalRedisCommands);
                 });
             },
 
@@ -503,6 +547,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             callback('Error with final redis commands for cleaning up ' + JSON.stringify(error));
                             return;
                         }
+                        processingPayments = false;
                         logger.debug(logSystem, logComponent, 'Payments processing performed an interval');
                     });
                 };
@@ -524,6 +569,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                     logger.debug(logSystem, logComponent, 'Payments to be sent to: ' + JSON.stringify(addressAmounts));
 
+                    processingPayments = true;
                     daemon.cmd('sendmany', ['', addressAmounts], function(results){
 
                         if (results[0].error){
