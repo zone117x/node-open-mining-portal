@@ -135,8 +135,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 });
                 var shareMultiplier = algos[coinStats.algorithm].multiplier || 0;
                 var hashratePre = shareMultiplier * coinStats.shares / portalConfig.website.hashrateWindow;
-                coinStats.hashrate = hashratePre / 1e3 | 0;
-                portalStats.global.hashrate += coinStats.hashrate;
+                coinStats.hashrate = hashratePre | 0;
                 portalStats.global.workers += Object.keys(coinStats.workers).length;
 
                 /* algorithm specific global stats */

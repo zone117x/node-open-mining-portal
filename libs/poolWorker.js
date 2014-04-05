@@ -126,10 +126,10 @@ module.exports = function(logger){
 
 
             if (isValidShare)
-                logger.debug(logSystem, logComponent, logSubCat, 'Valid share of difficulty ' + data.difficulty + ' by ' + data.worker + ' [' + data.ip + ']' );
+                logger.debug(logSystem, logComponent, logSubCat, 'Share accepted at diff ' + data.difficulty + ' with diff ' + data.shareDiff + ' by ' + data.worker + ' [' + data.ip + ']' );
 
             else if (!isValidShare)
-                logger.debug(logSystem, logComponent, logSubCat, 'Invalid share submitted, share data: ' + shareData);
+                logger.debug(logSystem, logComponent, logSubCat, 'Share rejected: ' + shareData);
 
 
             handlers.share(isValidShare, isValidBlock, data)

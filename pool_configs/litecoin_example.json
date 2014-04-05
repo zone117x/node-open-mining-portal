@@ -2,6 +2,14 @@
     "enabled": false,
     "coin": "litecoin.json",
 
+    "address": "n4jSe18kZMCdGcZqaYprShXW6EH1wivUK1",
+    "blockRefreshInterval": 1000,
+    "txRefreshInterval": 20000,
+    "jobRebroadcastTimeout": 55,
+    "connectionTimeout": 600,
+    "emitInvalidBlockHashes": false,
+    "shareVariancePercent": 15,
+
     "shareProcessing": {
         "internal": {
             "enabled": true,
@@ -35,12 +43,6 @@
         }
     },
 
-    "address": "n4jSe18kZMCdGcZqaYprShXW6EH1wivUK1",
-    "blockRefreshInterval": 1000,
-    "txRefreshInterval": 20000,
-    "jobRebroadcastTimeout": 55,
-    "connectionTimeout": 600,
-
     "banning": {
         "enabled": true,
         "time": 600,
@@ -61,7 +63,7 @@
             }
         },
         "3032": {
-            "diff": 16
+            "diff": 8
         },
         "3256": {
             "diff": 256
