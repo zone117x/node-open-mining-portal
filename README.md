@@ -27,7 +27,7 @@ authentication. A minimalistic HTML5 front-end connects to the portals statistic
 pool such as connected miners, network/pool difficulty/hash rate, etc.
 
 #### Attack Mitigation
-* Detects and thwarts socket flooding (invalid data sent over socket in order to consume system resources).
+* Detects and thwarts socket flooding (garbage data sent over socket in order to consume system resources).
 * Detects and thwarts zombie miners (botnet infected computers connecting to your server to use up sockets but not sending any shares).
 * Detects and thwarts invalid share attacks:
    * NOMP is not vulnerable to the low difficulty share exploits happening to other pool servers. Other pool server
