@@ -107,7 +107,7 @@ a good pool operator. For starters be sure to read:
 Clone the repository and run `npm update` for all the dependencies to be installed:
 
 ```bash
-git clone https://github.com/zone117x/node-stratum-portal.git nomp
+git clone https://github.com/zone117x/node-open-mining-portal.git nomp
 cd nomp
 npm update
 ```
