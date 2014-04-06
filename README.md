@@ -38,6 +38,14 @@ pool such as connected miners, network/pool difficulty/hash rate, etc.
 thread per connection, and clustering is also implemented so all CPU cores are taken advantage of.
 
 
+#### Security
+NOMP has some implicit security advantages for pool operators and miners:
+* Without a registration/login system, non-security-oriented miners reusing passwords across pools is no longer a concern.
+* Automated payouts by default and pool profits are sent to another address so pool wallets aren't plump with coins -
+giving hackers little reward and keeping your pool from being a target.
+* Miners can notice lack of automated payments as a possible early warning sign that an operator is about to run off with their coins.
+
+
 #### Planned Features
 
 * NOMP API - Used by the website to display stats and information about the pool(s) on the portal's front-end website,
@@ -50,14 +58,6 @@ redistribute the work to our own connected miners.
 * Automated switching of connected miners to different pools/coins is also easily done due to the multi-pool architecture
 of this software. The switching can be controlled using a coin profitability API such as CoinChoose.com or CoinWarz.com
 (or calculated locally using daemon-reported network difficulties and exchange APIs).
-
-
-#### Security
-NOMP has some implicit security advantages for pool operators and miners:
-* Without a registration/login system, non-security-oriented miners reusing passwords across pools is no longer a concern.
-* Automated payouts by default and pool profits are sent to another address so pool wallets aren't plump with coins -
-giving hackers little reward and keeping your pool from being a target.
-* Miners can notice lack of automated payments as a possible early warning sign that an operator is about to run off with their coins.
 
 
 #### Community / Support
