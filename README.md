@@ -30,8 +30,9 @@ pool such as connected miners, network/pool difficulty/hash rate, etc.
 * Detects and thwarts socket flooding (invalid data sent over socket in order to consume system resources).
 * Detects and thwarts zombie miners (botnet infected computers connecting to your server to use up sockets but not sending any shares).
 * Detects and thwarts invalid share attacks:
-   * NOMP dynamically generates the max difficulty for each hashing algorithm based on values founds in coin source
-   code so that the low difficulty share exploits happening to other pool servers won't work on this one.
+   * Other pool server software guesstimate and hardcode the max difficulties for new hashing algorithms. NOMP
+   dynamically generates the max difficulty for each algorithm based on values founds in coin source
+   code - NOMP is not vulnerable to the low difficulty share exploits happening to other pool servers.
    * IP banning feature which on a configurable threshold will ban an IP for a configurable amount of time if the miner
    submits over a configurable threshold of invalid shares.
 * NOMP is written in Node.js which uses a single thread (async) to handle connections rather than the overhead of one
