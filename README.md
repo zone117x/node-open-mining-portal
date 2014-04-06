@@ -398,6 +398,13 @@ output from NOMP.
 * Use [New Relic](http://newrelic.com/) to monitor your NOMP instance and server performance.
 
 
+#### Upgrading NOMP
+When updating NOMP to the latest code its important to not only `git pull` the latest from this repo, but to also update the `node-statum-pool` module and any config files that may have been changed.
+* Inside your NOMP directory (where the init.js script is) do `git pull` to get the latest NOMP code.
+* Remove the dependenices by deleting the `node_modules` directory with `rm -r node_modules`.
+* Run `npm update` to force updating/reinstalling of the dependencies.
+* Compare your `config.json` and `pool_configs/coin.json` configurations to the lateset example ones in this repo or the ones in the setup instructions where each config field is explained. You may need to modify or add any new changes.
+
 Donations
 ---------
 To support development of this project feel free to donate :)
