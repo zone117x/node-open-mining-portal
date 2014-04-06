@@ -26,16 +26,17 @@ Each and every share will be rewarded - even for rounds resulting in orphaned bl
 authentication. A minimalistic HTML5 front-end connects to the portals statistics API to display stats from from each
 pool such as connected miners, network/pool difficulty/hash rate, etc.
 
-* Attack mitigation features:
-   * Detects and thwarts socket flooding (invalid data sent over socket in order to consume system resources).
-   * Detects and thwarts zombie miners (botnet infected computers connecting to your server to use up sockets but not sending any shares).
-   * Detects and thwarts invalid share attacks:
-      * NOMP dynamically generates the max difficulty for each hashing algorithm based on values founds in coin source
-      code so that the low difficulty share exploits happening to other pool servers won't work on this one.
-      * IP banning feature which on a configurable threshold will ban an IP for a configurable amount of time if the miner
-      submits over a configurable threshold of invalid shares.
-   * NOMP is written in Node.js which uses a single thread (async) to handle connections rather than the overhead of one
-   thread per connection, and clustering is also implemented so all CPU cores are taken advantage of.
+#### Attack Mitigation
+* Detects and thwarts socket flooding (invalid data sent over socket in order to consume system resources).
+* Detects and thwarts zombie miners (botnet infected computers connecting to your server to use up sockets but not sending any shares).
+* Detects and thwarts invalid share attacks:
+   * NOMP dynamically generates the max difficulty for each hashing algorithm based on values founds in coin source
+   code so that the low difficulty share exploits happening to other pool servers won't work on this one.
+   * IP banning feature which on a configurable threshold will ban an IP for a configurable amount of time if the miner
+   submits over a configurable threshold of invalid shares.
+* NOMP is written in Node.js which uses a single thread (async) to handle connections rather than the overhead of one
+thread per connection, and clustering is also implemented so all CPU cores are taken advantage of.
+
 
 #### Planned Features
 
