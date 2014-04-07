@@ -28,9 +28,9 @@ $(function(){
     var statsSource = new EventSource("/api/live_stats");
     statsSource.addEventListener('message', function(e){
         var stats = JSON.parse(e.data);
-        for (algo in algos) {
-                $('#statsMiners'+algo).text(stats.algos[algo].workers);
-                $('#statsHashrate'+algo).text(stats.algos[algo].hashrateString);
+        for (algo in stats.algos) {
+            $('#statsMiners'+algo).text(stats.algos[algo].workers);
+            $('#statsHashrate'+algo).text(stats.algos[algo].hashrateString);
         }
     });
 
