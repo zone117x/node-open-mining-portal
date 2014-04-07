@@ -33,11 +33,9 @@ var logger = new PoolLogger({
 
 
 try {
-/*
     require('newrelic');
     if (cluster.isMaster)
         logger.debug('NewRelic', 'Monitor', 'New Relic initiated');
-*/
 } catch(e) {}
 
 
