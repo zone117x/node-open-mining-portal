@@ -7,17 +7,22 @@
 #include <errno.h>
 
 /*
- part of NOMP project
-  optimal block change pool notify in pure c. 
- (may also work as coin switch)
 
- Simple lightweight & fast.
+Contributed by Alex Petrov aka SysMan at sysman.net
 
-# gcc blocknotify.c -o blocknotify
-#
-#  Platforms : Linux,BSD,Solaris (mostly OS independent)
+Part of NOMP project
+Simple lightweight & fast - a more efficient block notify script in pure C.
 
-  Alex Petrov aka SysMan at sysman.net
+(may also work as coin switch)
+
+Platforms : Linux,BSD,Solaris (mostly OS independent)
+
+Build with:
+    gcc blocknotify.c -o blocknotify
+
+
+Usage in daemon coin.conf
+    blocknotify="/bin/blocknotify localhost:8117 mySuperSecurePassword dogecoin %s"
 
 
 // {"password":"notepas","coin":"Xcoin","hash":"d2191a8b644c9cd903439edf1d89ee060e196b3e116e0d48a3f11e5e3987a03b"}
@@ -25,6 +30,8 @@
 
 # $Id: blocknotify.c,v 0.1 2014/04/07 22:38:09 sysman Exp $
 */
+
+
 int main(int argc, char **argv)
 {
    int sockfd,n;

@@ -431,7 +431,8 @@ Example: inside `dogecoin.conf` add the line
 blocknotify="node scripts/blockNotify.js localhost:8117 mySuperSecurePassword dogecoin %s"
 ```
 
-
+Alternatively, you can use a more efficient block notify script written in pure C. Build and usage instructions
+are commented in [scripts/blocknotify.c](scripts/blocknotify.c).
 
 
 #### 3) Start the portal
@@ -477,6 +478,7 @@ Credits
 * [vekexasia](//github.com/vekexasia) - co-developer & great tester
 * [TheSeven](//github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
 * [UdjinM6](//github.com/UdjinM6) - helped implement fee withdrawal in payment processing
+* [Alex Petrov / sysmanalex](https://github.com/sysmanalex) - contributed the pure C block notify script
 * Those that contributed to [node-stratum-pool](//github.com/zone117x/node-stratum-pool)
 
 
