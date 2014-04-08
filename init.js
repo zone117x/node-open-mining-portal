@@ -116,7 +116,7 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
             delete poolConfigs[coin];
         }
 
-        if (p.daemons.length < 1){
+        if (!Array.isArray(p.daemons) || p.daemons.length < 1){
             logger.error('Master', coin, 'No daemons configured so a pool cannot be started for this coin.');
             delete poolConfigs[coin];
         }
