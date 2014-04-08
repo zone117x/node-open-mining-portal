@@ -6,6 +6,7 @@ var cluster = require('cluster');
 var async = require('async');
 var PoolLogger = require('./libs/logUtil.js');
 var BlocknotifyListener = require('./libs/blocknotifyListener.js');
+var CoinswitchListener = require('./libs/coinswitchListener.js');
 var RedisBlocknotifyListener = require('./libs/redisblocknotifyListener.js');
 var WorkerListener = require('./libs/workerListener.js');
 var PoolWorker = require('./libs/poolWorker.js');
@@ -71,19 +72,7 @@ if (cluster.isWorker){
     }
 
     return;
-} /* else {
-    var coinNames = ['alphacoin','frankocoin','emerald','kittehcoin'];
-    var curIndex = 0;
-    setInterval(function () {
-        var newCoinName = coinNames[++curIndex % coinNames.length];
-        console.log("SWITCHING to "+newCoinName);
-        var ipcMessage = {type:'switch', coin: newCoinName};
-        Object.keys(cluster.workers).forEach(function(id) {
-            cluster.workers[id].send(ipcMessage);
-        });
-    }, 20000);
-} */
-
+} 
 
 
 //Read all pool configs from pool_configs and join them with their coin profile
@@ -102,11 +91,11 @@ var buildPoolConfigs = function(){
 
         var coinProfile = JSON.parse(JSON.minify(fs.readFileSync(coinFilePath, {encoding: 'utf8'})));
         poolOptions.coin = coinProfile;
-        configs[poolOptions.coin.name] = poolOptions;
+        configs[poolOptions.coin.name.toLowerCase()] = poolOptions;
 
         if (!(coinProfile.algorithm in algos)){
             logger.error('Master', coinProfile.name, 'Cannot run a pool for unsupported algorithm "' + coinProfile.algorithm + '"');
-            delete configs[poolOptions.coin.name];
+            delete configs[poolOptions.coin.name.toLowerCase()];
         }
 
     });
@@ -198,6 +187,54 @@ var startBlockListener = function(portalConfig){
     listener.start();
 };
 
+
+//
+// Receives authenticated events from coin switch listener and triggers proxy
+// to swtich to a new coin.  
+//
+var startCoinswitchListener = function(portalConfig){
+    var listener = new CoinswitchListener(portalConfig.coinSwitchListener);
+    listener.on('log', function(text){
+        logger.debug('Master', 'Coinswitch', text);
+    });
+    listener.on('switchcoin', function(message){
+
+        var ipcMessage = {type:'blocknotify', coin: message.coin, hash: message.hash};
+        Object.keys(cluster.workers).forEach(function(id) {
+            cluster.workers[id].send(ipcMessage);
+        });
+        var ipcMessage = { 
+		    type:'switch', 
+			coin: message.coin.toLowerCase()
+		};
+        Object.keys(cluster.workers).forEach(function(id) {
+            cluster.workers[id].send(ipcMessage);
+        });
+
+    });
+    listener.start();
+
+/*
+if !cluster.isWorker
+else {
+    var coinNames = ['Emoticoin','Infinitecoin'];
+    var curIndex = 0;
+    setInterval(function () {
+        var newCoinName = coinNames[++curIndex % coinNames.length];
+        console.log("SWITCHING to " + newCoinName);
+        var ipcMessage = { 
+		    type:'switch', 
+			coin: newCoinName
+		};
+        Object.keys(cluster.workers).forEach(function(id) {
+            cluster.workers[id].send(ipcMessage);
+        });
+    }, 30000);
+} 
+*/
+
+};
+
 var startRedisBlockListener = function(portalConfig){
     //block notify options
     //setup block notify here and use IPC to tell appropriate pools
@@ -272,6 +309,8 @@ var startWebsite = function(portalConfig, poolConfigs){
     startPaymentProcessor(poolConfigs);
 
     startBlockListener(portalConfig);
+
+    startCoinswitchListener(portalConfig);
 
     startRedisBlockListener(portalConfig);
 

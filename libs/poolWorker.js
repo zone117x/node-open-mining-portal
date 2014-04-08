@@ -1,14 +1,14 @@
 var Stratum = require('stratum-pool');
 var Vardiff = require('stratum-pool/lib/varDiff.js');
+var redis   = require('redis');
 var net     = require('net');
-
-
 
 var MposCompatibility = require('./mposCompatibility.js');
 var ShareProcessor = require('./shareProcessor.js');
 
 module.exports = function(logger){
 
+    var _this = this;
 
     var poolConfigs  = JSON.parse(process.env.pools);
     var portalConfig = JSON.parse(process.env.portalConfig);
@@ -17,30 +17,54 @@ module.exports = function(logger){
     
     var pools = {};
 
-    var proxyStuff = {};
+    var proxySwitch = {};
 
     //Handle messages from master process sent via IPC
     process.on('message', function(message) {
         switch(message.type){
+
             case 'blocknotify':
                 var pool = pools[message.coin.toLowerCase()]
                 if (pool) pool.processBlockNotify(message.hash)
                 break;
+
+            // IPC message for pool switching
             case 'switch':
-                var newCoinPool = pools[message.coin.toLowerCase()];
-                if (newCoinPool) {
-                    var oldPool = pools[proxyStuff.curActivePool];
+                var logSystem = 'Proxy';
+                var logComponent = 'Switch';
+                var logSubCat = 'Thread ' + (parseInt(forkId) + 1);
+
+                var newCoin = message.coin.toLowerCase();
+				if (!poolConfigs.hasOwnProperty(newCoin)) {
+                    logger.debug(logSystem, logComponent, logSubCat, 'Switch message to coin that is not recognized: ' + newCoin);
+					break;
+				}
+
+                var algo    = poolConfigs[newCoin].coin.algorithm;
+                var newPool = pools[newCoin];
+                var oldCoin = proxySwitch[algo].currentPool;
+                var oldPool = pools[oldCoin];
+                var proxyPort = proxySwitch[algo].port;
+
+				if (newCoin == oldCoin) {
+                    logger.debug(logSystem, logComponent, logSubCat, 'Switch message would have no effect - ignoring ' + newCoin);
+					break;
+				}
+
+                logger.debug(logSystem, logComponent, logSubCat, 'Proxy message for ' + algo + ' from ' + oldCoin + ' to ' + newCoin);
+
+                if (newPool) {
                     oldPool.relinquishMiners(
                         function (miner, cback) { 
                             // relinquish miners that are attached to one of the "Auto-switch" ports and leave the others there.
-                            cback(typeof(portalConfig.proxy.ports[miner.client.socket.localPort]) !== 'undefined')
+                            cback(miner.client.socket.localPort == proxyPort)
                         }, 
                         function (clients) {
-                            newCoinPool.attachMiners(clients);
-                            proxyStuff.curActivePool = message.coin.toLowerCase();
+                            newPool.attachMiners(clients);
                         }
-                    )
-                    
+                    );
+                    proxySwitch[algo].currentPool = newCoin;
+                    //TODO write new pool to REDIS
                 }
                 break;
         }
@@ -54,7 +78,6 @@ module.exports = function(logger){
         var logSystem = 'Pool';
         var logComponent = coin;
         var logSubCat = 'Thread ' + (parseInt(forkId) + 1);
-
 
         var handlers = {
             auth: function(){},
@@ -128,51 +151,125 @@ module.exports = function(logger){
             else if (isValidBlock)
                 logger.debug(logSystem, logComponent, logSubCat, 'Block found: ' + data.blockHash);
 
-
             if (isValidShare)
-                logger.debug(logSystem, logComponent, logSubCat, 'Share accepted at diff ' + data.difficulty + ' with diff ' + data.shareDiff + ' by ' + data.worker + ' [' + data.ip + ']' );
+                logger.debug(logSystem, logComponent, logSubCat, 'Share accepted at diff ' + data.difficulty + ' by ' + data.worker + ' [' + data.ip + ']' );
 
             else if (!isValidShare)
                 logger.debug(logSystem, logComponent, logSubCat, 'Share rejected: ' + shareData);
-
 
             handlers.share(isValidShare, isValidBlock, data)
 
 
         }).on('difficultyUpdate', function(workerName, diff){
+            logger.debug(logSystem, logComponent, logSubCat, 'Difficulty update to diff ' + diff + ' workerName=' + JSON.stringify(workerName));
             handlers.diff(workerName, diff);
         }).on('log', function(severity, text) {
             logger[severity](logSystem, logComponent, logSubCat, text);
         });
+
         pool.start();
         pools[poolOptions.coin.name.toLowerCase()] = pool;
     });
 
-    
-    if (typeof(portalConfig.proxy) !== 'undefined' && portalConfig.proxy.enabled === true) {
-        proxyStuff.curActivePool = Object.keys(pools)[0];
-        proxyStuff.proxys = {};
-        proxyStuff.varDiffs = {};
-        Object.keys(portalConfig.proxy.ports).forEach(function(port) {
-            proxyStuff.varDiffs[port] = new Vardiff(port, portalConfig.proxy.ports[port].varDiff);
-        });
-        Object.keys(pools).forEach(function (coinName) {
-            var p = pools[coinName];
-            Object.keys(proxyStuff.varDiffs).forEach(function(port) {
-                p.setVarDiff(port, proxyStuff.varDiffs[port]);
+
+    if (typeof(portalConfig.proxy) !== 'undefined') {
+
+        var logSystem = 'Proxy';
+        var logComponent = 'Setup';
+        var logSubCat = 'Thread ' + (parseInt(forkId) + 1);
+
+        var proxyState = {};
+
+        //
+        // Load proxy state for each algorithm from redis which allows NOMP to resume operation
+        // on the last pool it was using when reloaded or restarted
+        //
+        logger.debug(logSystem, logComponent, logSubCat, 'Loading last proxy state from redis');
+        var redisClient = redis.createClient(6379, "localhost") //TODO figure out where redis config will come from for such things
+        redisClient.on('ready', function(){
+            redisClient.hgetall("proxyState", function(error, obj) {
+                if (error) {
+                    logger.debug(logSystem, logComponent, logSubCat, 'No last proxy state found in redis');
+                }
+                else {
+                    proxyState = obj;
+                    logger.debug(logSystem, logComponent, logSubCat, 'Last proxy state loaded from redis');
+                }
+
+                //
+                // Setup proxySwitch object to control proxy operations from configuration and any restored 
+                // state.  Each algorithm has a listening port, current coin name, and an active pool to 
+                // which traffic is directed when activated in the config.  
+			    //	
+				// In addition, the proxy config also takes diff and varDiff parmeters the override the
+				// defaults for the standard config of the coin.
+                //
+                Object.keys(portalConfig.proxy).forEach(function(algorithm) {
+
+                    if (portalConfig.proxy[algorithm].enabled === true) {
+                        var initalPool = proxyState.hasOwnProperty(algorithm) ? proxyState[algorithm].currentPool : _this.getFirstPoolForAlgorithm(algorithm);
+                        proxySwitch[algorithm] = {
+                            port: portalConfig.proxy[algorithm].port,
+                            currentPool: initalPool,
+                            proxy: {}
+                        }
+                       
+
+						// Copy diff and vardiff configuation into pools that match our algorithm so the stratum server can pick them up
+						//
+						// Note: This seems a bit wonky and brittle - better if proxy just used the diff config of the port it was
+						// routed into instead.
+						//
+						if (portalConfig.proxy[algorithm].hasOwnProperty('varDiff')) {
+                            proxySwitch[algorithm].varDiff = new Vardiff(proxySwitch[algorithm].port, portalConfig.proxy[algorithm].varDiff);
+                            proxySwitch[algorithm].diff    = portalConfig.proxy[algorithm].diff;
+						}
+                        Object.keys(pools).forEach(function (coinName) {
+                            var a = poolConfigs[coinName].coin.algorithm;
+                            var p = pools[coinName];
+							if (a == algorithm) {
+                                p.setVarDiff(proxySwitch[algorithm].port, proxySwitch[algorithm].varDiff);
+
+								// Set diff for proxy port by mimicking coin port config and setting it in the pool
+								// the diff wasn't being picked up by the stratum server for proxy workers and was always using the default of 8
+								//p.options.ports[proxySwitch[algorithm].port] = {};
+								//p.options.ports[proxySwitch[algorithm].port].proxy = true;
+								//p.options.ports[proxySwitch[algorithm].port].diff = proxySwitch[algorithm].diff;
+							}
+                        });
+
+                        proxySwitch[algorithm].proxy = net.createServer({allowHalfOpen: true}, function(socket) {
+                            var currentPool = proxySwitch[algorithm].currentPool;
+                            var logSubCat = 'Thread ' + (parseInt(forkId) + 1);
+
+                            logger.debug(logSystem, 'Connect', logSubCat, 'Proxy connect from ' + socket.remoteAddress + ' on ' + proxySwitch[algorithm].port 
+							             + ' routing to ' + currentPool);
+                            pools[currentPool].getStratumServer().handleNewClient(socket);
+
+                        }).listen(parseInt(proxySwitch[algorithm].port), function() {
+                            logger.debug(logSystem, logComponent, logSubCat, 'Proxy listening for ' + algorithm + ' on port ' + proxySwitch[algorithm].port 
+							             + ' into ' + proxySwitch[algorithm].currentPool);
+                        });
+                    }
+                    else {
+                        logger.debug(logSystem, logComponent, logSubCat, 'Proxy pool for ' + algorithm + ' disabled.');
+                    }
+                });
             });
+        }).on('error', function(err){
+            logger.debug(logSystem, logComponent, logSubCat, 'Pool configuration failed: ' + err);
         });
-
-        Object.keys(portalConfig.proxy.ports).forEach(function (port) {
-            proxyStuff.proxys[port] = net .createServer({allowHalfOpen: true}, function(socket) {
-                console.log(proxyStuff.curActivePool);
-                pools[proxyStuff.curActivePool].getStratumServer().handleNewClient(socket);
-            }).listen(parseInt(port), function(){
-                console.log("Proxy listening on " + port);
-            });
-        });
-
-
-        
+        redisClient.quit();
     }
+
+    this.getFirstPoolForAlgorithm = function(algorithm) {
+        var foundCoin = "";
+        Object.keys(poolConfigs).forEach(function(coinName) {
+            if (poolConfigs[coinName].coin.algorithm == algorithm) {
+                if (foundCoin === "")
+                    foundCoin = coinName;
+            }
+        });
+        return foundCoin;
+    };
 };

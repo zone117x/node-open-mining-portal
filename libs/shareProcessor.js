@@ -18,7 +18,7 @@ module.exports = function(logger, poolConfig){
 
     var internalConfig = poolConfig.shareProcessing.internal;
     var redisConfig = internalConfig.redis;
-    var coin = poolConfig.coin.name;
+    var coin = poolConfig.coin.name.toLowerCase();
 
     var forkId = process.env.forkId;
     var logSystem = 'Pool';
