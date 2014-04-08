@@ -1,5 +1,4 @@
 var Stratum = require('stratum-pool');
-var Vardiff = require('stratum-pool/lib/varDiff.js');
 var redis   = require('redis');
 var net     = require('net');
 
@@ -24,8 +23,15 @@ module.exports = function(logger){
         switch(message.type){
 
             case 'blocknotify':
-                var pool = pools[message.coin.toLowerCase()]
-                if (pool) pool.processBlockNotify(message.hash)
+
+                var messageCoin = message.coin.toLowerCase();
+                var poolTarget = Object.keys(pools).filter(function(p){
+                    return p.toLowerCase() === messageCoin;
+                })[0];
+
+                if (poolTarget)
+                    pools[poolTarget].processBlockNotify(message.hash);
+
                 break;
 
             // IPC message for pool switching
@@ -34,13 +40,17 @@ module.exports = function(logger){
                 var logComponent = 'Switch';
                 var logSubCat = 'Thread ' + (parseInt(forkId) + 1);
 
-                var newCoin = message.coin.toLowerCase();
-				if (!poolConfigs.hasOwnProperty(newCoin)) {
-                    logger.debug(logSystem, logComponent, logSubCat, 'Switch message to coin that is not recognized: ' + newCoin);
-					break;
-				}
+                var messageCoin = message.coin.toLowerCase();
+                var newCoin = Object.keys(pools).filter(function(p){
+                    return p.toLowerCase() === messageCoin;
+                })[0];
 
-                var algo    = poolConfigs[newCoin].coin.algorithm;
+                if (!newCoin){
+                    logger.debug(logSystem, logComponent, logSubCat, 'Switch message to coin that is not recognized: ' + messageCoin);
+                    break;
+                }
+
+                var algo = poolConfigs[newCoin].coin.algorithm;
                 var newPool = pools[newCoin];
                 var oldCoin = proxySwitch[algo].currentPool;
                 var oldPool = pools[oldCoin];
@@ -168,7 +178,7 @@ module.exports = function(logger){
         });
 
         pool.start();
-        pools[poolOptions.coin.name.toLowerCase()] = pool;
+        pools[poolOptions.coin.name] = pool;
     });
 
 
@@ -212,7 +222,7 @@ module.exports = function(logger){
                             port: portalConfig.proxy[algorithm].port,
                             currentPool: initalPool,
                             proxy: {}
-                        }
+                        };
                        
 
 						// Copy diff and vardiff configuation into pools that match our algorithm so the stratum server can pick them up
@@ -221,24 +231,18 @@ module.exports = function(logger){
 						// routed into instead.
 						//
 						if (portalConfig.proxy[algorithm].hasOwnProperty('varDiff')) {
-                            proxySwitch[algorithm].varDiff = new Vardiff(proxySwitch[algorithm].port, portalConfig.proxy[algorithm].varDiff);
-                            proxySwitch[algorithm].diff    = portalConfig.proxy[algorithm].diff;
+                            proxySwitch[algorithm].varDiff = new Stratum.varDiff(proxySwitch[algorithm].port, portalConfig.proxy[algorithm].varDiff);
+                            proxySwitch[algorithm].diff = portalConfig.proxy[algorithm].diff;
 						}
                         Object.keys(pools).forEach(function (coinName) {
                             var a = poolConfigs[coinName].coin.algorithm;
                             var p = pools[coinName];
-							if (a == algorithm) {
+							if (a === algorithm) {
                                 p.setVarDiff(proxySwitch[algorithm].port, proxySwitch[algorithm].varDiff);
-
-								// Set diff for proxy port by mimicking coin port config and setting it in the pool
-								// the diff wasn't being picked up by the stratum server for proxy workers and was always using the default of 8
-								//p.options.ports[proxySwitch[algorithm].port] = {};
-								//p.options.ports[proxySwitch[algorithm].port].proxy = true;
-								//p.options.ports[proxySwitch[algorithm].port].diff = proxySwitch[algorithm].diff;
 							}
                         });
 
-                        proxySwitch[algorithm].proxy = net.createServer({allowHalfOpen: true}, function(socket) {
+                        proxySwitch[algorithm].proxy = net.createServer(function(socket) {
                             var currentPool = proxySwitch[algorithm].currentPool;
                             var logSubCat = 'Thread ' + (parseInt(forkId) + 1);
 

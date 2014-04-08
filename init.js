@@ -91,11 +91,11 @@ var buildPoolConfigs = function(){
 
         var coinProfile = JSON.parse(JSON.minify(fs.readFileSync(coinFilePath, {encoding: 'utf8'})));
         poolOptions.coin = coinProfile;
-        configs[poolOptions.coin.name.toLowerCase()] = poolOptions;
+        configs[poolOptions.coin.name] = poolOptions;
 
         if (!(coinProfile.algorithm in algos)){
             logger.error('Master', coinProfile.name, 'Cannot run a pool for unsupported algorithm "' + coinProfile.algorithm + '"');
-            delete configs[poolOptions.coin.name.toLowerCase()];
+            delete configs[poolOptions.coin.name];
         }
 
     });
@@ -210,7 +210,7 @@ var startCoinswitchListener = function(portalConfig){
         });
         var ipcMessage = { 
 		    type:'switch', 
-			coin: message.coin.toLowerCase()
+			coin: message.coin
 		};
         Object.keys(cluster.workers).forEach(function(id) {
             cluster.workers[id].send(ipcMessage);

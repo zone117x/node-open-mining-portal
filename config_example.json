@@ -1,21 +1,11 @@
 {
     "logLevel": "debug",
+
     "clustering": {
         "enabled": true,
         "forks": "auto"
     },
-    "blockNotifyListener": {
-        "enabled": false,
-        "port": 8117,
-        "password": "test"
-    },
 
-    "redisBlockNotifyListener": {
-        "enabled"       : false,
-        "redisPort"     : 6379,
-        "redisHost"     : "hostname",
-        "psubscribeKey" : "newblocks:*"
-    },
     "website": {
         "enabled": true,
         "siteTitle": "Cryppit",
@@ -23,45 +13,54 @@
         "statUpdateInterval": 1.5,
         "hashrateWindow": 300
     },
-	/* 
-	   In a proxy configuration, you can setup ports that accept miners for work based on 
-	   a specific algorithm instead of a specific coin.  Miners that connect to these ports
-	   are automatically switched a coin determined by the server.
 
-	   The default coin is the first configured pool for each algorithm and coin switching 
-	   can be triggered using the coinSwitch.js script in the scripts folder.
+    "blockNotifyListener": {
+        "enabled": false,
+        "port": 8117,
+        "password": "test"
+    },
 
-	   Please note miner address authentication must be disabled when using NOMP in a proxy
-	   configuration and that payout processing is left up to the server administrator. 
-    */
+    "coinSwitchListener": {
+        "enabled": false,
+        "port": 8118,
+        "password": "test"
+    },
+
     "proxy": {
         "sha256": {
             "enabled": false,
             "port": "3333",
-			"diff": 10,
+            "diff": 10,
             "varDiff": {
-                "minDiff": 16, //Minimum difficulty
-                "maxDiff": 512, //Network difficulty will be used if it is lower than this
-                "targetTime": 15, //Try to get 1 share per this many seconds
-                "retargetTime": 90, //Check to see if we should retarget every this many seconds
-                "variancePercent": 30 //Allow time to very this % from target without retargeting
+                "minDiff": 16,
+                "maxDiff": 512,
+                "targetTime": 15,
+                "retargetTime": 90,
+                "variancePercent": 30
             }
         },
         "scrypt": {
             "enabled": false,
             "port": "4444",
-			"diff": 10,
+            "diff": 10,
             "varDiff": {
-                "minDiff": 16, //Minimum difficulty
-                "maxDiff": 512, //Network difficulty will be used if it is lower than this
-                "targetTime": 15, //Try to get 1 share per this many seconds
-                "retargetTime": 90, //Check to see if we should retarget every this many seconds
-                "variancePercent": 30 //Allow time to very this % from target without retargeting
+                "minDiff": 16,
+                "maxDiff": 512,
+                "targetTime": 15,
+                "retargetTime": 90,
+                "variancePercent": 30
             }
         },
         "scrypt-n": {
             "enabled": false,
             "port": "5555"
         }
+    },
+
+    "redisBlockNotifyListener": {
+        "enabled": false,
+        "redisPort": 6379,
+        "redisHost": "hostname",
+        "psubscribeKey": "newblocks:*"
     }
 }

@@ -132,24 +132,73 @@ Explanation for each field:
         "enabled": true,
         "forks": "auto"
     },
-    
-    /* With this enabled, the master process will start listening on the configured port for
-       messages from the 'scripts/blockNotify.js' script which your coin daemons can be configured
-       to run when a new block is available. When a blocknotify message is received, the master
-       process uses IPC (inter-process communication) to notify each worker process about the
-       message. Each worker process then sends the message to the appropriate coin pool. See
-       "Setting up blocknotify" below to set up your daemon to use this feature. */
+
+    /* This is the front-end. Its not finished. When it is finished, this comment will say so. */
+    "website": {
+        "enabled": true,
+        "port": 80,
+        "liveStats": true
+    },
+
+    /* With this enabled, the master process listen on the configured port for messages from the
+       'scripts/blockNotify.js' script which your coin daemons can be configured to run when a
+       new block is available. When a blocknotify message is received, the master process uses
+       IPC (inter-process communication) to notify each thread about the message. Each thread
+       then sends the message to the appropriate coin pool. See "Setting up blocknotify" below to
+       set up your daemon to use this feature. */
     "blockNotifyListener": {
         "enabled": true,
         "port": 8117,
         "password": "test"
     },
     
-    /* This is the front-end. Its not finished. When it is finished, this comment will say so. */
-    "website": {
-        "enabled": true,
-        "port": 80,
-        "liveStats": true
+    /* With this enabled, the master process will listen on the configured port for messages from
+       the 'scripts/coinSwitch.js' script which will trigger your proxy pools to switch to the
+       specified coin (non-case-sensitive). This setting is used in conjuction with the proxy
+       feature below. */
+    "coinSwitchListener": {
+        "enabled": false,
+        "port": 8118,
+        "password": "test"
+    },
+
+    /* In a proxy configuration, you can setup ports that accept miners for work based on a
+       specific algorithm instead of a specific coin.  Miners that connect to these ports are
+       automatically switched a coin determined by the server. The default coin is the first
+       configured pool for each algorithm and coin switching can be triggered using the
+       coinSwitch.js script in the scripts folder.
+
+       Please note miner address authentication must be disabled when using NOMP in a proxy
+       configuration and that payout processing is left up to the server administrator. */
+    "proxy": {
+        "sha256": {
+            "enabled": false,
+            "port": "3333",
+            "diff": 10,
+            "varDiff": {
+                "minDiff": 16, //Minimum difficulty
+                "maxDiff": 512, //Network difficulty will be used if it is lower than this
+                "targetTime": 15, //Try to get 1 share per this many seconds
+                "retargetTime": 90, //Check to see if we should retarget every this many seconds
+                "variancePercent": 30 //Allow time to very this % from target without retargeting
+            }
+        },
+        "scrypt": {
+            "enabled": false,
+            "port": "4444",
+            "diff": 10,
+            "varDiff": {
+                "minDiff": 16, //Minimum difficulty
+                "maxDiff": 512, //Network difficulty will be used if it is lower than this
+                "targetTime": 15, //Try to get 1 share per this many seconds
+                "retargetTime": 90, //Check to see if we should retarget every this many seconds
+                "variancePercent": 30 //Allow time to very this % from target without retargeting
+            }
+        },
+        "scrypt-n": {
+            "enabled": false,
+            "port": "5555"
+        }
     }
 }
 ````
