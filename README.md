@@ -472,6 +472,7 @@ To support development of this project feel free to donate :)
 
 Credits
 -------
+* [Jerry Brady / mintyfresh68](https://github.com/bluecircle) - got coin-switching fully working and developed proxy-per-algo feature
 * [Tony Dobbs](http://anthonydobbs.com) - graphical help with logo and front-end design
 * [vekexasia](//github.com/vekexasia) - co-developer & great tester
 * [TheSeven](//github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
