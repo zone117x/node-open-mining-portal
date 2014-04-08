@@ -115,6 +115,11 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
             logger.error('Master', coin, 'Share processing is not configured so a pool cannot be started for this coin.');
             delete poolConfigs[coin];
         }
+
+        if (p.daemons.length < 1){
+            logger.error('Master', coin, 'No daemons configured so a pool cannot be started for this coin.');
+            delete poolConfigs[coin];
+        }
     });
 
     if (Object.keys(poolConfigs).length === 0){
@@ -214,24 +219,6 @@ var startCoinswitchListener = function(portalConfig){
     });
     listener.start();
 
-/*
-if !cluster.isWorker
-else {
-    var coinNames = ['Emoticoin','Infinitecoin'];
-    var curIndex = 0;
-    setInterval(function () {
-        var newCoinName = coinNames[++curIndex % coinNames.length];
-        console.log("SWITCHING to " + newCoinName);
-        var ipcMessage = { 
-		    type:'switch', 
-			coin: newCoinName
-		};
-        Object.keys(cluster.workers).forEach(function(id) {
-            cluster.workers[id].send(ipcMessage);
-        });
-    }, 30000);
-} 
-*/
 
 };
 
