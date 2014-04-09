@@ -74,7 +74,18 @@ module.exports = function(logger){
                         }
                     );
                     proxySwitch[algo].currentPool = newCoin;
-                    //TODO write new pool to REDIS
+
+                    var redisClient = redis.createClient(6379, "localhost") 
+                    redisClient.on('ready', function(){
+                        redisClient.hset('proxyState', algo, newCoin, function(error, obj) {
+                            if (error) {
+                                logger.error(logSystem, logComponent, logSubCat, 'Redis error writing proxy config: ' + JSON.stringify(err))
+                            }
+                            else {
+                                logger.debug(logSystem, logComponent, logSubCat, 'Last proxy state saved to redis for ' + algo);
+                            }
+						});
+					});
                 }
                 break;
         }
@@ -195,7 +206,7 @@ module.exports = function(logger){
         // on the last pool it was using when reloaded or restarted
         //
         logger.debug(logSystem, logComponent, logSubCat, 'Loading last proxy state from redis');
-        var redisClient = redis.createClient(6379, "localhost") //TODO figure out where redis config will come from for such things
+        var redisClient = redis.createClient(6379, "localhost") 
         redisClient.on('ready', function(){
             redisClient.hgetall("proxyState", function(error, obj) {
                 if (error) {
@@ -217,7 +228,7 @@ module.exports = function(logger){
                 Object.keys(portalConfig.proxy).forEach(function(algorithm) {
 
                     if (portalConfig.proxy[algorithm].enabled === true) {
-                        var initalPool = proxyState.hasOwnProperty(algorithm) ? proxyState[algorithm].currentPool : _this.getFirstPoolForAlgorithm(algorithm);
+                        var initalPool = proxyState.hasOwnProperty(algorithm) ? proxyState[algorithm] : _this.getFirstPoolForAlgorithm(algorithm);
                         proxySwitch[algorithm] = {
                             port: portalConfig.proxy[algorithm].port,
                             currentPool: initalPool,
@@ -263,7 +274,6 @@ module.exports = function(logger){
         }).on('error', function(err){
             logger.debug(logSystem, logComponent, logSubCat, 'Pool configuration failed: ' + err);
         });
-        redisClient.quit();
     }
 
     this.getFirstPoolForAlgorithm = function(algorithm) {
