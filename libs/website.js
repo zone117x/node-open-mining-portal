@@ -5,6 +5,8 @@ var path = require('path');
 var async = require('async');
 var dot = require('dot');
 var express = require('express');
+var bodyParser = require('body-parser');
+var compress = require('compression');
 
 var watch = require('node-watch');
 
@@ -29,7 +31,8 @@ module.exports = function(logger){
         'home.html': '',
         'getting_started.html': 'getting_started',
         'stats.html': 'stats',
-        'api.html': 'api'
+        'api.html': 'api',
+        'admin.html': 'admin'
     };
 
     var pageTemplates = {};
@@ -60,8 +63,9 @@ module.exports = function(logger){
     };
 
 
-    var readPageFiles = function(){
-        async.each(Object.keys(pageFiles), function(fileName, callback){
+
+    var readPageFiles = function(files){
+        async.each(files, function(fileName, callback){
             var filePath = 'website/' + (fileName === 'index.html' ? '' : 'pages/') + fileName;
             fs.readFile(filePath, 'utf8', function(err, data){
                 var pTemp = dot.template(data);
@@ -78,12 +82,14 @@ module.exports = function(logger){
     };
 
 
-
+    //If an html file was changed reload it
     watch('website', function(filename){
-        //if (event === 'change' && filename in pageFiles)
-        //READ ALL THE FILEZ BLAHHH
-            readPageFiles();
-
+        var basename = path.basename(filename);
+        if (basename in pageFiles){
+            console.log(filename);
+            readPageFiles([basename]);
+            logger.debug(logSystem, 'Server', 'Reloaded file ' + basename);
+        }
     });
 
     portalStats.getGlobalStats(function(){
@@ -103,10 +109,9 @@ module.exports = function(logger){
         });
     };
 
-    setInterval(buildUpdatedWebsite, websiteConfig.statUpdateInterval * 1000);
+    setInterval(buildUpdatedWebsite, websiteConfig.stats.updateInterval * 1000);
 
 
-    var app = express();
 
     var getPage = function(pageId){
         if (pageId in pageProcessed){
@@ -127,6 +132,11 @@ module.exports = function(logger){
 
 
 
+    var app = express();
+
+
+    app.use(bodyParser.json());
+
     app.get('/get_page', function(req, res, next){
         var requestedPage = getPage(req.query.id);
         if (requestedPage){
@@ -143,11 +153,27 @@ module.exports = function(logger){
         portalApi.handleApiRequest(req, res, next);
     });
 
+    app.post('/api/admin/:method', function(req, res, next){
+        if (portalConfig.website
+            && portalConfig.website.adminCenter
+            && portalConfig.website.adminCenter.enabled){
+            if (portalConfig.website.adminCenter.password === req.body.password)
+                portalApi.handleAdminApiRequest(req, res, next);
+            else
+                res.send(401, JSON.stringify({error: 'Incorrect Password'}));
+
+        }
+        else
+            next();
+
+    });
+
+    app.use(compress());
     app.use('/static', express.static('website/static'));
 
     app.use(function(err, req, res, next){
         console.error(err.stack);
-        res.end(500, 'Something broke!');
+        res.send(500, 'Something broke!');
     });
 
     app.listen(portalConfig.website.port, function(){

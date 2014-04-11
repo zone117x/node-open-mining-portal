@@ -147,7 +147,27 @@ Explanation for each field:
     "website": {
         "enabled": true,
         "port": 80,
-        "liveStats": true
+        /* Used for displaying stratum connection data on the Getting Started page. */
+        "stratumHost": "cryppit.com",
+        "stats": {
+            /* Gather stats to broadcast to page viewers and store in redis for historical stats
+               every this many seconds. */
+            "updateInterval": 15,
+            /* How many seconds to hold onto historical stats. Currently set to 24 hours. */
+            "historicalRetention": 43200,
+            /* How many seconds worth of shares should be gathered to generate hashrate. */
+            "hashrateWindow": 300,
+            /* Redis instance of where to store historical stats. */
+            "redis": {
+                "host": "localhost",
+                "port": 6379
+            }
+        },
+        /* Not done yet. */
+        "adminCenter": {
+            "enabled": true,
+            "password": "password"
+        }
     },
 
     /* With this enabled, the master process listen on the configured port for messages from the
@@ -463,7 +483,7 @@ When updating NOMP to the latest code its important to not only `git pull` the l
 * Inside your NOMP directory (where the init.js script is) do `git pull` to get the latest NOMP code.
 * Remove the dependenices by deleting the `node_modules` directory with `rm -r node_modules`.
 * Run `npm update` to force updating/reinstalling of the dependencies.
-* Compare your `config.json` and `pool_configs/coin.json` configurations to the lateset example ones in this repo or the ones in the setup instructions where each config field is explained. You may need to modify or add any new changes.
+* Compare your `config.json` and `pool_configs/coin.json` configurations to the latest example ones in this repo or the ones in the setup instructions where each config field is explained. You may need to modify or add any new changes.
 
 Donations
 ---------
@@ -481,7 +501,7 @@ To support development of this project feel free to donate :)
 Credits
 -------
 * [Jerry Brady / mintyfresh68](https://github.com/bluecircle) - got coin-switching fully working and developed proxy-per-algo feature
-* [Tony Dobbs](http://anthonydobbs.com) - graphical help with logo and front-end design
+* [Tony Dobbs](http://anthonydobbs.com) - designs for front-end and created the NOMP logo
 * [vekexasia](//github.com/vekexasia) - co-developer & great tester
 * [TheSeven](//github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
 * [UdjinM6](//github.com/UdjinM6) - helped implement fee withdrawal in payment processing

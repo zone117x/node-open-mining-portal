@@ -17,6 +17,10 @@ module.exports = function(logger, portalConfig, poolConfigs){
             case 'stats':
                 res.end(portalStats.statsString);
                 return;
+            case 'pool_stats':
+                res.writeHead(200, {'content-encoding': 'gzip'});
+                res.end(portalStats.statPoolHistoryBuffer);
+                return;
             case 'live_stats':
                 res.writeHead(200, {
                     'Content-Type': 'text/event-stream',
@@ -31,6 +35,18 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 });
 
                 return;
+            default:
+                next();
+        }
+    };
+
+
+    this.handleAdminApiRequest = function(req, res, next){
+        switch(req.params.method){
+            case 'pools': {
+                res.end(JSON.stringify({result: poolConfigs}));
+                return;
+            }
             default:
                 next();
         }

@@ -38,6 +38,8 @@
         "mysql": "*",
         "async": "*",
         "express": "*",
+        "body-parser": "*",
+        "compression": "*",
         "dot": "*",
         "colors": "*",
         "node-watch": "*"

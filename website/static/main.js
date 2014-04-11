@@ -1,11 +1,12 @@
+
 $(function(){
 
     var hotSwap = function(page, pushSate){
         if (pushSate) history.pushState(null, null, '/' + page);
-        $('.selected').removeClass('selected');
-        $('a[href="/' + page + '"]').parent().addClass('selected')
+        $('.pure-menu-selected').removeClass('pure-menu-selected');
+        $('a[href="/' + page + '"]').parent().addClass('pure-menu-selected');
         $.get("/get_page", {id: page}, function(data){
-            $('#page').html(data);
+            $('main').html(data);
         }, 'html')
     };
 
@@ -25,7 +26,7 @@ $(function(){
         }, 0);
     });
 
-    var statsSource = new EventSource("/api/live_stats");
+    window.statsSource = new EventSource("/api/live_stats");
     statsSource.addEventListener('message', function(e){
         var stats = JSON.parse(e.data);
         for (algo in stats.algos) {

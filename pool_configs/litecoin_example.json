@@ -53,7 +53,10 @@
 
     "ports": {
         "3008": {
-            "diff": 8,
+            "diff": 8
+        },
+        "3032": {
+            "diff": 32,
             "varDiff": {
                 "minDiff": 8,
                 "maxDiff": 512,
@@ -61,9 +64,6 @@
                 "retargetTime": 90,
                 "variancePercent": 30
             }
-        },
-        "3032": {
-            "diff": 8
         },
         "3256": {
             "diff": 256
