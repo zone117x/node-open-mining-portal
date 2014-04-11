@@ -23,7 +23,7 @@ Build with:
 
 
 Usage in daemon coin.conf
-    blocknotify="/bin/blocknotify 127.0.01:8117 mySuperSecurePassword dogecoin %s"
+    blocknotify="/bin/blocknotify 127.0.0.1:8117 mySuperSecurePassword dogecoin %s"
 
 *NOTE* If you use "localhost" as hostname you may get a "13" error (socket / connect / send may consider "localhost" as a broadcast address)
 
