@@ -210,11 +210,15 @@ module.exports = function(logger){
         redisClient.on('ready', function(){
             redisClient.hgetall("proxyState", function(error, obj) {
                 if (error) {
+                    proxyState = {};
                     logger.debug(logSystem, logComponent, logSubCat, 'No last proxy state found in redis');
                 }
                 else {
-                    proxyState = obj;
-                    logger.debug(logSystem, logComponent, logSubCat, 'Last proxy state loaded from redis');
+					if (obj != null)
+					{
+                    	proxyState = obj;
+                        logger.debug(logSystem, logComponent, logSubCat, 'Last proxy state loaded from redis');
+					}
                 }
 
                 //
