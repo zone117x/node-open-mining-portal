@@ -11,7 +11,7 @@
         "port": 80,
         "stratumHost": "cryppit.com",
         "stats": {
-            "updateInterval": 15,
+            "updateInterval": 60,
             "historicalRetention": 43200,
             "hashrateWindow": 300,
             "redis": {

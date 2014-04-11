@@ -20,7 +20,6 @@ module.exports = function(logger, portalConfig, poolConfigs){
 
     this.statHistory = [];
     this.statPoolHistory = [];
-    this.statPoolHistoryBuffer;
 
     this.stats = {};
     this.statsString = '';
@@ -84,7 +83,6 @@ module.exports = function(logger, portalConfig, poolConfigs){
             _this.statHistory.forEach(function(stats){
                 addStatPoolHistory(stats);
             });
-            deflateStatPoolHistory();
         });
     }
 
@@ -96,7 +94,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
         for (var pool in stats.pools){
             data.pools[pool] = {
                 hashrate: stats.pools[pool].hashrate,
-                workers: stats.pools[pool].workerCount,
+                workerCount: stats.pools[pool].workerCount,
                 blocks: stats.pools[pool].blocks
             }
         }
@@ -104,11 +102,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
     }
 
 
-    function deflateStatPoolHistory(){
-        zlib.gzip(JSON.stringify(_this.statPoolHistory), function(err, buffer){
-            _this.statPoolHistoryBuffer = buffer;
-        });
-    }
+
 
     this.getGlobalStats = function(callback){
 
@@ -244,8 +238,6 @@ module.exports = function(logger, portalConfig, poolConfigs){
                     break;
                 }
             }
-
-            deflateStatPoolHistory();
 
             redisStats.multi([
                 ['zadd', 'statHistory', statGatherTime, _this.statsString],

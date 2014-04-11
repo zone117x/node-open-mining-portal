@@ -18,8 +18,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 res.end(portalStats.statsString);
                 return;
             case 'pool_stats':
-                res.writeHead(200, {'content-encoding': 'gzip'});
-                res.end(portalStats.statPoolHistoryBuffer);
+                res.end(JSON.stringify(portalStats.statPoolHistory));
                 return;
             case 'live_stats':
                 res.writeHead(200, {
