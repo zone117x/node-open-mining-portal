@@ -130,6 +130,8 @@ function displayCharts(){
 
         poolBlockChart.xAxis.tickFormat(timeOfDayFormat);
 
+        poolBlockChart.yAxis.tickFormat(d3.format('d'));
+
         d3.select('#poolBlocks').datum(poolBlockData).call(poolBlockChart);
 
         return poolBlockChart;
