@@ -1,4 +1,3 @@
-
 $(function(){
 
     var hotSwap = function(page, pushSate){
@@ -27,12 +26,5 @@ $(function(){
     });
 
     window.statsSource = new EventSource("/api/live_stats");
-    statsSource.addEventListener('message', function(e){
-        var stats = JSON.parse(e.data);
-        for (algo in stats.algos) {
-            $('#statsMiners'+algo).text(stats.algos[algo].workers);
-            $('#statsHashrate'+algo).text(stats.algos[algo].hashrateString);
-        }
-    });
 
 });

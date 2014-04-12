@@ -17,26 +17,31 @@
         min-width: 170px;
     }
 
-    #menu > div:first-child{
+    #menu > .menuHeader{
         color: #e3f7ff;
         border-bottom: 1px solid #7f878b;
         font-size: 1.2em;
-        padding: 16px 0 4px 15px;
+        padding: 16px 16px 4px 15px;
     }
 
-    #coinList{
-        padding: 20px;
+    .menuList{
         transition-duration: 200ms;
     }
 
-    #coinList > a{
+    .menuList > a:first-child{
+        margin-top: 10px;
+    }
+
+    .menuList > a{
         display: block;
         color: #e3f7ff;
         text-decoration: none;
-        padding: 5px;
+        padding: 7px;
+        padding-left: 25px;
+        text-transform: capitalize;
     }
 
-    #coinList > a:hover{
+    .menuList > a:hover{
         color: #f69b3a;
     }
 
@@ -125,6 +130,9 @@
         position: absolute;
         background-color: #f06350;
     }
+    #coinInfo .coinInfoName{
+        text-transform: capitalize;
+    }
     #coinInfo > div:first-of-type{
         font-size: 1.8em;
         text-align: center;
@@ -175,11 +183,40 @@
 <div id="holder">
 
     <div id="menu">
-        <div>Coins</div>
-        <div id="coinList">
+
+        {{? (function(){
+                if (!it.portalConfig.proxy) return false;
+                for (var p in it.portalConfig.proxy){
+                    if (it.portalConfig.proxy[p].enabled)
+                        return true;
+                }
+                return false;
+            })()
+        }}
+        <div class="menuHeader">Coin-Switching Ports</div>
+        {{?}}
+
+        <div class="menuList">
+        {{ for (var p in it.portalConfig.proxy){
+            if (!it.portalConfig.proxy[p].enabled) continue;
+            var info = {
+                algo: p,
+                ports: {},
+                host: it.portalConfig.website.stratumHost
+            };
+            info.ports[it.portalConfig.proxy[p].port] = {diff: it.portalConfig.proxy[p].diff};
+            info = JSON.stringify(info).replace(/"/g, '&quot;');
+        }}
+            <a href="#" class="poolOption" data-info="{{=info}}">{{=p}}</a>
+        {{ } }}
+        </div>
+
+        <div class="menuHeader">Coins</div>
+        <div class="menuList" id="coinList">
             {{ for(var pool in it.poolsConfigs) {
                 var info = JSON.stringify({
                     coin: it.poolsConfigs[pool].coin,
+                    algo: it.poolsConfigs[pool].coin.algorithm,
                     ports: it.poolsConfigs[pool].ports,
                     host: it.portalConfig.website.stratumHost
                 }).replace(/"/g, '&quot;');
@@ -222,7 +259,7 @@
             <div>Password:</div>
         </div>
         <div id="coinInfoRowValues">
-            <div>your <span class="coinInfoName"></span> wallet address</div>
+            <div id="coinInfoUsername"></div>
             <div>anything</div>
         </div>
     </div>
@@ -233,14 +270,17 @@
     function showCoinConfig(info){
 
         var htmlKeys = '<div class="coinInfoData">Algorithm:</div>';
-        var htmlValues = '<div class="coinInfoData">' + info.coin.algorithm + '</div>';
+        var htmlValues = '<div class="coinInfoData">' + info.algo + '</div>';
 
         for (var port in info.ports){
             htmlKeys += '<div class="coinInfoData">URL <span class="coinInfoSubtle">(difficulty ' + info.ports[port].diff + ')</span>:</div>';
             htmlValues += '<div class="coinInfoData">stratum+tcp://' + info.host + ':' + port + '</div>';
         }
 
-        $('.coinInfoName').text(info.coin.name);
+        if (info.coin)
+            $('#coinInfoUsername').text('your ' + info.coin.name + ' wallet address');
+        else
+            $('#coinInfoUsername').text('your public key');
         $('.coinInfoData').remove();
         $('#coinInfoRowKeys').append(htmlKeys);
         $('#coinInfoRowValues').append(htmlValues);
@@ -248,9 +288,9 @@
 
     $('#coinGlowTrigger').click(function(event){
         event.preventDefault();
-        $('#coinList').addClass('glow');
+        $('.menuList').addClass('glow');
         setTimeout(function(){
-            $('#coinList').removeClass('glow');
+            $('.menuList').removeClass('glow');
         }, 200);
         return false;
     });

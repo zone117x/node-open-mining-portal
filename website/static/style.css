@@ -4,6 +4,7 @@ html, button, input, select, textarea, .pure-g [class *= "pure-u"], .pure-g-r [c
 
 html{
     background: #2d2d2d;
+    overflow-y: scroll;
 }
 
 body{
