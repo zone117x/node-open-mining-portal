@@ -66,9 +66,9 @@ module.exports = function(logger, poolConfig){
         var dbData = [
             shareData.ip,
             shareData.worker,
-            isValidShare ? 'Y' : 'N', 
+            isValidShare ? 'Y' : 'N',
             isValidBlock ? 'Y' : 'N',
-            shareData.difficulty,
+            poolConfig.coin.algorithm === 'x11' ? shareData.difficulty * 256 : shareData.difficulty,
             typeof(shareData.error) === 'undefined' ? null : shareData.error,
             shareData.blockHash ? shareData.blockHash : (shareData.blockHashInvalid ? shareData.blockHashInvalid : '')
         ];
