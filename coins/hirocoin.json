@@ -1,5 +1,6 @@
 {
     "name": "Hirocoin",
     "symbol": "hic",
-    "algorithm": "x11"
+    "algorithm": "x11",
+    "mposDiffMultiplier": 256
 }
