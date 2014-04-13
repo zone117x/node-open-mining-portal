@@ -68,6 +68,12 @@
         }
     },
 
+	"profitSwitch": {
+		"enabled": false,
+        "updateInterval": 60,
+		"depth": 0.80
+	},
+
     "redisBlockNotifyListener": {
         "enabled": false,
         "redisPort": 6379,

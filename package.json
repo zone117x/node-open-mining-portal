@@ -42,7 +42,9 @@
         "compression": "*",
         "dot": "*",
         "colors": "*",
-        "node-watch": "*"
+        "node-watch": "*",
+        "request": "*",
+        "nonce": "*"
     },
     "engines": {
         "node": ">=0.10"
