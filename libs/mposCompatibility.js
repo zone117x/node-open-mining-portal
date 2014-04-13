@@ -68,7 +68,7 @@ module.exports = function(logger, poolConfig){
             shareData.worker,
             isValidShare ? 'Y' : 'N',
             isValidBlock ? 'Y' : 'N',
-            poolConfig.coin.algorithm === 'x11' ? shareData.difficulty * 256 : shareData.difficulty,
+            shareData.difficulty * (poolConfig.coin.mposDiffMultiplier || 1)
             typeof(shareData.error) === 'undefined' ? null : shareData.error,
             shareData.blockHash ? shareData.blockHash : (shareData.blockHashInvalid ? shareData.blockHashInvalid : '')
         ];
