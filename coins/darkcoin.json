@@ -1,5 +1,6 @@
 {
     "name": "Darkcoin",
     "symbol": "DRK",
-    "algorithm": "x11"
+    "algorithm": "x11",
+    "mposDiffMultiplier": 256
 }

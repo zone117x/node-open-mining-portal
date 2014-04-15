@@ -272,6 +272,7 @@ Here is an example of the required fields:
     "symbol": "ltc",
     "algorithm": "scrypt", //or "sha256", "scrypt-jane", "scrypt-n", "quark", "x11"
     "txMessages": false, //or true (not required, defaults to false)
+    "mposDiffMultiplier": 256, //only for x11 coins in mpos mode, set to 256 (optional)
 }
 ````
 
