@@ -8,7 +8,6 @@ var PoolLogger = require('./libs/logUtil.js');
 var BlocknotifyListener = require('./libs/blocknotifyListener.js');
 var CoinswitchListener = require('./libs/coinswitchListener.js');
 var RedisBlocknotifyListener = require('./libs/redisblocknotifyListener.js');
-var WorkerListener = require('./libs/workerListener.js');
 var PoolWorker = require('./libs/poolWorker.js');
 var PaymentProcessor = require('./libs/paymentProcessor.js');
 var Website = require('./libs/website.js');
@@ -139,6 +138,7 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
         return portalConfig.clustering.forks;
     })();
 
+    var poolWorkers = {};
 
     var createPoolWorker = function(forkId){
         var worker = cluster.fork({
@@ -147,11 +147,24 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
             pools: serializedConfigs,
             portalConfig: JSON.stringify(portalConfig)
         });
+        worker.forkId = forkId;
+        worker.type = 'pool';
+        poolWorkers[forkId] = worker;
         worker.on('exit', function(code, signal){
             logger.error('Master', 'PoolSpanwer', 'Fork ' + forkId + ' died, spawning replacement worker...');
             setTimeout(function(){
                 createPoolWorker(forkId);
             }, 2000);
+        }).on('message', function(msg){
+            switch(msg.type){
+                case 'banIP':
+                    Object.keys(cluster.workers).forEach(function(id) {
+                        if (cluster.workers[id].type === 'pool'){
+                            cluster.workers[id].send({type: 'banIP', ip: msg.ip});
+                        }
+                    });
+                    break;
+            }
         });
     };
 
@@ -165,12 +178,6 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
         }
     }, 250);
 
-};
-
-
-var startWorkerListener = function(poolConfigs){
-    var workerListener = new WorkerListener(logger, poolConfigs);
-    workerListener.init();
 };
 
 
@@ -300,8 +307,6 @@ var startWebsite = function(portalConfig, poolConfigs){
     startCoinswitchListener(portalConfig);
 
     startRedisBlockListener(portalConfig);
-
-    startWorkerListener(poolConfigs);
 
     startWebsite(portalConfig, poolConfigs);
 

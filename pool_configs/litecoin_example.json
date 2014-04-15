@@ -10,6 +10,8 @@
     "emitInvalidBlockHashes": false,
     "shareVariancePercent": 15,
 
+    "tcpProxyProtocol": false,
+
     "shareProcessing": {
         "internal": {
             "enabled": true,
@@ -22,19 +24,19 @@
             "feeReceiveAddress": "mppaGeNaSbG1Q7S6V3gL5uJztMhucgL9Vh",
             "feeWithdrawalThreshold": 5,
             "daemon": {
-                "host": "localhost",
+                "host": "127.0.0.1",
                 "port": 19332,
                 "user": "litecoinrpc",
                 "password": "testnet"
             },
             "redis": {
-                "host": "localhost",
+                "host": "127.0.0.1",
                 "port": 6379
             }
         },
         "mpos": {
             "enabled": false,
-            "host": "localhost",
+            "host": "127.0.0.1",
             "port": 3306,
             "user": "me",
             "password": "mypass",
@@ -72,13 +74,13 @@
 
     "daemons": [
         {
-            "host": "localhost",
+            "host": "127.0.0.1",
             "port": 19332,
             "user": "litecoinrpc",
             "password": "testnet"
         },
         {
-            "host": "localhost",
+            "host": "127.0.0.1",
             "port": 19344,
             "user": "litecoinrpc",
             "password": "testnet"
@@ -87,7 +89,7 @@
 
     "p2p": {
         "enabled": false,
-        "host": "localhost",
+        "host": "127.0.0.1",
         "port": 19333,
         "protocolVersion": 70002,
         "magic": "fcc1b7dc"

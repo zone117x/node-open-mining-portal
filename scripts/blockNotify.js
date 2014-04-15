@@ -1,6 +1,6 @@
 /*
  This script should be hooked to the coin daemon as follow:
- litecoind -blocknotify="node /path/to/this/script/blockNotify.js localhost:8117 password litecoin %s"
+ litecoind -blocknotify="node /path/to/this/script/blockNotify.js 127.0.0.1:8117 password litecoin %s"
  The above will send tell litecoin to launch this script with those parameters every time a block is found.
  This script will then send the blockhash along with other information to a listening tcp socket
  */

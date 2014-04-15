@@ -22,6 +22,13 @@ module.exports = function(logger){
     process.on('message', function(message) {
         switch(message.type){
 
+            case 'banIP':
+                for (var p in pools){
+                    if (pools[p].stratumServer)
+                        pools[p].stratumServer.addBannedIP(message.ip);
+                }
+                break;
+
             case 'blocknotify':
 
                 var messageCoin = message.coin.toLowerCase();
@@ -75,7 +82,7 @@ module.exports = function(logger){
                     );
                     proxySwitch[algo].currentPool = newCoin;
 
-                    var redisClient = redis.createClient(6379, "localhost") 
+                    var redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host)
                     redisClient.on('ready', function(){
                         redisClient.hset('proxyState', algo, newCoin, function(error, obj) {
                             if (error) {
@@ -186,6 +193,8 @@ module.exports = function(logger){
             handlers.diff(workerName, diff);
         }).on('log', function(severity, text) {
             logger[severity](logSystem, logComponent, logSubCat, text);
+        }).on('banIP', function(ip, worker){
+            process.send({type: 'banIP', ip: ip});
         });
 
         pool.start();
@@ -206,7 +215,7 @@ module.exports = function(logger){
         // on the last pool it was using when reloaded or restarted
         //
         logger.debug(logSystem, logComponent, logSubCat, 'Loading last proxy state from redis');
-        var redisClient = redis.createClient(6379, "localhost") 
+        var redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host)
         redisClient.on('ready', function(){
             redisClient.hgetall("proxyState", function(error, obj) {
                 if (error || obj == null) {
