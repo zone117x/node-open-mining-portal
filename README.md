@@ -405,9 +405,9 @@ Description of options:
     },
 
     /* If a worker is submitting a high threshold of invalid shares we can temporarily ban their IP
-       to reduce system/network load. Also useful to fight against flooding attacks. The worker's
-       If running behind something like HAProxy be sure to enable the TCP Proxy Protocol config,
-       otherwise you'll end up banning your own IP address (and therefore all workers). */
+       to reduce system/network load. Also useful to fight against flooding attacks. If running
+       behind something like HAProxy be sure to enable 'tcpProxyProtocol', otherwise you'll end up
+       banning your own IP address (and therefore all workers). */
     "banning": {
         "enabled": true,
         "time": 600, //How many seconds to ban worker for
