@@ -472,10 +472,9 @@ Description of options:
         /* Port configured for daemon (this is the actual peer port not RPC port) */
         "port": 19333,
 
-
-        /* If your coin daemon is new enough (i.e. not a shitcoin) then it will support a p2p feature
-           that prevents the daemon from spamming our peer node with unnecessary transaction data.
-           Assume its supported but if you have problems try disabling it. */
+        /* If your coin daemon is new enough (i.e. not a shitcoin) then it will support a p2p
+           feature that prevents the daemon from spamming our peer node with unnecessary
+           transaction data. Assume its supported but if you have problems try disabling it. */
         "disableTransactions": true,
 
         /* Magic value is different for main/testnet and for each coin. It is found in the daemon
