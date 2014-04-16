@@ -457,23 +457,30 @@ Description of options:
     ],
 
 
-    /* This allows the pool to connect to the daemon as a node peer to recieve block updates.
+    /* This allows the pool to connect to the daemon as a node peer to receive block updates.
        It may be the most efficient way to get block updates (faster than polling, less
-       intensive than blocknotify script). However its still under development (not yet working). */
+       intensive than blocknotify script). It requires additional setup: the 'magic' field must
+       be exact (extracted from the coin source code). */
     "p2p": {
         "enabled": false,
+
+        /* Host for daemon */
         "host": "127.0.0.1",
+
+        /* Port configured for daemon (this is the actual peer port not RPC port) */
         "port": 19333,
+
+
+        /* If your coin daemon is new enough (i.e. not a shitcoin) then it will support a p2p feature
+           that prevents the daemon from spamming our peer node with unnecessary transaction data.
+           Assume its supported but if you have problems try disabling it. */
+        "disableTransactions": true,
 
         /* Magic value is different for main/testnet and for each coin. It is found in the daemon
            source code as the pchMessageStart variable.
            For example, litecoin mainnet magic: http://git.io/Bi8YFw
-           And for litecoin testnet magic: http://git.io/NXBYJA
-         */
-        "magic": "fcc1b7dc",
-
-        //Found in src as the PROTOCOL_VERSION variable, for example: http://git.io/KjuCrw
-        "protocolVersion": 70002,
+           And for litecoin testnet magic: http://git.io/NXBYJA */
+        "magic": "fcc1b7dc"
     }
 }
 
@@ -494,7 +501,7 @@ node [path to scripts/blockNotify.js] [listener host]:[listener port] [listener 
 ```
 Example: inside `dogecoin.conf` add the line
 ```
-blocknotify="node scripts/blockNotify.js 127.0.0.1:8117 mySuperSecurePassword dogecoin %s"
+blocknotify=node scripts/blockNotify.js 127.0.0.1:8117 mySuperSecurePassword dogecoin %s
 ```
 
 Alternatively, you can use a more efficient block notify script written in pure C. Build and usage instructions
@@ -541,11 +548,13 @@ Credits
 -------
 * [Jerry Brady / mintyfresh68](https://github.com/bluecircle) - got coin-switching fully working and developed proxy-per-algo feature
 * [Tony Dobbs](http://anthonydobbs.com) - designs for front-end and created the NOMP logo
+* [LucasJones(//github.com/LucasJones) - getting p2p block notify script working
 * [vekexasia](//github.com/vekexasia) - co-developer & great tester
 * [TheSeven](//github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
 * [UdjinM6](//github.com/UdjinM6) - helped implement fee withdrawal in payment processing
 * [Alex Petrov / sysmanalex](https://github.com/sysmanalex) - contributed the pure C block notify script
 * [svirusxxx](//github.com/svirusxxx) - sponsored development of MPOS mode
+* [icecube45](//github.com/icecube45) - helping out with the repo wiki
 * Those that contributed to [node-stratum-pool](//github.com/zone117x/node-stratum-pool#credits)
 
 

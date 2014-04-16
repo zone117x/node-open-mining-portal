@@ -91,7 +91,7 @@
         "enabled": false,
         "host": "127.0.0.1",
         "port": 19333,
-        "protocolVersion": 70002,
+        "disableTransactions": true,
         "magic": "fcc1b7dc"
     }
 }

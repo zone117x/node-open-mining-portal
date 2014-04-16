@@ -37,7 +37,7 @@ module.exports = function(logger){
                 })[0];
 
                 if (poolTarget)
-                    pools[poolTarget].processBlockNotify(message.hash);
+                    pools[poolTarget].processBlockNotify(message.hash, 'blocknotify script');
 
                 break;
 
