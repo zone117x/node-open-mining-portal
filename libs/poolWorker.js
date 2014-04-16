@@ -22,6 +22,13 @@ module.exports = function(logger){
     process.on('message', function(message) {
         switch(message.type){
 
+            case 'banIP':
+                for (var p in pools){
+                    if (pools[p].stratumServer)
+                        pools[p].stratumServer.addBannedIP(message.ip);
+                }
+                break;
+
             case 'blocknotify':
 
                 var messageCoin = message.coin.toLowerCase();
@@ -30,7 +37,7 @@ module.exports = function(logger){
                 })[0];
 
                 if (poolTarget)
-                    pools[poolTarget].processBlockNotify(message.hash);
+                    pools[poolTarget].processBlockNotify(message.hash, 'blocknotify script');
 
                 break;
 
@@ -74,7 +81,18 @@ module.exports = function(logger){
                         }
                     );
                     proxySwitch[algo].currentPool = newCoin;
-                    //TODO write new pool to REDIS
+
+                    var redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host)
+                    redisClient.on('ready', function(){
+                        redisClient.hset('proxyState', algo, newCoin, function(error, obj) {
+                            if (error) {
+                                logger.error(logSystem, logComponent, logSubCat, 'Redis error writing proxy config: ' + JSON.stringify(err))
+                            }
+                            else {
+                                logger.debug(logSystem, logComponent, logSubCat, 'Last proxy state saved to redis for ' + algo);
+                            }
+						});
+					});
                 }
                 break;
         }
@@ -175,6 +193,8 @@ module.exports = function(logger){
             handlers.diff(workerName, diff);
         }).on('log', function(severity, text) {
             logger[severity](logSystem, logComponent, logSubCat, text);
+        }).on('banIP', function(ip, worker){
+            process.send({type: 'banIP', ip: ip});
         });
 
         pool.start();
@@ -195,10 +215,10 @@ module.exports = function(logger){
         // on the last pool it was using when reloaded or restarted
         //
         logger.debug(logSystem, logComponent, logSubCat, 'Loading last proxy state from redis');
-        var redisClient = redis.createClient(6379, "localhost") //TODO figure out where redis config will come from for such things
+        var redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host)
         redisClient.on('ready', function(){
             redisClient.hgetall("proxyState", function(error, obj) {
-                if (error) {
+                if (error || obj == null) {
                     logger.debug(logSystem, logComponent, logSubCat, 'No last proxy state found in redis');
                 }
                 else {
@@ -217,7 +237,7 @@ module.exports = function(logger){
                 Object.keys(portalConfig.proxy).forEach(function(algorithm) {
 
                     if (portalConfig.proxy[algorithm].enabled === true) {
-                        var initalPool = proxyState.hasOwnProperty(algorithm) ? proxyState[algorithm].currentPool : _this.getFirstPoolForAlgorithm(algorithm);
+                        var initalPool = proxyState.hasOwnProperty(algorithm) ? proxyState[algorithm] : _this.getFirstPoolForAlgorithm(algorithm);
                         proxySwitch[algorithm] = {
                             port: portalConfig.proxy[algorithm].port,
                             currentPool: initalPool,
@@ -263,7 +283,6 @@ module.exports = function(logger){
         }).on('error', function(err){
             logger.debug(logSystem, logComponent, logSubCat, 'Pool configuration failed: ' + err);
         });
-        redisClient.quit();
     }
 
     this.getFirstPoolForAlgorithm = function(algorithm) {

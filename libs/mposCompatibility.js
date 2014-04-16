@@ -41,7 +41,7 @@ module.exports = function(logger, poolConfig){
 
         connection.query(
             'SELECT password FROM pool_worker WHERE username = LOWER(?)',
-            [workerName],
+            [workerName.toLowerCase()],
             function(err, result){
                 if (err){
                     logger.error(logIdentify, logComponent, 'Database error when authenticating worker: ' +
@@ -66,9 +66,9 @@ module.exports = function(logger, poolConfig){
         var dbData = [
             shareData.ip,
             shareData.worker,
-            isValidShare ? 'Y' : 'N', 
+            isValidShare ? 'Y' : 'N',
             isValidBlock ? 'Y' : 'N',
-            shareData.difficulty,
+            shareData.difficulty * (poolConfig.coin.mposDiffMultiplier || 1),
             typeof(shareData.error) === 'undefined' ? null : shareData.error,
             shareData.blockHash ? shareData.blockHash : (shareData.blockHashInvalid ? shareData.blockHashInvalid : '')
         ];

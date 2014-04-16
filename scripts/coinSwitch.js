@@ -2,7 +2,7 @@
  This script demonstrates sending a coin switch request and can be invoked from the command line
  with:
 
-    "node coinSwitch.js localhost:8118 password %s"
+    "node coinSwitch.js 127.0.0.1:8118 password %s"
 
  where <%s> is the name of the coin proxy miners will be switched onto.
 

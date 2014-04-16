@@ -8,10 +8,22 @@
 
     "website": {
         "enabled": true,
-        "siteTitle": "Cryppit",
         "port": 80,
-        "statUpdateInterval": 1.5,
-        "hashrateWindow": 300
+        "stratumHost": "cryppit.com",
+        "stats": {
+            "updateInterval": 60,
+            "historicalRetention": 43200,
+            "hashrateWindow": 300
+        },
+        "adminCenter": {
+            "enabled": true,
+            "password": "password"
+        }
+    },
+
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6379
     },
 
     "blockNotifyListener": {

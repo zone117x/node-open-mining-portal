@@ -1,5 +1,318 @@
-<div>
+<style>
+    #holder{
+        display: flex;
+        flex-direction: row;
+    }
 
-    To get started simply....
+    .glow{
+        box-shadow: inset 0 0 12px 4px #ff6c00;
+    }
 
+    .hidden{
+        display: none !important;
+    }
+
+    #menu{
+        background-color: #3d3d3d;
+        min-width: 170px;
+    }
+
+    #menu > .menuHeader{
+        color: #e3f7ff;
+        border-bottom: 1px solid #7f878b;
+        font-size: 1.2em;
+        padding: 16px 16px 4px 15px;
+    }
+
+    .menuList{
+        transition-duration: 200ms;
+    }
+
+    .menuList > a:first-child{
+        margin-top: 10px;
+    }
+
+    .menuList > a{
+        display: block;
+        color: #e3f7ff;
+        text-decoration: none;
+        padding: 7px;
+        padding-left: 25px;
+        text-transform: capitalize;
+    }
+
+    .menuList > a:hover{
+        color: #f69b3a;
+    }
+
+    #main{
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        margin: 18px;
+    }
+    .miningOption{
+        color: white;
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        min-height: 215px;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
+    }
+
+    a.miningOption:hover{
+        color: #f69b3a;
+    }
+
+    .miningOption:first-child{
+        background-color: #0eafc7;
+    }
+    .miningOption:last-child{
+        background-color: #b064e1;
+    }
+    .miningOptionNum{
+        font-size: 6em;
+        padding-right: 20px;
+        width: 140px;
+        text-align: center;
+    }
+    .miningOptionInstructions{
+        flex: 1 1 auto;
+    }
+
+    .miningOptionInstructions > div:first-child{
+        font-size: 2.4em;
+    }
+    .miningOptionInstructions > div:last-child{
+        margin-top: 20px;
+        font-size: 1.3em;
+    }
+
+    #orHolder{
+        height: 37px;
+        text-align: center;
+    }
+    #orLine{
+        border-bottom: 1px solid #c2cacf;
+        height: 19px;
+        margin-bottom: -13px;
+    }
+    #orText{
+        background-color: #ebf4fa;
+        color: #5c5c5c;
+        display: inline-block;
+        width: 35px;
+        font-style: italic;
+    }
+
+    #coinInfoBackground{
+        transition-duration: 400ms;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: black;
+        opacity: 0.0;
+    }
+    #coinInfo{
+        display: flex;
+        flex-direction: column;
+        color: white;
+        width: 750px;
+        min-height: 400px;
+        top: 50px;
+        left: 50%;
+        margin-left: -375px;
+        position: absolute;
+        background-color: #f06350;
+    }
+    #coinInfo .coinInfoName{
+        text-transform: capitalize;
+    }
+    #coinInfo > div:first-of-type{
+        font-size: 1.8em;
+        text-align: center;
+        margin-top: 40px;
+        margin-bottom: 35px;
+    }
+    #coinInfoRows{
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        flex: 1 1 auto;
+        margin-bottom: 70px;
+    }
+    #coinInfoRows > div{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    #coinInfoRows > div > div{
+        padding: 3px;
+    }
+    #coinInfoRowKeys{
+        font-weight: bold;
+        padding-right: 30px;
+    }
+    #coinInfoRowKeys .coinInfoSubtle{
+        font-weight: normal;
+    }
+    #coinInfoRowValues{
+
+    }
+    #coinInfoClose{
+        position: absolute;
+        font-size: 3em;
+        top: 0;
+        right: 0;
+        width: 60px;
+        height: 60px;
+        text-align: center;
+        color: white;
+        text-decoration: none;
+    }
+    #coinInfoClose:hover{
+        color: #50f0e3;
+    }
+</style>
+
+<div id="holder">
+
+    <div id="menu">
+
+        {{? (function(){
+                if (!it.portalConfig.proxy) return false;
+                for (var p in it.portalConfig.proxy){
+                    if (it.portalConfig.proxy[p].enabled)
+                        return true;
+                }
+                return false;
+            })()
+        }}
+        <div class="menuHeader">Coin-Switching Ports</div>
+        {{?}}
+
+        <div class="menuList">
+        {{ for (var p in it.portalConfig.proxy){
+            if (!it.portalConfig.proxy[p].enabled) continue;
+            var info = {
+                algo: p,
+                ports: {},
+                host: it.portalConfig.website.stratumHost
+            };
+            info.ports[it.portalConfig.proxy[p].port] = {diff: it.portalConfig.proxy[p].diff};
+            info = JSON.stringify(info).replace(/"/g, '&quot;');
+        }}
+            <a href="#" class="poolOption" data-info="{{=info}}">{{=p}}</a>
+        {{ } }}
+        </div>
+
+        <div class="menuHeader">Coins</div>
+        <div class="menuList" id="coinList">
+            {{ for(var pool in it.poolsConfigs) {
+                var info = JSON.stringify({
+                    coin: it.poolsConfigs[pool].coin,
+                    algo: it.poolsConfigs[pool].coin.algorithm,
+                    ports: it.poolsConfigs[pool].ports,
+                    host: it.portalConfig.website.stratumHost
+                }).replace(/"/g, '&quot;');
+            }}
+            <a href="#" class="poolOption" data-info="{{=info}}">{{=pool}}</a>
+            {{ } }}
+        </div>
+    </div>
+
+    <div id="main">
+        <a href="#" class="miningOption" id="nompAppDownload">
+            <div class="miningOptionNum">1.</div>
+            <div class="miningOptionInstructions">
+                <div>Download NOMP App</div>
+                <div>Our preconfigured app makes mining that easy</div>
+            </div>
+        </a>
+        <div id="orHolder">
+            <div id="orLine"></div>
+            <div id="orText">or</div>
+        </div>
+        <a href="#" class="miningOption" id="coinGlowTrigger">
+            <div class="miningOptionNum">2.</div>
+            <div class="miningOptionInstructions">
+                <div>Select a coin for connection details</div>
+                <div>Configurations for each coin are available for advanced miners</div>
+            </div>
+        </a>
+    </div>
 </div>
+
+<a href="#" id="coinInfoBackground" class="hidden"></a>
+
+<div id="coinInfo" class="hidden">
+    <a href="#" id="coinInfoClose">×</a>
+    <div><span class="coinInfoName"></span> Configuration:</div>
+    <div id="coinInfoRows">
+        <div id="coinInfoRowKeys">
+            <div>Username:</div>
+            <div>Password:</div>
+        </div>
+        <div id="coinInfoRowValues">
+            <div id="coinInfoUsername"></div>
+            <div>anything</div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function showCoinConfig(info){
+
+        var htmlKeys = '<div class="coinInfoData">Algorithm:</div>';
+        var htmlValues = '<div class="coinInfoData">' + info.algo + '</div>';
+
+        for (var port in info.ports){
+            htmlKeys += '<div class="coinInfoData">URL <span class="coinInfoSubtle">(difficulty ' + info.ports[port].diff + ')</span>:</div>';
+            htmlValues += '<div class="coinInfoData">stratum+tcp://' + info.host + ':' + port + '</div>';
+        }
+
+        if (info.coin)
+            $('#coinInfoUsername').text('your ' + info.coin.name + ' wallet address');
+        else
+            $('#coinInfoUsername').text('your public key');
+        $('.coinInfoData').remove();
+        $('#coinInfoRowKeys').append(htmlKeys);
+        $('#coinInfoRowValues').append(htmlValues);
+    }
+
+    $('#coinGlowTrigger').click(function(event){
+        event.preventDefault();
+        $('.menuList').addClass('glow');
+        setTimeout(function(){
+            $('.menuList').removeClass('glow');
+        }, 200);
+        return false;
+    });
+
+    $('.poolOption').click(function(event){
+        event.preventDefault();
+        showCoinConfig($(this).data('info'));
+        $('#coinInfoBackground,#coinInfo').removeClass('hidden');
+        $('#coinInfoBackground').css('opacity', 0.7);
+        return false;
+    });
+
+    $('#coinInfoBackground,#coinInfoClose').click(function(event){
+        event.preventDefault();
+        $('#coinInfoBackground,#coinInfo').addClass('hidden');
+        $('#coinInfoBackground').css('opacity', 0.0);
+        return false;
+    });
+
+    $('#nompAppDownload').click(function(event){
+        event.preventDefault();
+        alert('NOMP App development still in progress...');
+        return false;
+    });
+</script>
