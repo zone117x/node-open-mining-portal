@@ -41,7 +41,7 @@ module.exports = function(logger, poolConfig){
 
         connection.query(
             'SELECT password FROM pool_worker WHERE username = LOWER(?)',
-            [workerName],
+            [workerName.toLowerCase()],
             function(err, result){
                 if (err){
                     logger.error(logIdentify, logComponent, 'Database error when authenticating worker: ' +

@@ -13,16 +13,17 @@
         "stats": {
             "updateInterval": 60,
             "historicalRetention": 43200,
-            "hashrateWindow": 300,
-            "redis": {
-                "host": "localhost",
-                "port": 6379
-            }
+            "hashrateWindow": 300
         },
         "adminCenter": {
             "enabled": true,
             "password": "password"
         }
+    },
+
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6379
     },
 
     "blockNotifyListener": {
