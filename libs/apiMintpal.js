@@ -8,19 +8,19 @@ module.exports = function() {
 
     // Constants
     var version         = '0.1.0',
-        PUBLIC_API_URL  = 'http://pubapi.cryptsy.com/api.php',
-        PRIVATE_API_URL = 'https://api.cryptsy.com/api',
+        PUBLIC_API_URL  = 'https://api.mintpal.com/v2/market',
+        PRIVATE_API_URL  = 'https://api.mintpal.com/v2/market',
         USER_AGENT      = 'nomp/node-open-mining-portal'
 
     // Constructor
-    function Cryptsy(key, secret){
+    function Mintpal(key, secret){
         // Generate headers signed by this user's key and secret.
         // The secret is encapsulated and never exposed
         this._getPrivateHeaders = function(parameters){
             var paramString, signature;
 
             if (!key || !secret){
-                throw 'Cryptsy: Error. API key and secret required';
+                throw 'Mintpal: Error. API key and secret required';
             }
 
             // Sort parameters alphabetically and convert to `arg1=foo&arg2=bar`
@@ -38,7 +38,7 @@ module.exports = function() {
     }
 
     // If a site uses non-trusted SSL certificates, set this value to false
-    Cryptsy.STRICT_SSL = true;
+    Mintpal.STRICT_SSL = true;
 
     // Helper methods
     function joinCurrencies(currencyA, currencyB){
@@ -46,8 +46,8 @@ module.exports = function() {
     }
 
     // Prototype
-    Cryptsy.prototype = {
-        constructor: Cryptsy,
+    Mintpal.prototype = {
+        constructor: Mintpal,
 
         // Make an API request
         _request: function(options, callback){
@@ -57,7 +57,7 @@ module.exports = function() {
 
             options.headers['User-Agent'] = USER_AGENT;
             options.json = true;
-            options.strictSSL = Cryptsy.STRICT_SSL;
+            options.strictSSL = Mintpal.STRICT_SSL;
 
             request(options, function(err, response, body) {
                 callback(err, body);
@@ -99,11 +99,13 @@ module.exports = function() {
         // PUBLIC METHODS
 
         getTicker: function(callback){
-            var parameters = {
-                    method: 'marketdatav2'
-                };
+            var options = {
+                method: 'GET',
+                url: PUBLIC_API_URL + '/summary',
+                qs: null
+            };
 
-            return this._public(parameters, callback);
+            return this._request(options, callback);
         },
 
         getOrderBook: function(currencyA, currencyB, callback){
@@ -200,5 +202,5 @@ module.exports = function() {
         }
     };
 
-    return Cryptsy;
+    return Mintpal;
 }();

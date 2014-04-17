@@ -2,6 +2,7 @@ var async = require('async');
 
 var Cryptsy = require('./apiCryptsy.js');
 var Poloniex = require('./apiPoloniex.js');
+var Mintpal = require('./apiMintpal.js');
 var Stratum = require('stratum-pool');
 
 module.exports = function(logger){
@@ -61,6 +62,10 @@ module.exports = function(logger){
         // 'API_SECRET'
     );
     var cryptsyApi =  new Cryptsy(
+        // 'API_KEY',
+        // 'API_SECRET'
+    );
+    var mintpalApi =  new Mintpal(
         // 'API_KEY',
         // 'API_SECRET'
     );
@@ -253,6 +258,50 @@ module.exports = function(logger){
     };
 
 
+    this.getProfitDataMintpal = function(callback){
+        async.series([
+            function(taskCallback){
+                mintpalApi.getTicker(function(err, response){
+                    if (err){
+                        taskCallback(err);
+                        return;
+                    }
+
+																				Object.keys(symbolToAlgorithmMap).forEach(function(symbol){
+																								response.data.forEach(function(market){
+																												var exchangeInfo = profitStatus[symbolToAlgorithmMap[symbol]][symbol].exchangeInfo;
+																												if (!exchangeInfo.hasOwnProperty('Mintpal'))
+																																exchangeInfo['Mintpal'] = {};
+
+																												var marketData = exchangeInfo['Mintpal'];
+
+																												if (market.exchange == 'BTC' && market.code == symbol) {
+																																if (!marketData.hasOwnProperty('BTC'))
+																																				marketData['BTC'] = {};
+
+																																marketData['BTC'].last = new Number(market.last_price);
+																															 marketData['BTC'].baseVolume = new Number(market['24hvol']);
+																															 marketData['BTC'].quoteVolume = new Number(market['24hvol'] / market.last_price);
+																																marketData['BTC'].ask = new Number(market.top_ask);
+																																marketData['BTC'].bid = new Number(market.top_bid);
+																												}
+
+																								});
+																				});
+                    taskCallback();
+                });
+            }
+        ], function(err){
+            if (err){
+                callback(err);
+                return;
+            }
+            callback(null);
+        });
+        
+    };
+
+
     this.getCoindDaemonInfo = function(callback){
         var daemonTasks = [];
         Object.keys(profitStatus).forEach(function(algo){
@@ -320,11 +369,19 @@ module.exports = function(logger){
     var checkProfitability = function(){
         logger.debug(logSystem, 'Check', 'Running mining profitability check.');
 
-        async.parallel([
-            _this.getProfitDataPoloniex,
-            _this.getProfitDataCryptsy,
-            _this.getCoindDaemonInfo
-        ], function(err){
+								profitabilityTasks = [];
+								if (portalConfig.profitSwitch.usePoloniex)
+								    profitabilityTasks.push(_this.getProfitDataPoloniex);
+
+								if (portalConfig.profitSwitch.useCryptsy)
+								    profitabilityTasks.push(_this.getProfitDataCryptsy);
+
+								if (portalConfig.profitSwitch.useMintpal)
+								    profitabilityTasks.push(_this.getProfitDataMintpal);
+
+								profitabilityTasks.push(_this.getCoindDaemonInfo);
+
+        async.parallel(profitabilityTasks, function(err){
             if (err){
                 logger.error(logSystem, 'Check', 'Error while checking profitability: ' + err);
                 return;
