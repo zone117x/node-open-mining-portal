@@ -180,7 +180,7 @@ module.exports = function(logger){
                 logger.debug(logSystem, logComponent, logSubCat, 'Block found: ' + data.blockHash);
 
             if (isValidShare)
-                logger.debug(logSystem, logComponent, logSubCat, 'Share accepted at diff ' + data.difficulty + ' by ' + data.worker + ' [' + data.ip + ']' );
+                logger.debug(logSystem, logComponent, logSubCat, 'Share accepted at diff ' + data.difficulty + '/' + data.shareDiff + ' by ' + data.worker + ' [' + data.ip + ']' );
 
             else if (!isValidShare)
                 logger.debug(logSystem, logComponent, logSubCat, 'Share rejected: ' + shareData);
