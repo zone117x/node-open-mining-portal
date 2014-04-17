@@ -1,0 +1,5 @@
+{
+    "name": "RonPaulCoin",
+    "symbol": "RPC",
+    "algorithm": "scrypt"
+}
