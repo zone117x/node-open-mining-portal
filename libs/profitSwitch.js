@@ -1,4 +1,5 @@
 var async = require('async');
+var net = require('net');
 
 var Cryptsy = require('./apiCryptsy.js');
 var Poloniex = require('./apiPoloniex.js');
@@ -42,13 +43,16 @@ module.exports = function(logger){
     // 
     // ensure we have something to switch
     //
-    var isMoreThanOneCoin = false;
     Object.keys(profitStatus).forEach(function(algo){
-        if (Object.keys(profitStatus[algo]).length > 1) {
-            isMoreThanOneCoin = true;
+        if (Object.keys(profitStatus[algo]).length <= 1) {
+            delete profitStatus[algo];
+												Object.keys(symbolToAlgorithmMap).forEach(function(symbol){
+												    if (symbolToAlgorithmMap[symbol] === algo)
+																    delete symbolToAlgorithmMap[symbol];
+												});
         }
     });
-    if (!isMoreThanOneCoin){
+    if (Object.keys(profitStatus).length == 0){
         logger.debug(logSystem, 'Config', 'No alternative coins to switch to in current config, switching disabled.');
         return;
     }
@@ -110,7 +114,13 @@ module.exports = function(logger){
                             marketData['LTC'].baseVolume = new Number(ltcData.baseVolume);
                             marketData['LTC'].quoteVolume = new Number(ltcData.quoteVolume);
                         }
+																				    // save LTC to BTC exchange rate
+                        if (marketData.hasOwnProperty('LTC') && data.hasOwnProperty('BTC_LTC')) {
+																				        var btcLtc = data['BTC_LTC'];
+                            marketData['LTC'].ltcToBtc = new Number(btcLtc.highestBid);
+																				    }
                     });
+
                     taskCallback();
                 });
             },
@@ -158,6 +168,7 @@ module.exports = function(logger){
                 return;
             }
             var depth = new Number(0);
+            var totalQty = new Number(0);
             if (data.hasOwnProperty('bids')){
                 data['bids'].forEach(function(order){
                     var price = new Number(order[0]);
@@ -166,12 +177,15 @@ module.exports = function(logger){
                     // only measure the depth down to configured depth
                     if (price >= limit){
                        depth += (qty * price);
+																							totalQty += qty;
                     }
                 });
             }
 
             var marketData = profitStatus[symbolToAlgorithmMap[symbolB]][symbolB].exchangeInfo['Poloniex'];
             marketData[symbolA].depth = depth;
+												if (totalQty > 0)
+                marketData[symbolA].weightedBid = new Number(depth / totalQty);
             callback();
         });
     };
@@ -194,7 +208,7 @@ module.exports = function(logger){
 																								var marketData = exchangeInfo['Cryptsy'];
 																								var results    = data.return.markets;
 
-                        if (results.hasOwnProperty(symbol + '/BTC')) {
+                        if (results && results.hasOwnProperty(symbol + '/BTC')) {
 																								    if (!marketData.hasOwnProperty('BTC'))
 																												    marketData['BTC'] = {};
 
@@ -208,18 +222,22 @@ module.exports = function(logger){
                                 marketData['BTC'].bid = new Number(btcData.buyorders[0].price);
 																																var limit = new Number(marketData['BTC'].bid * portalConfig.profitSwitch.depth);
                                 var depth = new Number(0);
+                                var totalQty = new Number(0);
                                 btcData['buyorders'].forEach(function(order){
                                     var price = new Number(order.price);
                                     var qty = new Number(order.quantity);
                                     if (price >= limit){
                                         depth += (qty * price);
+																							                 totalQty += qty;
                                     }
 																															});
                                marketData['BTC'].depth = depth;
+																															if (totalQty > 0)
+                                   marketData['BTC'].weightedBid = new Number(depth / totalQty);
 																											}
 																				    }
 
-                        if (data.hasOwnProperty(symbol + '/LTC')) {
+                        if (results && results.hasOwnProperty(symbol + '/LTC')) {
 																									   if (!marketData.hasOwnProperty('LTC'))
 																												    marketData['LTC'] = {};
 
@@ -233,14 +251,18 @@ module.exports = function(logger){
                                 marketData['LTC'].bid = new Number(ltcData.buyorders[0].price);
 																																var limit = new Number(marketData['LTC'].bid * portalConfig.profitSwitch.depth);
                                 var depth = new Number(0);
+                                var totalQty = new Number(0);
                                 ltcData['buyorders'].forEach(function(order){
                                     var price = new Number(order.price);
                                     var qty = new Number(order.quantity);
                                     if (price >= limit){
                                         depth += (qty * price);
+																							                 totalQty += qty;
                                     }
 																															});
                                marketData['LTC'].depth = depth;
+																															if (totalQty > 0)
+                                   marketData['LTC'].weightedBid = new Number(depth / totalQty);
 																											}
                         }
                     });
@@ -262,7 +284,7 @@ module.exports = function(logger){
         async.series([
             function(taskCallback){
                 mintpalApi.getTicker(function(err, response){
-                    if (err){
+                    if (err || !response.data){
                         taskCallback(err);
                         return;
                     }
@@ -346,6 +368,7 @@ module.exports = function(logger){
             }
             var depth = new Number(0);
             if (response.hasOwnProperty('data')){
+                var totalQty = new Number(0);
                 response['data'].forEach(function(order){
                     var price = new Number(order.price);
 																				var limit = new Number(coinPrice * portalConfig.profitSwitch.depth);
@@ -353,13 +376,15 @@ module.exports = function(logger){
                     // only measure the depth down to configured depth
                     if (price >= limit){
                        depth += (qty * price);
+																							totalQty += qty;
                     }
                 });
             }
 
-
             var marketData = profitStatus[symbolToAlgorithmMap[symbolB]][symbolB].exchangeInfo['Mintpal'];
             marketData[symbolA].depth = depth;
+												if (totalQty > 0)
+                marketData[symbolA].weightedBid = new Number(depth / totalQty);
             callback();
         });
     };
@@ -429,8 +454,70 @@ module.exports = function(logger){
     };
 
 
+    this.getMiningRate = function(callback){
+        var daemonTasks = [];
+        Object.keys(profitStatus).forEach(function(algo){
+            Object.keys(profitStatus[algo]).forEach(function(symbol){
+												    var coinStatus = profitStatus[symbolToAlgorithmMap[symbol]][symbol];
+																coinStatus.blocksPerMhPerHour = new Number(3600 / ((coinStatus.difficulty * Math.pow(2,32)) / (1 * 1000 * 1000)));
+																coinStatus.coinsPerMhPerHour = new Number(coinStatus.reward * coinStatus.blocksPerMhPerHour);
+            });
+        });
+        callback(null);
+    };
+
+
+				this.switchToMostProfitableCoins = function() {
+				    Object.keys(profitStatus).forEach(function(algo) {
+											 var algoStatus = profitStatus[algo];
+
+            var bestExchange;
+            var bestCoin;
+            var bestBtcPerMhPerHour = new Number(0);
+
+				        Object.keys(profitStatus[algo]).forEach(function(symbol) {
+												    var coinStatus = profitStatus[algo][symbol];
+
+																Object.keys(coinStatus.exchangeInfo).forEach(function(exchange){
+																    var exchangeData = coinStatus.exchangeInfo[exchange];
+																				if (exchangeData.hasOwnProperty('BTC') && exchangeData['BTC'].hasOwnProperty('weightedBid')){
+																				    var btcPerMhPerHour = new Number(exchangeData['BTC'].weightedBid * coinStatus.coinsPerMhPerHour);
+																				    if (btcPerMhPerHour > bestBtcPerMhPerHour){
+																								    bestBtcPerMhPerHour = btcPerMhPerHour;
+																								    bestExchange = exchange;
+																								    bestCoin = profitStatus[algo][symbol].name;
+																								}
+												            coinStatus.btcPerMhPerHour = btcPerMhPerHour;
+                        logger.debug(logSystem, 'CALC', 'BTC/' + symbol + ' on ' + exchange + ' with ' + coinStatus.btcPerMhPerHour.toFixed(8) + ' BTC/Mh/hr');
+																				}
+																				if (exchangeData.hasOwnProperty('LTC') && exchangeData['LTC'].hasOwnProperty('weightedBid')){
+																				    var btcPerMhPerHour = new Number((exchangeData['LTC'].weightedBid * coinStatus.coinsPerMhPerHour) * exchangeData['LTC'].ltcToBtc);
+                        logger.debug(logSystem, 'LTC Check', 'btcPerMhPerHour = ' + btcPerMhPerHour);
+																				    if (btcPerMhPerHour > bestBtcPerMhPerHour){
+																								    bestBtcPerMhPerHour = btcPerMhPerHour;
+																								    bestExchange = exchange;
+																								    bestCoin = profitStatus[algo][symbol].name;
+																								}
+												            coinStatus.btcPerMhPerHour = btcPerMhPerHour;
+                        logger.debug(logSystem, 'CALC', 'LTC/' + symbol + ' on ' + exchange + ' with ' + coinStatus.btcPerMhPerHour.toFixed(8) + ' BTC/Mh/hr');
+																				}
+																});
+												});
+            logger.debug(logSystem, 'RESULT', 'Best coin for ' + algo + ' is ' + bestCoin + ' on ' + bestExchange + ' with ' + bestBtcPerMhPerHour.toFixed(8) + ' BTC/Mh/hr');
+												if (portalConfig.coinSwitchListener.enabled){
+																var client = net.connect(portalConfig.coinSwitchListener.port, portalConfig.coinSwitchListener.host, function () {
+																				client.write(JSON.stringify({
+																								password: portalConfig.coinSwitchListener.password,
+																								coin: bestCoin
+																				}) + '\n');
+																});
+												}
+								});
+				};
+
+
     var checkProfitability = function(){
-        logger.debug(logSystem, 'Check', 'Running mining profitability check.');
+        logger.debug(logSystem, 'Check', 'Collecting profitability data.');
 
 								profitabilityTasks = [];
 								if (portalConfig.profitSwitch.usePoloniex)
@@ -443,12 +530,18 @@ module.exports = function(logger){
 								    profitabilityTasks.push(_this.getProfitDataMintpal);
 
 								profitabilityTasks.push(_this.getCoindDaemonInfo);
+								profitabilityTasks.push(_this.getMiningRate);
 
-        async.parallel(profitabilityTasks, function(err){
+        // has to be series 
+        async.series(profitabilityTasks, function(err){
             if (err){
                 logger.error(logSystem, 'Check', 'Error while checking profitability: ' + err);
                 return;
             }
+												//
+												// TODO offer support for a userConfigurable function for deciding on coin to override the default
+												// 
+												_this.switchToMostProfitableCoins();
         });
     };
     setInterval(checkProfitability, portalConfig.profitSwitch.updateInterval * 1000);
