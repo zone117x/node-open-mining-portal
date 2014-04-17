@@ -286,8 +286,47 @@ module.exports = function(logger){
 																																marketData['BTC'].bid = new Number(market.top_bid);
 																												}
 
+																												if (market.exchange == 'LTC' && market.code == symbol) {
+																																if (!marketData.hasOwnProperty('LTC'))
+																																				marketData['LTC'] = {};
+
+																																marketData['LTC'].last = new Number(market.last_price);
+																															 marketData['LTC'].baseVolume = new Number(market['24hvol']);
+																															 marketData['LTC'].quoteVolume = new Number(market['24hvol'] / market.last_price);
+																																marketData['LTC'].ask = new Number(market.top_ask);
+																																marketData['LTC'].bid = new Number(market.top_bid);
+																												}
+
 																								});
 																				});
+                    taskCallback();
+                });
+            },
+            function(taskCallback){
+                var depthTasks = [];
+                Object.keys(symbolToAlgorithmMap).forEach(function(symbol){
+                    var marketData = profitStatus[symbolToAlgorithmMap[symbol]][symbol].exchangeInfo['Mintpal'];
+                    if (marketData.hasOwnProperty('BTC') && marketData['BTC'].bid > 0){
+                        depthTasks.push(function(callback){
+																								    _this.getMarketDepthFromMintpal('BTC', symbol, marketData['BTC'].bid, callback) 
+																								});
+                    }
+                    if (marketData.hasOwnProperty('LTC') && marketData['LTC'].bid > 0){
+                        depthTasks.push(function(callback){
+																								    _this.getMarketDepthFromMintpal('LTC', symbol, marketData['LTC'].bid, callback) 
+																								});
+                    }
+                });
+
+                if (!depthTasks.length){
+                    taskCallback();
+                    return;
+                }
+                async.series(depthTasks, function(err){
+                    if (err){
+                        taskCallback(err);
+                        return;
+                    }
                     taskCallback();
                 });
             }
@@ -298,7 +337,31 @@ module.exports = function(logger){
             }
             callback(null);
         });
-        
+    };
+    this.getMarketDepthFromMintpal = function(symbolA, symbolB, coinPrice, callback){
+        mintpalApi.getBuyOrderBook(symbolA, symbolB, function(err, response){
+            if (err){
+                callback(err);
+                return;
+            }
+            var depth = new Number(0);
+            if (response.hasOwnProperty('data')){
+                response['data'].forEach(function(order){
+                    var price = new Number(order.price);
+																				var limit = new Number(coinPrice * portalConfig.profitSwitch.depth);
+                    var qty = new Number(order.amount);
+                    // only measure the depth down to configured depth
+                    if (price >= limit){
+                       depth += (qty * price);
+                    }
+                });
+            }
+
+
+            var marketData = profitStatus[symbolToAlgorithmMap[symbolB]][symbolB].exchangeInfo['Mintpal'];
+            marketData[symbolA].depth = depth;
+            callback();
+        });
     };
 
 
@@ -386,7 +449,6 @@ module.exports = function(logger){
                 logger.error(logSystem, 'Check', 'Error while checking profitability: ' + err);
                 return;
             }
-            logger.debug(logSystem, 'Check', JSON.stringify(profitStatus));
         });
     };
     setInterval(checkProfitability, portalConfig.profitSwitch.updateInterval * 1000);

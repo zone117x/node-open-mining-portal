@@ -108,6 +108,16 @@ module.exports = function() {
             return this._request(options, callback);
         },
 
+        getBuyOrderBook: function(currencyA, currencyB, callback){
+            var options = {
+                method: 'GET',
+                url: PUBLIC_API_URL + '/orders/' + currencyB + '/' + currencyA + '/BUY',
+                qs: null
+            };
+
+            return this._request(options, callback);
+        },
+
         getOrderBook: function(currencyA, currencyB, callback){
             var parameters = {
                     command: 'returnOrderBook',
