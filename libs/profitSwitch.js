@@ -1,5 +1,6 @@
 var async = require('async');
 
+var Cryptsy = require('./apiCryptsy.js');
 var Poloniex = require('./apiPoloniex.js');
 var Stratum = require('stratum-pool');
 
@@ -16,7 +17,7 @@ module.exports = function(logger){
     // build status tracker for collecting coin market information
     //
     var profitStatus = {};
-    var profitSymbols = {};
+    var symbolToAlgorithmMap = {};
     Object.keys(poolConfigs).forEach(function(coin){
 
         var poolConfig = poolConfigs[coin];
@@ -30,12 +31,10 @@ module.exports = function(logger){
             symbol: poolConfig.coin.symbol,
             difficulty: 0,
             reward: 0,
-            prices: {},
-            depths: {},
-            volumes: {},
+            exchangeInfo: {}
         };
         profitStatus[algo][poolConfig.coin.symbol] = coinStatus;
-        profitSymbols[poolConfig.coin.symbol] = algo;
+        symbolToAlgorithmMap[poolConfig.coin.symbol] = algo;
     });
 
 
@@ -52,14 +51,16 @@ module.exports = function(logger){
         logger.debug(logSystem, 'Config', 'No alternative coins to switch to in current config, switching disabled.');
         return;
     }
-    logger.debug(logSystem, 'profitStatus', JSON.stringify(profitStatus));
-    logger.debug(logSystem, 'profitStatus', JSON.stringify(profitSymbols));
 
 
     // 
     // setup APIs
     //
     var poloApi =  new Poloniex(
+        // 'API_KEY',
+        // 'API_SECRET'
+    );
+    var cryptsyApi =  new Cryptsy(
         // 'API_KEY',
         // 'API_SECRET'
     );
@@ -75,51 +76,34 @@ module.exports = function(logger){
                         taskCallback(err);
                         return;
                     }
-                    Object.keys(profitSymbols).forEach(function(symbol){
-                        var btcPrice = new Number(0);
-                        var ltcPrice = new Number(0);
+
+                    Object.keys(symbolToAlgorithmMap).forEach(function(symbol){
+                        var exchangeInfo = profitStatus[symbolToAlgorithmMap[symbol]][symbol].exchangeInfo;
+																								if (!exchangeInfo.hasOwnProperty('Poloniex'))
+																								    exchangeInfo['Poloniex'] = {};
+																								var marketData = exchangeInfo['Poloniex'];
 
                         if (data.hasOwnProperty('BTC_' + symbol)) {
-                            btcPrice = new Number(data['BTC_' + symbol]);
+																									   if (!marketData.hasOwnProperty('BTC'))
+																												    marketData['BTC'] = {};
+
+																									   var btcData = data['BTC_' + symbol];
+                            marketData['BTC'].ask = new Number(btcData.lowestAsk);
+                            marketData['BTC'].bid = new Number(btcData.highestBid);
+                            marketData['BTC'].last = new Number(btcData.last);
+                            marketData['BTC'].baseVolume = new Number(btcData.baseVolume);
+                            marketData['BTC'].quoteVolume = new Number(btcData.quoteVolume);
                         }
                         if (data.hasOwnProperty('LTC_' + symbol)) {
-                            ltcPrice = new Number(data['LTC_' + symbol]);
-                        }
+																									   if (!marketData.hasOwnProperty('LTC'))
+																												    marketData['LTC'] = {};
 
-                        if (btcPrice > 0 || ltcPrice > 0) {
-                            var prices = {
-                                BTC: btcPrice,
-                                LTC: ltcPrice
-                            };
-                            profitStatus[profitSymbols[symbol]][symbol].prices['Poloniex'] = prices;
-                        }
-                    });
-                    taskCallback();
-                });
-            },
-            function(taskCallback){
-                poloApi.get24hVolume(function(err, data){
-                    if (err){
-                        taskCallback(err);
-                        return;
-                    }
-                    Object.keys(profitSymbols).forEach(function(symbol){
-                        var btcVolume = new Number(0);
-                        var ltcVolume = new Number(0);
-
-                        if (data.hasOwnProperty('BTC_' + symbol)) {
-                            btcVolume = new Number(data['BTC_' + symbol].BTC);
-                        }
-                        if (data.hasOwnProperty('LTC_' + symbol)) {
-                            ltcVolume = new Number(data['LTC_' + symbol].LTC);
-                        }
-
-                        if (btcVolume > 0 || ltcVolume > 0) {
-                            var volumes = {
-                                BTC: btcVolume,
-                                LTC: ltcVolume
-                            };
-                            profitStatus[profitSymbols[symbol]][symbol].volumes['Poloniex'] = volumes;
+																									   var ltcData = data['LTC_' + symbol];
+                            marketData['LTC'].ask = new Number(ltcData.lowestAsk);
+                            marketData['LTC'].bid = new Number(ltcData.highestBid);
+                            marketData['LTC'].last = new Number(ltcData.last);
+                            marketData['LTC'].baseVolume = new Number(ltcData.baseVolume);
+                            marketData['LTC'].quoteVolume = new Number(ltcData.quoteVolume);
                         }
                     });
                     taskCallback();
@@ -127,34 +111,25 @@ module.exports = function(logger){
             },
             function(taskCallback){
                 var depthTasks = [];
-                Object.keys(profitSymbols).forEach(function(symbol){
-                    var coinVolumes = profitStatus[profitSymbols[symbol]][symbol].volumes;
-                    var coinPrices  = profitStatus[profitSymbols[symbol]][symbol].prices;
-
-                    if (coinVolumes.hasOwnProperty('Poloniex') && coinPrices.hasOwnProperty('Poloniex')){
-                        var btcDepth = new Number(0);
-                        var ltcDepth = new Number(0);
-
-                        if (coinVolumes['Poloniex']['BTC'] > 0 && coinPrices['Poloniex']['BTC'] > 0){
-                            var coinPrice = new Number(coinPrices['Poloniex']['BTC']);
-                            depthTasks.push(function(callback){
-                                _this.getMarketDepthFromPoloniex('BTC', symbol, coinPrice, callback)
-                            });
-                        }
-                        if (coinVolumes['Poloniex']['LTC'] > 0 && coinPrices['Poloniex']['LTC'] > 0){
-                            var coinPrice = new Number(coinPrices['Poloniex']['LTC']);
-                            depthTasks.push(function(callback){
-                                _this.getMarketDepthFromPoloniex('LTC', symbol, coinPrice, callback)
-                            });
-                        }
+                Object.keys(symbolToAlgorithmMap).forEach(function(symbol){
+                    var marketData = profitStatus[symbolToAlgorithmMap[symbol]][symbol].exchangeInfo['Poloniex'];
+                    if (marketData.hasOwnProperty('BTC') && marketData['BTC'].bid > 0){
+                        depthTasks.push(function(callback){
+																								    _this.getMarketDepthFromPoloniex('BTC', symbol, marketData['BTC'].bid, callback) 
+																								});
+                    }
+                    if (marketData.hasOwnProperty('LTC') && marketData['LTC'].bid > 0){
+                        depthTasks.push(function(callback){
+																								    _this.getMarketDepthFromPoloniex('LTC', symbol, marketData['LTC'].bid, callback) 
+																								});
                     }
                 });
 
-                if (depthTasks.length == 0){
-                    taskCallback;
+                if (!depthTasks.length){
+                    taskCallback();
                     return;
                 }
-                async.parallel(depthTasks, function(err){
+                async.series(depthTasks, function(err){
                     if (err){
                         taskCallback(err);
                         return;
@@ -181,29 +156,102 @@ module.exports = function(logger){
             if (data.hasOwnProperty('bids')){
                 data['bids'].forEach(function(order){
                     var price = new Number(order[0]);
+																				var limit = new Number(coinPrice * portalConfig.profitSwitch.depth);
                     var qty = new Number(order[1]);
                     // only measure the depth down to configured depth
-                    if (price >= coinPrice * portalConfig.profitSwitch.depth){
+                    if (price >= limit){
                        depth += (qty * price);
                     }
                 });
             }
 
-            if (!profitStatus[profitSymbols[symbolB]][symbolB].depths.hasOwnProperty('Poloniex')){
-                profitStatus[profitSymbols[symbolB]][symbolB].depths['Poloniex'] = {
-                    BTC: 0,
-                    LTC: 0
-                };
-            }
-            profitStatus[profitSymbols[symbolB]][symbolB].depths['Poloniex'][symbolA] = depth;
+            var marketData = profitStatus[symbolToAlgorithmMap[symbolB]][symbolB].exchangeInfo['Poloniex'];
+            marketData[symbolA].depth = depth;
             callback();
         });
     };
 
-    // TODO
+    
     this.getProfitDataCryptsy = function(callback){
-        callback(null);
+        async.series([
+            function(taskCallback){
+                cryptsyApi.getTicker(function(err, data){
+                    if (err || data.success != 1){
+                        taskCallback(err);
+                        return;
+                    }
+
+                    Object.keys(symbolToAlgorithmMap).forEach(function(symbol){
+                        var exchangeInfo = profitStatus[symbolToAlgorithmMap[symbol]][symbol].exchangeInfo;
+																								if (!exchangeInfo.hasOwnProperty('Cryptsy'))
+																								    exchangeInfo['Cryptsy'] = {};
+
+																								var marketData = exchangeInfo['Cryptsy'];
+																								var results    = data.return.markets;
+
+                        if (results.hasOwnProperty(symbol + '/BTC')) {
+																								    if (!marketData.hasOwnProperty('BTC'))
+																												    marketData['BTC'] = {};
+
+																									   var btcData = results[symbol + '/BTC'];
+                            marketData['BTC'].last = new Number(btcData.lasttradeprice);
+                            marketData['BTC'].baseVolume = new Number(marketData['BTC'].last / btcData.volume);
+                            marketData['BTC'].quoteVolume = new Number(btcData.volume);
+																												if (btcData.sellorders != null)
+                                marketData['BTC'].ask = new Number(btcData.sellorders[0].price);
+																												if (btcData.buyorders != null) {
+                                marketData['BTC'].bid = new Number(btcData.buyorders[0].price);
+																																var limit = new Number(marketData['BTC'].bid * portalConfig.profitSwitch.depth);
+                                var depth = new Number(0);
+                                btcData['buyorders'].forEach(function(order){
+                                    var price = new Number(order.price);
+                                    var qty = new Number(order.quantity);
+                                    if (price >= limit){
+                                        depth += (qty * price);
+                                    }
+																															});
+                               marketData['BTC'].depth = depth;
+																											}
+																				    }
+
+                        if (data.hasOwnProperty(symbol + '/LTC')) {
+																									   if (!marketData.hasOwnProperty('LTC'))
+																												    marketData['LTC'] = {};
+
+																									   var ltcData = results[symbol + '/LTC'];
+                            marketData['LTC'].last = new Number(ltcData.lasttradeprice);
+                            marketData['LTC'].baseVolume = new Number(marketData['LTC'].last / ltcData.volume);
+                            marketData['LTC'].quoteVolume = new Number(ltcData.volume);
+																												if (ltcData.sellorders != null)
+                                marketData['LTC'].ask = new Number(ltcData.sellorders[0].price);
+																												if (ltcData.buyorders != null) {
+                                marketData['LTC'].bid = new Number(ltcData.buyorders[0].price);
+																																var limit = new Number(marketData['LTC'].bid * portalConfig.profitSwitch.depth);
+                                var depth = new Number(0);
+                                ltcData['buyorders'].forEach(function(order){
+                                    var price = new Number(order.price);
+                                    var qty = new Number(order.quantity);
+                                    if (price >= limit){
+                                        depth += (qty * price);
+                                    }
+																															});
+                               marketData['LTC'].depth = depth;
+																											}
+                        }
+                    });
+                    taskCallback();
+                });
+            }
+        ], function(err){
+            if (err){
+                callback(err);
+                return;
+            }
+            callback(null);
+        });
+        
     };
+
 
     this.getCoindDaemonInfo = function(callback){
         var daemonTasks = [];
@@ -211,7 +259,7 @@ module.exports = function(logger){
             Object.keys(profitStatus[algo]).forEach(function(symbol){
                 var coinName = profitStatus[algo][symbol].name;
                 var poolConfig = poolConfigs[coinName];
-                var daemonConfig =  poolConfig.shareProcessing.internal.daemon;
+                var daemonConfig = poolConfig.shareProcessing.internal.daemon;
                 daemonTasks.push(function(callback){
                     _this.getDaemonInfoForCoin(symbol, daemonConfig, callback)
                 });
@@ -222,7 +270,7 @@ module.exports = function(logger){
             callback();
             return;
         }
-        async.parallel(daemonTasks, function(err){
+        async.series(daemonTasks, function(err){
             if (err){
                 callback(err);
                 return;
@@ -232,26 +280,36 @@ module.exports = function(logger){
     };
     this.getDaemonInfoForCoin = function(symbol, cfg, callback){
         var daemon = new Stratum.daemon.interface([cfg]);
-        daemon.once('online', function(){
-            daemon.cmd('getdifficulty', null, function(result){
-                if (result[0].error != null){
-                    callback(result[0].error);
-                    return;
-                }
-                profitStatus[profitSymbols[symbol]][symbol].difficulty = result[0].response;
-
-                daemon.cmd('getblocktemplate', 
-                    [{"capabilities": [ "coinbasetxn", "workid", "coinbase/append" ]}],
-																				function(result){
-                        if (result[0].error != null){
-                            callback(result[0].error);
-                            return;
-                        }
-                        profitStatus[profitSymbols[symbol]][symbol].reward = new Number(result[0].response.coinbasevalue / 100000000);
-																});
-                callback(null)
-            });
-        }).once('connectionFailed', function(error){
+								daemon.once('online', function(){
+												async.parallel([
+																function(taskCallback){
+																				daemon.cmd('getdifficulty', null, function(result){
+																				    if (result[0].error != null){
+																								    taskCallback(result[0].error);
+																								    return;
+																				    }
+																				    profitStatus[symbolToAlgorithmMap[symbol]][symbol].difficulty = result[0].response;
+																				    taskCallback(null);
+																				});
+																},
+																function(taskCallback){
+																				daemon.cmd('getblocktemplate', [{"capabilities": [ "coinbasetxn", "workid", "coinbase/append" ]}], function(result){
+																								if (result[0].error != null){
+																												taskCallback(result[0].error);
+																												return;
+																								}
+																								profitStatus[symbolToAlgorithmMap[symbol]][symbol].reward = new Number(result[0].response.coinbasevalue / 100000000);
+																								taskCallback(null);
+																				});
+																}
+												], function(err){
+																if (err){
+																				callback(err);
+																				return;
+																}
+																callback(null);
+												});
+								}).once('connectionFailed', function(error){
             callback(error);
         }).on('error', function(error){
             callback(error);

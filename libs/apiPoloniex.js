@@ -8,7 +8,7 @@ module.exports = function() {
 
     // Constants
     var version         = '0.1.0',
-        PUBLIC_API_URL  = 'http://poloniex.com/public',
+        PUBLIC_API_URL  = 'https://poloniex.com/public',
         PRIVATE_API_URL = 'https://poloniex.com/tradingApi',
         USER_AGENT      = 'npm-crypto-apis/' + version
 
