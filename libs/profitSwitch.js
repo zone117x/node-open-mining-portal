@@ -492,7 +492,6 @@ module.exports = function(logger){
 																				}
 																				if (exchangeData.hasOwnProperty('LTC') && exchangeData['LTC'].hasOwnProperty('weightedBid')){
 																				    var btcPerMhPerHour = new Number((exchangeData['LTC'].weightedBid * coinStatus.coinsPerMhPerHour) * exchangeData['LTC'].ltcToBtc);
-                        logger.debug(logSystem, 'LTC Check', 'btcPerMhPerHour = ' + btcPerMhPerHour);
 																				    if (btcPerMhPerHour > bestBtcPerMhPerHour){
 																								    bestBtcPerMhPerHour = btcPerMhPerHour;
 																								    bestExchange = exchange;
