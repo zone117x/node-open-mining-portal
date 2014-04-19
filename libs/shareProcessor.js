@@ -42,7 +42,6 @@ module.exports = function(logger, poolConfig){
 
     this.handleShare = function(isValidShare, isValidBlock, shareData){
 
-
         var redisCommands = [];
 
         if (isValidShare){
@@ -71,8 +70,8 @@ module.exports = function(logger, poolConfig){
         connection.multi(redisCommands).exec(function(err, replies){
             if (err)
                 logger.error(logSystem, logComponent, logSubCat, 'Error with share processor multi ' + JSON.stringify(err));
-            else
-                logger.debug(logSystem, logComponent, logSubCat, 'Share data and stats recorded');
+            //else
+                //logger.debug(logSystem, logComponent, logSubCat, 'Share data and stats recorded');
         });
 
 
