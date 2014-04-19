@@ -1,10 +1,13 @@
-var async = require('async');
-var net = require('net');
+var async  = require('async');
+var net    = require('net');
+var bignum = require('bignum');
+var algos  = require('stratum-pool/lib/algoProperties.js');
+var util   = require('stratum-pool/lib/util.js');
 
-var Cryptsy = require('./apiCryptsy.js');
+var Cryptsy  = require('./apiCryptsy.js');
 var Poloniex = require('./apiPoloniex.js');
-var Mintpal = require('./apiMintpal.js');
-var Stratum = require('stratum-pool');
+var Mintpal  = require('./apiMintpal.js');
+var Stratum  = require('stratum-pool');
 
 module.exports = function(logger){
 
@@ -418,38 +421,29 @@ module.exports = function(logger){
     this.getDaemonInfoForCoin = function(symbol, cfg, callback){
         var daemon = new Stratum.daemon.interface([cfg]);
         daemon.once('online', function(){
-            async.parallel([
-                function(taskCallback){
-                    daemon.cmd('getdifficulty', null, function(result){
-                        if (result[0].error != null){
-                            taskCallback(result[0].error);
-                            return;
-                        }
-                        profitStatus[symbolToAlgorithmMap[symbol]][symbol].difficulty = result[0].response;
-                        taskCallback(null);
-                    });
-                },
-                function(taskCallback){
-                    daemon.cmd('getblocktemplate', [{"capabilities": [ "coinbasetxn", "workid", "coinbase/append" ]}], function(result){
-                        if (result[0].error != null){
-                            taskCallback(result[0].error);
-                            return;
-                        }
-                        profitStatus[symbolToAlgorithmMap[symbol]][symbol].reward = new Number(result[0].response.coinbasevalue / 100000000);
-                        taskCallback(null);
-                    });
-                }
-            ], function(err){
-                if (err){
-                    callback(err);
+            daemon.cmd('getblocktemplate', [{"capabilities": [ "coinbasetxn", "workid", "coinbase/append" ]}], function(result){
+                if (result[0].error != null){
+                    logger.error(logSystem, symbol, 'Error while reading daemon info: ' + JSON.stringify(result[0]));
+                    callback(null); // fail gracefully for each coin
                     return;
                 }
+                var coinStatus = profitStatus[symbolToAlgorithmMap[symbol]][symbol];
+                var response   = result[0].response;
+
+                // some shitcoins dont provide target, only bits, so we need to deal with both
+                var target = response.target ? bignum(response.target, 16) : util.bignumFromBitsHex(response.bits);
+                coinStatus.difficulty = parseFloat((diff1.toNumber() / target.toNumber()).toFixed(9));
+                logger.debug(logSystem, symbol, 'difficulty is ' + coinStatus.difficulty);
+
+                coinStatus.reward = new Number(response.coinbasevalue / 100000000);
                 callback(null);
             });
         }).once('connectionFailed', function(error){
-            callback(error);
+            logger.error(logSystem, symbol, JSON.stringify(error));
+            callback(null); // fail gracefully for each coin
         }).on('error', function(error){
-            callback(error);
+            logger.error(logSystem, symbol, JSON.stringify(error));
+            callback(null); // fail gracefully for each coin
         }).init();
     };
 
@@ -459,7 +453,7 @@ module.exports = function(logger){
         Object.keys(profitStatus).forEach(function(algo){
             Object.keys(profitStatus[algo]).forEach(function(symbol){
                 var coinStatus = profitStatus[symbolToAlgorithmMap[symbol]][symbol];
-                coinStatus.blocksPerMhPerHour = new Number(3600 / ((coinStatus.difficulty * Math.pow(2,32)) / (1 * 1000 * 1000)));
+                coinStatus.blocksPerMhPerHour = new Number(86400 / ((coinStatus.difficulty * Math.pow(2,32)) / (1 * 1000 * 1000)));
                 coinStatus.coinsPerMhPerHour = new Number(coinStatus.reward * coinStatus.blocksPerMhPerHour);
             });
         });
@@ -488,7 +482,7 @@ module.exports = function(logger){
                             bestCoin = profitStatus[algo][symbol].name;
                         }
                         coinStatus.btcPerMhPerHour = btcPerMhPerHour;
-                        logger.debug(logSystem, 'CALC', 'BTC/' + symbol + ' on ' + exchange + ' with ' + coinStatus.btcPerMhPerHour.toFixed(8) + ' BTC/Mh/hr');
+                        logger.debug(logSystem, 'CALC', 'BTC/' + symbol + ' on ' + exchange + ' with ' + coinStatus.btcPerMhPerHour.toFixed(8) + ' BTC/day per Mh/s');
                     }
                     if (exchangeData.hasOwnProperty('LTC') && exchangeData['LTC'].hasOwnProperty('weightedBid')){
                         var btcPerMhPerHour = new Number((exchangeData['LTC'].weightedBid * coinStatus.coinsPerMhPerHour) * exchangeData['LTC'].ltcToBtc);
@@ -498,11 +492,11 @@ module.exports = function(logger){
                             bestCoin = profitStatus[algo][symbol].name;
                         }
                         coinStatus.btcPerMhPerHour = btcPerMhPerHour;
-                        logger.debug(logSystem, 'CALC', 'LTC/' + symbol + ' on ' + exchange + ' with ' + coinStatus.btcPerMhPerHour.toFixed(8) + ' BTC/Mh/hr');
+                        logger.debug(logSystem, 'CALC', 'LTC/' + symbol + ' on ' + exchange + ' with ' + coinStatus.btcPerMhPerHour.toFixed(8) + ' BTC/day per Mh/s');
                     }
                 });
             });
-            logger.debug(logSystem, 'RESULT', 'Best coin for ' + algo + ' is ' + bestCoin + ' on ' + bestExchange + ' with ' + bestBtcPerMhPerHour.toFixed(8) + ' BTC/Mh/hr');
+            logger.debug(logSystem, 'RESULT', 'Best coin for ' + algo + ' is ' + bestCoin + ' on ' + bestExchange + ' with ' + bestBtcPerMhPerHour.toFixed(8) + ' BTC/day per Mh/s');
             if (portalConfig.coinSwitchListener.enabled){
                 var client = net.connect(portalConfig.coinSwitchListener.port, portalConfig.coinSwitchListener.host, function () {
                     client.write(JSON.stringify({

@@ -44,7 +44,8 @@
         "colors": "*",
         "node-watch": "*",
         "request": "*",
-        "nonce": "*"
+        "nonce": "*",
+        "bignum": "*"
     },
     "engines": {
         "node": ">=0.10"
