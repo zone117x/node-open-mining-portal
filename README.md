@@ -7,7 +7,7 @@ responsive user-friendly front-end website featuring mining instructions, in-dep
 
 #### Table of Contents
 * [Features](#features)
-  * [Attack Mitigation](##attack-mitigation)
+  * [Attack Mitigation](#attack-mitigation)
   * [Security](#security)
   * [Planned Features](#planned-features)
 * [Community Support](#community--support)
