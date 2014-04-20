@@ -432,7 +432,7 @@ module.exports = function(logger){
 
                 // some shitcoins dont provide target, only bits, so we need to deal with both
                 var target = response.target ? bignum(response.target, 16) : util.bignumFromBitsHex(response.bits);
-                coinStatus.difficulty = parseFloat((diff1.toNumber() / target.toNumber()).toFixed(9));
+                coinStatus.difficulty = parseFloat((diff1 / target.toNumber()).toFixed(9));
                 logger.debug(logSystem, symbol, 'difficulty is ' + coinStatus.difficulty);
 
                 coinStatus.reward = new Number(response.coinbasevalue / 100000000);
