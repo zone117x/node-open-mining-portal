@@ -11,6 +11,7 @@ var RedisBlocknotifyListener = require('./libs/redisblocknotifyListener.js');
 var PoolWorker = require('./libs/poolWorker.js');
 var PaymentProcessor = require('./libs/paymentProcessor.js');
 var Website = require('./libs/website.js');
+var ProfitSwitch = require('./libs/profitSwitch.js');
 
 var algos = require('stratum-pool/lib/algoProperties.js');
 
@@ -57,7 +58,7 @@ catch(e){
 
 
 if (cluster.isWorker){
-    
+
     switch(process.env.workerType){
         case 'pool':
             new PoolWorker(logger);
@@ -67,6 +68,9 @@ if (cluster.isWorker){
             break;
         case 'website':
             new Website(logger);
+            break;
+        case 'profitSwitch':
+            new ProfitSwitch(logger);
             break;
     }
 
@@ -210,23 +214,19 @@ var startCoinswitchListener = function(portalConfig){
         logger.debug('Master', 'Coinswitch', text);
     });
     listener.on('switchcoin', function(message){
-
         var ipcMessage = {type:'blocknotify', coin: message.coin, hash: message.hash};
         Object.keys(cluster.workers).forEach(function(id) {
             cluster.workers[id].send(ipcMessage);
         });
         var ipcMessage = { 
-		    type:'switch', 
-			coin: message.coin
-		};
+            type:'switch', 
+            coin: message.coin
+        };
         Object.keys(cluster.workers).forEach(function(id) {
             cluster.workers[id].send(ipcMessage);
         });
-
     });
     listener.start();
-
-
 };
 
 var startRedisBlockListener = function(portalConfig){
@@ -294,6 +294,28 @@ var startWebsite = function(portalConfig, poolConfigs){
 };
 
 
+var startProfitSwitch = function(portalConfig, poolConfigs){
+
+    if (!portalConfig.profitSwitch.enabled){
+        logger.error('Master', 'Profit', 'Profit auto switching disabled');
+        return;
+    }
+
+    var worker = cluster.fork({
+        workerType: 'profitSwitch',
+        pools: JSON.stringify(poolConfigs),
+        portalConfig: JSON.stringify(portalConfig)
+    });
+    worker.on('exit', function(code, signal){
+        logger.error('Master', 'Profit', 'Profit switching process died, spawning replacement...');
+        setTimeout(function(){
+            startWebsite(portalConfig, poolConfigs);
+        }, 2000);
+    });
+};
+
+
+
 (function init(){
 
     var poolConfigs = buildPoolConfigs();
@@ -309,5 +331,7 @@ var startWebsite = function(portalConfig, poolConfigs){
     startRedisBlockListener(portalConfig);
 
     startWebsite(portalConfig, poolConfigs);
+
+    startProfitSwitch(portalConfig, poolConfigs);
 
 })();

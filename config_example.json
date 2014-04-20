@@ -34,6 +34,7 @@
 
     "coinSwitchListener": {
         "enabled": false,
+        "host": "127.0.0.1",
         "port": 8118,
         "password": "test"
     },
@@ -67,6 +68,15 @@
             "enabled": false,
             "port": "5555"
         }
+    },
+
+    "profitSwitch": {
+        "enabled": false,
+        "updateInterval": 600,
+        "depth": 0.90,
+        "usePoloniex": true,
+        "useCryptsy": true,
+        "useMintpal": true
     },
 
     "redisBlockNotifyListener": {

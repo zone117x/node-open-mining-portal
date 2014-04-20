@@ -63,10 +63,10 @@ module.exports = function(logger){
                 var oldPool = pools[oldCoin];
                 var proxyPort = proxySwitch[algo].port;
 
-				if (newCoin == oldCoin) {
+                if (newCoin == oldCoin) {
                     logger.debug(logSystem, logComponent, logSubCat, 'Switch message would have no effect - ignoring ' + newCoin);
-					break;
-				}
+                    break;
+                }
 
                 logger.debug(logSystem, logComponent, logSubCat, 'Proxy message for ' + algo + ' from ' + oldCoin + ' to ' + newCoin);
 
@@ -91,8 +91,8 @@ module.exports = function(logger){
                             else {
                                 logger.debug(logSystem, logComponent, logSubCat, 'Last proxy state saved to redis for ' + algo);
                             }
-						});
-					});
+                        });
+                    });
                 }
                 break;
         }
@@ -230,9 +230,9 @@ module.exports = function(logger){
                 // Setup proxySwitch object to control proxy operations from configuration and any restored 
                 // state.  Each algorithm has a listening port, current coin name, and an active pool to 
                 // which traffic is directed when activated in the config.  
-			    //	
-				// In addition, the proxy config also takes diff and varDiff parmeters the override the
-				// defaults for the standard config of the coin.
+                //    
+                // In addition, the proxy config also takes diff and varDiff parmeters the override the
+                // defaults for the standard config of the coin.
                 //
                 Object.keys(portalConfig.proxy).forEach(function(algorithm) {
 
@@ -245,21 +245,21 @@ module.exports = function(logger){
                         };
                        
 
-						// Copy diff and vardiff configuation into pools that match our algorithm so the stratum server can pick them up
-						//
-						// Note: This seems a bit wonky and brittle - better if proxy just used the diff config of the port it was
-						// routed into instead.
-						//
-						if (portalConfig.proxy[algorithm].hasOwnProperty('varDiff')) {
+                        // Copy diff and vardiff configuation into pools that match our algorithm so the stratum server can pick them up
+                        //
+                        // Note: This seems a bit wonky and brittle - better if proxy just used the diff config of the port it was
+                        // routed into instead.
+                        //
+                        if (portalConfig.proxy[algorithm].hasOwnProperty('varDiff')) {
                             proxySwitch[algorithm].varDiff = new Stratum.varDiff(proxySwitch[algorithm].port, portalConfig.proxy[algorithm].varDiff);
                             proxySwitch[algorithm].diff = portalConfig.proxy[algorithm].diff;
-						}
+                        }
                         Object.keys(pools).forEach(function (coinName) {
                             var a = poolConfigs[coinName].coin.algorithm;
                             var p = pools[coinName];
-							if (a === algorithm) {
+                            if (a === algorithm) {
                                 p.setVarDiff(proxySwitch[algorithm].port, proxySwitch[algorithm].varDiff);
-							}
+                            }
                         });
 
                         proxySwitch[algorithm].proxy = net.createServer(function(socket) {
@@ -267,12 +267,12 @@ module.exports = function(logger){
                             var logSubCat = 'Thread ' + (parseInt(forkId) + 1);
 
                             logger.debug(logSystem, 'Connect', logSubCat, 'Proxy connect from ' + socket.remoteAddress + ' on ' + proxySwitch[algorithm].port 
-							             + ' routing to ' + currentPool);
+                                         + ' routing to ' + currentPool);
                             pools[currentPool].getStratumServer().handleNewClient(socket);
 
                         }).listen(parseInt(proxySwitch[algorithm].port), function() {
                             logger.debug(logSystem, logComponent, logSubCat, 'Proxy listening for ' + algorithm + ' on port ' + proxySwitch[algorithm].port 
-							             + ' into ' + proxySwitch[algorithm].currentPool);
+                                         + ' into ' + proxySwitch[algorithm].currentPool);
                         });
                     }
                     else {
