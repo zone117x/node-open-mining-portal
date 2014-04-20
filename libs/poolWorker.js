@@ -117,7 +117,7 @@ module.exports = function(logger){
 
         //Functions required for MPOS compatibility
         if (shareProcessing && shareProcessing.mpos && shareProcessing.mpos.enabled){
-            var mposCompat = new MposCompatibility(logger, poolOptions)
+            var mposCompat = new MposCompatibility(logger, poolOptions);
 
             handlers.auth = function(workerName, password, authCallback){
                 mposCompat.handleAuth(workerName, password, authCallback);
@@ -135,7 +135,7 @@ module.exports = function(logger){
         //Functions required for internal payment processing
         else if (shareProcessing && shareProcessing.internal && shareProcessing.internal.enabled){
 
-            var shareProcessor = new ShareProcessor(logger, poolOptions)
+            var shareProcessor = new ShareProcessor(logger, poolOptions);
 
             handlers.auth = function(workerName, password, authCallback){
                 if (shareProcessing.internal.validateWorkerAddress !== true)
@@ -215,7 +215,7 @@ module.exports = function(logger){
         // on the last pool it was using when reloaded or restarted
         //
         logger.debug(logSystem, logComponent, logSubCat, 'Loading last proxy state from redis');
-        var redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host)
+        var redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host);
         redisClient.on('ready', function(){
             redisClient.hgetall("proxyState", function(error, obj) {
                 if (error || obj == null) {
