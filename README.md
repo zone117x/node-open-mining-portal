@@ -554,7 +554,7 @@ Credits
 -------
 * [Jerry Brady / mintyfresh68](https://github.com/bluecircle) - got coin-switching fully working and developed proxy-per-algo feature
 * [Tony Dobbs](http://anthonydobbs.com) - designs for front-end and created the NOMP logo
-* [LucasJones(//github.com/LucasJones) - getting p2p block notify script working
+* [LucasJones](//github.com/LucasJones) - got p2p block notify working and implemented additional hashing algos
 * [vekexasia](//github.com/vekexasia) - co-developer & great tester
 * [TheSeven](//github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
 * [UdjinM6](//github.com/UdjinM6) - helped implement fee withdrawal in payment processing
