@@ -1,7 +1,5 @@
 {
-    "name"       : "Alphacoin",
-    "symbol"     : "ALF",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Alphacoin",
+    "symbol": "ALF",
+    "algorithm": "scrypt"
 }

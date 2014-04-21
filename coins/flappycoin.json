@@ -1,7 +1,5 @@
 {
-    "name"       : "Flappycoin",
-    "symbol"     : "FLAP",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Flappycoin",
+    "symbol": "FLAP",
+    "algorithm": "scrypt"
 }

@@ -20,45 +20,39 @@ module.exports = function(logger, poolConfig){
     var redisConfig = internalConfig.redis;
     var coin = poolConfig.coin.name;
 
-    var connection;
+    var forkId = process.env.forkId;
+    var logSystem = 'Pool';
+    var logComponent = coin;
+    var logSubCat = 'Thread ' + (parseInt(forkId) + 1);
 
-    function connect(){
+    var connection = redis.createClient(redisConfig.port, redisConfig.host);
 
-        var reconnectTimeout;
-
-        connection = redis.createClient(redisConfig.port, redisConfig.host);
-        connection.on('ready', function(){
-            clearTimeout(reconnectTimeout);
-            logger.debug('redis', 'Successfully connected to redis database');
-        });
-        connection.on('error', function(err){
-            logger.error('redis', 'Redis client had an error: ' + JSON.stringify(err))
-        });
-        connection.on('end', function(){
-            logger.error('redis', 'Connection to redis database as been ended');
-            logger.warning('redis', 'Trying reconnection in 3 seconds...');
-            reconnectTimeout = setTimeout(function(){
-                connect();
-            }, 3000);
-        });
-    }
-    connect();
+    connection.on('ready', function(){
+        logger.debug(logSystem, logComponent, logSubCat, 'Share processing setup with redis (' + redisConfig.host +
+            ':' + redisConfig.port  + ')');
+    });
+    connection.on('error', function(err){
+        logger.error(logSystem, logComponent, logSubCat, 'Redis client had an error: ' + JSON.stringify(err))
+    });
+    connection.on('end', function(){
+        logger.error(logSystem, logComponent, logSubCat, 'Connection to redis database as been ended');
+    });
 
 
 
     this.handleShare = function(isValidShare, isValidBlock, shareData){
 
-
         var redisCommands = [];
 
         if (isValidShare){
-            redisCommands.push(['hincrby', coin + '_shares:roundCurrent', shareData.worker, shareData.difficulty]);
+            redisCommands.push(['hincrbyfloat', coin + '_shares:roundCurrent', shareData.worker, shareData.difficulty]);
             redisCommands.push(['hincrby', coin + '_stats', 'validShares', 1]);
 
             /* Stores share diff, worker, and unique value with a score that is the timestamp. Unique value ensures it
                doesn't overwrite an existing entry, and timestamp as score lets us query shares from last X minutes to
                generate hashrate for each worker and pool. */
-            redisCommands.push(['zadd', coin + '_hashrate', Date.now() / 1000 | 0, [shareData.difficulty, shareData.worker, Math.random()].join(':')]);
+            var dateNow = Date.now();
+            redisCommands.push(['zadd', coin + '_hashrate', dateNow / 1000 | 0, [shareData.difficulty, shareData.worker, dateNow].join(':')]);
         }
         else{
             redisCommands.push(['hincrby', coin + '_stats', 'invalidShares', 1]);
@@ -66,16 +60,18 @@ module.exports = function(logger, poolConfig){
 
         if (isValidBlock){
             redisCommands.push(['rename', coin + '_shares:roundCurrent', coin + '_shares:round' + shareData.height]);
-            redisCommands.push(['sadd', coin + '_blocksPending', shareData.tx + ':' + shareData.height + ':' + shareData.reward]);
+            redisCommands.push(['sadd', coin + '_blocksPending', [shareData.blockHash, shareData.txHash, shareData.height, shareData.reward].join(':')]);
             redisCommands.push(['hincrby', coin + '_stats', 'validBlocks', 1]);
         }
-        else if (shareData.solution){
+        else if (shareData.blockHash){
             redisCommands.push(['hincrby', coin + '_stats', 'invalidBlocks', 1]);
         }
 
         connection.multi(redisCommands).exec(function(err, replies){
             if (err)
-                logger.error('redis', 'error with share processor multi ' + JSON.stringify(err));
+                logger.error(logSystem, logComponent, logSubCat, 'Error with share processor multi ' + JSON.stringify(err));
+            //else
+                //logger.debug(logSystem, logComponent, logSubCat, 'Share data and stats recorded');
         });
 
 

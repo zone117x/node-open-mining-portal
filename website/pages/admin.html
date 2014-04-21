@@ -1,0 +1,50 @@
+<div>
+
+    <style>
+        #passwordForm, #adminCenter{
+            display: none;
+        }
+        #adminCenter{
+            display: flex;
+            flex-flow: row;
+        }
+        #leftMenu{
+            flex: 0 0 200px;
+        }
+        #editForm{
+            flex: 1 1 auto;
+        }
+    </style>
+
+    <form class="pure-form pure-form-stacked" id="passwordForm">
+        <fieldset>
+            <legend>Password</legend>
+
+            <input id="password" type="password" placeholder="Password">
+
+            <label for="remember" class="pure-checkbox">
+                <input id="remember" type="checkbox"> Stay Logged In
+            </label>
+
+            <button type="submit" class="pure-button pure-button-primary">Log In</button>
+        </fieldset>
+    </form>
+
+    <div id="adminCenter">
+
+        <div class="pure-menu pure-menu-open" id="leftMenu">
+            <a class="pure-menu-heading">Administration</a>
+            <ul>
+                <li id="addPool"><a href="#">Add Pool</a></li>
+                <li class="pure-menu-heading" id="poolList">Current Pools</li>
+            </ul>
+        </div>
+
+        <div id="editForm"></div>
+
+    </div>
+
+
+    <script src="/static/admin.js"></script>
+
+</div>

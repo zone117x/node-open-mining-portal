@@ -1,7 +1,5 @@
 {
-    "name"       : "Emerald",
-    "symbol"     : "EMD",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Emerald",
+    "symbol": "EMD",
+    "algorithm": "scrypt"
 }

@@ -1,0 +1,6 @@
+{
+    "name": "Cachecoin",
+    "symbol": "CACH",
+    "algorithm": "scrypt-jane",
+    "chainStartTime": 1388949883
+}

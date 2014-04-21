@@ -1,7 +1,5 @@
 {
-    "name"       : "Casinocoin",
-    "symbol"     : "CSC",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Casinocoin",
+    "symbol": "CSC",
+    "algorithm": "scrypt"
 }

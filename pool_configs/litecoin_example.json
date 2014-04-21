@@ -1,31 +1,42 @@
 {
-    "disabled": false,
+    "enabled": false,
     "coin": "litecoin.json",
+
+    "address": "n4jSe18kZMCdGcZqaYprShXW6EH1wivUK1",
+    "blockRefreshInterval": 1000,
+    "txRefreshInterval": 20000,
+    "jobRebroadcastTimeout": 55,
+    "connectionTimeout": 600,
+    "emitInvalidBlockHashes": false,
+    "shareVariancePercent": 15,
+
+    "tcpProxyProtocol": false,
 
     "shareProcessing": {
         "internal": {
             "enabled": true,
             "validateWorkerAddress": true,
-            "paymentInterval": 10,
-            "minimumPayment": 0.001,
+            "paymentInterval": 20,
+            "minimumPayment": 70,
             "minimumReserve": 10,
-            "feePercent": 0.02,
-            "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
+            "feePercent": 0.05,
+            "feeCollectAccount": "feesCollected",
+            "feeReceiveAddress": "mppaGeNaSbG1Q7S6V3gL5uJztMhucgL9Vh",
             "feeWithdrawalThreshold": 5,
             "daemon": {
-                "host": "localhost",
+                "host": "127.0.0.1",
                 "port": 19332,
                 "user": "litecoinrpc",
                 "password": "testnet"
             },
             "redis": {
-                "host": "localhost",
+                "host": "127.0.0.1",
                 "port": 6379
             }
         },
         "mpos": {
             "enabled": false,
-            "host": "localhost",
+            "host": "127.0.0.1",
             "port": 3306,
             "user": "me",
             "password": "mypass",
@@ -33,12 +44,6 @@
             "stratumAuth": "password"
         }
     },
-
-
-    "address": "mfsm1ckZKTTjDz94KonZZsbZnAbm1UV4BF",
-    "blockRefreshInterval": 1000,
-    "txRefreshInterval": 20000,
-    "connectionTimeout": 600,
 
     "banning": {
         "enabled": true,
@@ -49,8 +54,11 @@
     },
 
     "ports": {
-        "3008":{
-            "diff": 8,
+        "3008": {
+            "diff": 8
+        },
+        "3032": {
+            "diff": 32,
             "varDiff": {
                 "minDiff": 8,
                 "maxDiff": 512,
@@ -59,9 +67,6 @@
                 "variancePercent": 30
             }
         },
-        "3032": {
-            "diff": 32
-        },
         "3256": {
             "diff": 256
         }
@@ -69,13 +74,13 @@
 
     "daemons": [
         {
-            "host": "localhost",
+            "host": "127.0.0.1",
             "port": 19332,
             "user": "litecoinrpc",
             "password": "testnet"
         },
         {
-            "host": "localhost",
+            "host": "127.0.0.1",
             "port": 19344,
             "user": "litecoinrpc",
             "password": "testnet"
@@ -84,9 +89,9 @@
 
     "p2p": {
         "enabled": false,
-        "host": "localhost",
+        "host": "127.0.0.1",
         "port": 19333,
-        "protocolVersion": 70002,
+        "disableTransactions": true,
         "magic": "fcc1b7dc"
     }
 }

@@ -1,7 +1,5 @@
 {
-    "name"       : "Krugercoin",
-    "symbol"     : "KGC",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Krugercoin",
+    "symbol": "KGC",
+    "algorithm": "scrypt"
 }

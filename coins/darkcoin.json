@@ -1,7 +1,6 @@
 {
     "name": "Darkcoin",
-    "symbol": "drk",
+    "symbol": "DRK",
     "algorithm": "x11",
-    "reward": "POW",
-    "txMessages": false
+    "mposDiffMultiplier": 256
 }

@@ -1,7 +1,5 @@
 {
-    "name"       : "Lottocoin",
-    "symbol"     : "LOT",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Lottocoin",
+    "symbol": "LOT",
+    "algorithm": "scrypt"
 }

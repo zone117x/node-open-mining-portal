@@ -1,7 +1,6 @@
 {
     "name": "Yacoin",
-    "symbol": "yac",
+    "symbol": "YAC",
     "algorithm": "scrypt-jane",
-    "reward": "POS",
-    "txMessages": false
+    "chainStartTime": 1367991200
 }

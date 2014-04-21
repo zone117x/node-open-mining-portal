@@ -1,7 +1,5 @@
 {
-    "name"       : "Auroracoin",
-    "symbol"     : "AUR",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Auroracoin",
+    "symbol": "AUR",
+    "algorithm": "scrypt"
 }

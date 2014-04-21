@@ -1,7 +1,5 @@
 {
-    "name"       : "Digibyte",
-    "symbol"     : "DGB",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Digibyte",
+    "symbol": "DGB",
+    "algorithm": "scrypt"
 }

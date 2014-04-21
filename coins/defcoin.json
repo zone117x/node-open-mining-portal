@@ -1,0 +1,5 @@
+{
+    "name": "Defcoin",
+    "symbol": "DEF",
+    "algorithm": "scrypt"
+}

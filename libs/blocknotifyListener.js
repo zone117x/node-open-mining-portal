@@ -17,27 +17,43 @@ var listener = module.exports = function listener(options){
         }
 
         var blockNotifyServer = net.createServer(function(c) {
+
             emitLog('Block listener has incoming connection');
             var data = '';
-            c.on('data', function(d){
-                emitLog('Block listener received blocknotify data');
-                data += d;
-                if (data.slice(-1) === '\n'){
-                    c.end();
-                }
-            });
-            c.on('end', function() {
+            try {
+                c.on('data', function (d) {
+                    emitLog('Block listener received blocknotify data');
+                    data += d;
+                    if (data.slice(-1) === '\n') {
+                        c.end();
+                    }
+                });
+                c.on('end', function () {
 
-                emitLog('Block listener connection ended');
+                    emitLog('Block listener connection ended');
 
-                var message = JSON.parse(data);
-                if (message.password === options.password){
-                    _this.emit('hash', message);
-                }
-                else
-                    emitLog('Block listener received notification with incorrect password');
+                    var message;
 
-            });
+                    try{
+                        message = JSON.parse(data);
+                    }
+                    catch(e){
+                        emitLog('Block listener failed to parse message ' + data);
+                        return;
+                    }
+
+                    if (message.password === options.password) {
+                        _this.emit('hash', message);
+                    }
+                    else
+                        emitLog('Block listener received notification with incorrect password');
+
+                });
+            }
+            catch(e){
+                emitLog('Block listener had an error: ' + e);
+            }
+
         });
         blockNotifyServer.listen(options.port, function() {
             emitLog('Block notify listener server started on port ' + options.port)

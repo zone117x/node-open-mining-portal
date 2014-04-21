@@ -7,6 +7,9 @@ module.exports = function(logger, poolConfig){
 
     var connection;
 
+    var logIdentify = 'MySQL';
+    var logComponent = coin;
+
     function connect(){
         connection = mysql.createConnection({
             host: mposConfig.host,
@@ -17,18 +20,18 @@ module.exports = function(logger, poolConfig){
         });
         connection.connect(function(err){
             if (err)
-                logger.error('mysql', 'Could not connect to mysql database: ' + JSON.stringify(err))
+                logger.error(logIdentify, logComponent, 'Could not connect to mysql database: ' + JSON.stringify(err))
             else{
-                logger.debug('mysql', 'Successful connection to MySQL database');
+                logger.debug(logIdentify, logComponent, 'Successful connection to MySQL database');
             }
         });
         connection.on('error', function(err){
             if(err.code === 'PROTOCOL_CONNECTION_LOST') {
-                logger.warning('mysql', 'Lost connection to MySQL database, attempting reconnection...');
+                logger.warning(logIdentify, logComponent, 'Lost connection to MySQL database, attempting reconnection...');
                 connect();
             }
             else{
-                logger.error('mysql', 'Database error: ' + JSON.stringify(err))
+                logger.error(logIdentify, logComponent, 'Database error: ' + JSON.stringify(err))
             }
         });
     }
@@ -38,10 +41,10 @@ module.exports = function(logger, poolConfig){
 
         connection.query(
             'SELECT password FROM pool_worker WHERE username = LOWER(?)',
-            [workerName],
+            [workerName.toLowerCase()],
             function(err, result){
                 if (err){
-                    logger.error('mysql', 'Database error when authenticating worker: ' +
+                    logger.error(logIdentify, logComponent, 'Database error when authenticating worker: ' +
                         JSON.stringify(err));
                     authCallback(false);
                 }
@@ -63,19 +66,20 @@ module.exports = function(logger, poolConfig){
         var dbData = [
             shareData.ip,
             shareData.worker,
-            isValidShare ? 'Y' : 'N', 
+            isValidShare ? 'Y' : 'N',
             isValidBlock ? 'Y' : 'N',
-            shareData.difficulty,
+            shareData.difficulty * (poolConfig.coin.mposDiffMultiplier || 1),
             typeof(shareData.error) === 'undefined' ? null : shareData.error,
-            typeof(shareData.solution) === 'undefined' ? '' : shareData.solution
+            shareData.blockHash ? shareData.blockHash : (shareData.blockHashInvalid ? shareData.blockHashInvalid : '')
         ];
         connection.query(
             'INSERT INTO `shares` SET time = NOW(), rem_host = ?, username = ?, our_result = ?, upstream_result = ?, difficulty = ?, reason = ?, solution = ?',
             dbData,
             function(err, result) {
                 if (err)
-                    logger.error('mysql', 'Insert error when adding share: ' +
-                        JSON.stringify(err));
+                    logger.error(logIdentify, logComponent, 'Insert error when adding share: ' + JSON.stringify(err));
+                else
+                    logger.debug(logIdentify, logComponent, 'Share inserted');
             }
         );
     };
@@ -86,7 +90,7 @@ module.exports = function(logger, poolConfig){
             'UPDATE `pool_worker` SET `difficulty` = ' + diff + ' WHERE `username` = ' + connection.escape(workerName),
             function(err, result){
                 if (err)
-                    logger.error('mysql', 'Error when updating worker diff: ' +
+                    logger.error(logIdentify, logComponent, 'Error when updating worker diff: ' +
                         JSON.stringify(err));
                 else if (result.affectedRows === 0){
                     connection.query('INSERT INTO `pool_worker` SET ?', {username: workerName, difficulty: diff});

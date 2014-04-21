@@ -1,1 +1,140 @@
-<div>Welcome to {{=it.portalConfig.website.siteTitle}}! - The first multi-pool running on NOMP!</div>
+<style>
+    #boxWelcome{
+        background-color: #0eafc7;
+        color: white;
+        margin: 18px;
+    }
+    #logoImg{
+        height: 285px;
+        margin: 55px;
+    }
+    #welcomeText{
+        font-size: 2.7em;
+        margin: 50px 18px 10px 18px;
+    }
+    #welcomeItems{
+        list-style-type: none;
+        font-size: 1.3em;
+        padding: 0 !important;
+        margin: 0 0 0 18px !important;
+    }
+    #welcomeItems > li{
+        margin: 30px !important;
+    }
+    #boxesLower {
+        margin: 0 9px;
+    }
+    #boxesLower > div {
+        display: flex;
+    }
+    #boxesLower > div > div {
+        flex: 1 1 auto;
+        margin: 0 9px 18px 9px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+    .boxLowerHeader{
+        font-size: 1.3em;
+        margin: 0 0 5px 10px;
+    }
+
+
+    #boxStatsLeft{
+        background-color: #b064e1;
+    }
+    #boxStatsRight{
+        background-color: #10bb9c;
+    }
+    .boxStats{
+        color: white;
+    }
+    .boxStatsList{
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-around;
+        opacity: 0.77;
+        margin-bottom: 5px;
+        flex: 1 1 auto;
+        align-content: center;
+    }
+    .boxStatsList i.fa{
+        height: 15px;
+        width: 33px;
+        text-align: center;
+    }
+    .boxStatsList > div{
+        padding: 5px 20px;
+    }
+    .boxStatsList > div > div{
+        padding: 3px;
+    }
+
+
+</style>
+
+
+<div class="pure-g-r" id="boxWelcome">
+    <div class="pure-u-1-3">
+        <img id="logoImg" src="/static/logo.svg">
+    </div>
+    <div class="pure-u-2-3">
+        <div id="welcomeText">Welcome to the future of mining</div>
+        <ul id="welcomeItems">
+            <li>Low fees</li>
+            <li>High performance Node.js backend</li>
+            <li>User friendly mining client</li>
+            <li>Multi-coin / multi-pool</li>
+        </ul>
+    </div>
+</div>
+
+<div class="pure-g-r" id="boxesLower">
+
+    <div class="pure-u-1-2">
+        <div class="boxStats" id="boxStatsLeft">
+            <div class="boxLowerHeader">Global Stats</div>
+            <div class="boxStatsList">
+                {{ for(var algo in it.stats.algos) { }}
+                <div>
+                    <div><i class="fa fa-flask"></i>{{=algo}}</div>
+                    <div><i class="fa fa-users"></i><span id="statsMiners{{=algo}}">{{=it.stats.algos[algo].workers}}</span> Miners</div>
+                    <div><i class="fa fa-tachometer"></i><span id="statsHashrate{{=algo}}">{{=it.stats.algos[algo].hashrateString}}</span></div>
+                </div>
+                {{ } }}
+            </div>
+        </div>
+    </div>
+
+    <div class="pure-u-1-2">
+        <div class="boxStats" id="boxStatsRight">
+            <div class="boxLowerHeader">Pools / Coins</div>
+            <div class="boxStatsList">
+                {{ for(var pool in it.stats.pools) { }}
+                <div>
+                    <div><i class="fa fa-dot-circle-o"></i>{{=pool}}</div>
+                    <div><i class="fa fa-users"></i><span id="statsMiners{{=pool}}">{{=it.stats.pools[pool].workerCount}}</span> Miners</div>
+                    <div><i class="fa fa-tachometer"></i><span id="statsHashrate{{=pool}}">{{=it.stats.pools[pool].hashrateString}}</span></div>
+                </div>
+                {{ } }}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    $(function() {
+        statsSource.addEventListener('message', function (e) {
+            var stats = JSON.parse(e.data);
+            for (algo in stats.algos) {
+                $('#statsMiners' + algo).text(stats.algos[algo].workers);
+                $('#statsHashrate' + algo).text(stats.algos[algo].hashrateString);
+            }
+            for (var pool in stats.pools) {
+                $('#statsMiners' + pool).text(stats.pools[pool].workerCount);
+                $('#statsHashrate' + pool).text(stats.pools[pool].hashrateString);
+            }
+        });
+    });
+</script>

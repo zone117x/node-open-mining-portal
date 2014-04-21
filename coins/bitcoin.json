@@ -1,7 +1,5 @@
 {
     "name": "Bitcoin",
-    "symbol": "btc",
-    "algorithm": "sha256",
-    "reward": "POW",
-    "txMessages": false
+    "symbol": "BTC",
+    "algorithm": "sha256"
 }

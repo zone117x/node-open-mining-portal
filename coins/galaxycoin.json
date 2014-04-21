@@ -1,7 +1,5 @@
 {
-    "name"       : "Galaxycoin",
-    "symbol"     : "GLX",
-    "algorithm"  : "scrypt",
-    "reward"     : "POS",
-    "txMessages" : false
+    "name": "Galaxycoin",
+    "symbol": "GLX",
+    "algorithm": "scrypt"
 }

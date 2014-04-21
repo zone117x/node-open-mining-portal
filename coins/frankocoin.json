@@ -1,7 +1,5 @@
 {
-    "name"       : "Frankocoin",
-    "symbol"     : "FRK",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Frankocoin",
+    "symbol": "FRK",
+    "algorithm": "scrypt"
 }

@@ -1,7 +1,6 @@
 {
     "name": "Quarkcoin",
-    "symbol": "qrk",
+    "symbol": "QRK",
     "algorithm": "quark",
-    "reward": "POW",
-    "txMessages": false
+    "mposDiffMultiplier": 256
 }

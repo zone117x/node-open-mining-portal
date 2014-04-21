@@ -1,7 +1,5 @@
 {
-    "name"       : "Stablecoin",
-    "symbol"     : "SBC",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Stablecoin",
+    "symbol": "SBC",
+    "algorithm": "scrypt"
 }

@@ -1,7 +1,5 @@
 {
-    "name"       : "Bottlecaps",
-    "symbol"     : "CAP",
-    "algorithm"  : "scrypt",
-    "reward"     : "POS",
-    "txMessages" : false
+    "name": "Bottlecaps",
+    "symbol": "CAP",
+    "algorithm": "scrypt"
 }

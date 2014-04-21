@@ -1,7 +1,5 @@
 {
-    "name"       : "Spots",
-    "symbol"     : "SPT",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Spots",
+    "symbol": "SPT",
+    "algorithm": "scrypt"
 }

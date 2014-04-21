@@ -1,7 +1,5 @@
 {
-    "name"       : "Anoncoin",
-    "symbol"     : "ANC",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Anoncoin",
+    "symbol": "ANC",
+    "algorithm": "scrypt"
 }

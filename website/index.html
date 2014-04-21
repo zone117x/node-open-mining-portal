@@ -4,62 +4,59 @@
 <head>
     <meta charset="utf-8">
 
+    <link rel="icon" type="image/png" href="/static/favicon.png"/>
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.4.2/pure-min.css">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/0.2.0/Chart.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/zepto/1.1.3/zepto.min.js"></script>
 
-    <link rel="stylesheet" href="/static/style.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.5/d3.min.js"></script>
+    <script src="/static/nvd3.js"></script>
+    <link rel="stylesheet" href="/static/nvd3.css">
+
     <script src="/static/main.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
 
-
-    <title>{{=it.portalConfig.website.siteTitle}}</title>
-
+    <title>NOMP</title>
 
 </head>
 
 <body>
 
-<header class="header">
-    <div class="pure-menu pure-menu-open pure-menu-horizontal">
+<header>
+    <div class="home-menu pure-menu pure-menu-open pure-menu-horizontal">
+
+        <a class="pure-menu-heading hot-swapper" href="/"><i class="fa fa-home"></i>&nbsp;NOMP</a>
+
         <ul>
-            <li id="home" class="{{? it.selected === '' }}selected{{?}}">
-                <a class="hot-swapper" href="/"><i class="fa fa-home"></i>&nbsp;
-                    Home
-                </a>
-            </li>
-            <li class="{{? it.selected === 'getting_started' }}selected{{?}}">
+            <li class="{{? it.selected === 'getting_started' }}pure-menu-selected{{?}}">
                 <a class="hot-swapper" href="/getting_started">
                     <i class="fa fa-rocket"></i>&nbsp;
                     Getting Started
                 </a>
             </li>
-            <li class="{{? it.selected === 'stats' }}selected{{?}}">
+            <li class="{{? it.selected === 'stats' }}pure-menu-selected{{?}}">
                 <a class="hot-swapper" href="/stats">
                     <i class="fa fa-bar-chart-o"></i>&nbsp;
                     Stats
                 </a>
             </li>
-            <li class="{{? it.selected === 'api' }}selected{{?}}">
+            <li class="{{? it.selected === 'api' }}pure-menu-selected{{?}}">
                 <a class="hot-swapper" href="/api">
                     <i class="fa fa-code"></i>&nbsp;
                     API
                 </a>
             </li>
         </ul>
-
-        <div class="stats">
-            <div><i class="fa fa-users"></i>&nbsp;<span id="statsMiners">{{=it.stats.global.workers}}</span> Miners</div>
-            <div><i class="fa fa-tachometer"></i>&nbsp;<span id="statsHashrate">{{=it.stats.global.hashrate}}</span> KH/s</div>
-        </div>
-
     </div>
 </header>
 
 <main>
-    <div id="page">
-        {{=it.page}}
-    </div>
+    {{=it.page}}
 </main>
 
 
@@ -81,7 +78,6 @@
     </div>
 
 </footer>
-
 
 </body>
 </html>

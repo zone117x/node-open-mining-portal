@@ -1,0 +1,5 @@
+{
+    "name": "Rubycoin",
+    "symbol": "RUBY",
+    "algorithm": "scrypt"
+}

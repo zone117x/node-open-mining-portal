@@ -1,7 +1,5 @@
 {
-    "name"       : "Noirbits",
-    "symbol"     : "NRB",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Noirbits",
+    "symbol": "NRB",
+    "algorithm": "scrypt"
 }

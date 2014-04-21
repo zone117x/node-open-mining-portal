@@ -1,7 +1,5 @@
 {
     "name"       : "Phoenixcoin",
     "symbol"     : "PXC",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "algorithm"  : "scrypt"
 }

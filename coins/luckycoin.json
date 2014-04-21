@@ -1,7 +1,5 @@
 {
-    "name"       : "Luckycoin",
-    "symbol"     : "LKY",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Luckycoin",
+    "symbol": "LKY",
+    "algorithm": "scrypt"
 }

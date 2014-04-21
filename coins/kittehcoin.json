@@ -1,7 +1,5 @@
 {
-    "name"       : "Kittehcoin",
-    "symbol"     : "MEOW",
-    "algorithm"  : "scrypt",
-    "reward"     : "POW",
-    "txMessages" : false
+    "name": "Kittehcoin",
+    "symbol": "MEOW",
+    "algorithm": "scrypt"
 }

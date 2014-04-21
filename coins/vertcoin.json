@@ -1,0 +1,5 @@
+{
+    "name": "Vertcoin",
+    "symbol": "VTC",
+    "algorithm": "scrypt-n"
+}
