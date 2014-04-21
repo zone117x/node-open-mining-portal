@@ -52,7 +52,7 @@ module.exports = function(logger, poolConfig){
                     if(mposConfig.autoCreateWorker){
                         var account = workerName.split('.')[0];
                         connection.query(
-                            'SELECT username FROM accounts WHERE username = LOWER(?)',
+                            'SELECT id,username FROM accounts WHERE username = LOWER(?)',
                             [account.toLowerCase()],
                             function(err, result){
                                 if (err){
@@ -63,7 +63,7 @@ module.exports = function(logger, poolConfig){
                                     authCallback(false);
                                 }else{
                                     connection.query(
-                                        "INSERT INTO `pool_worker` (`id`, `account_id`, `username`, `password`, `difficulty`, `monitor`) VALUES (NULL, ?, ?, ?, '0', '0');",
+                                        "INSERT INTO `pool_worker` (`account_id`, `username`, `password`) VALUES (?, ?, ?);",
                                         [result[0].id,workerName.toLowerCase(),password],
                                         function(err, result){
                                             if (err){
