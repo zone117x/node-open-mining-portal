@@ -400,6 +400,10 @@ Description of options:
             "password": "mypass", //MySQL db password
             "database": "ltc", //MySQL db database name
 
+            /* Unregistered workers can automatically be registered (added to database) on stratum
+               worker authentication if this is true. */
+            "autoCreateWorker": false,
+
             /* For when miner's authenticate: set to "password" for both worker name and password to
                be checked for in the database, set to "worker" for only work name to be checked, or
                don't use this option (set to "none") for no auth checks */
