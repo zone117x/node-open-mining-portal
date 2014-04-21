@@ -63,8 +63,8 @@ module.exports = function(logger, poolConfig){
                                     authCallback(false);
                                 }else{
                                     connection.query(
-                                        "INSERT INTO `pool_worker` (`id`, `account_id`, `username`, `password`, `difficulty`, `monitor`) VALUES (NULL, ?, ?, '123', '0', '0');",
-                                        [result[0].id,workerName.toLowerCase()],
+                                        "INSERT INTO `pool_worker` (`id`, `account_id`, `username`, `password`, `difficulty`, `monitor`) VALUES (NULL, ?, ?, ?, '0', '0');",
+                                        [result[0].id,workerName.toLowerCase(),password],
                                         function(err, result){
                                             if (err){
                                                 logger.error(logIdentify, logComponent, 'Database error when insert worker: ' +
