@@ -38,7 +38,7 @@ module.exports = function(logger, poolConfig){
     connect();
 
     this.handleAuth = function(workerName, password, authCallback){
-
+        
         connection.query(
             'SELECT password FROM pool_worker WHERE username = LOWER(?)',
             [workerName.toLowerCase()],
@@ -48,8 +48,39 @@ module.exports = function(logger, poolConfig){
                         JSON.stringify(err));
                     authCallback(false);
                 }
-                else if (!result[0])
-                    authCallback(false);
+                else if (!result[0]){
+                    if(mposConfig.autoCreateWorker){
+                        var account = workerName.split('.')[0];
+                        connection.query(
+                            'SELECT id,username FROM accounts WHERE username = LOWER(?)',
+                            [account.toLowerCase()],
+                            function(err, result){
+                                if (err){
+                                    logger.error(logIdentify, logComponent, 'Database error when authenticating account: ' +
+                                        JSON.stringify(err));
+                                    authCallback(false);
+                                }else if(!result[0]){
+                                    authCallback(false);
+                                }else{
+                                    connection.query(
+                                        "INSERT INTO `pool_worker` (`account_id`, `username`, `password`) VALUES (?, ?, ?);",
+                                        [result[0].id,workerName.toLowerCase(),password],
+                                        function(err, result){
+                                            if (err){
+                                                logger.error(logIdentify, logComponent, 'Database error when insert worker: ' +
+                                                    JSON.stringify(err));
+                                                authCallback(false);
+                                            }else {
+                                                authCallback(true);
+                                            }
+                                        })
+                                }
+                            }
+                        );
+                    }else{
+                        authCallback(false);
+                    }
+                }
                 else if (mposConfig.stratumAuth === 'worker')
                     authCallback(true);
                 else if (result[0].password === password)
