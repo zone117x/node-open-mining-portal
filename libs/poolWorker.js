@@ -219,7 +219,7 @@ module.exports = function(logger){
         redisClient.on('ready', function(){
             redisClient.hgetall("proxyState", function(error, obj) {
                 if (error || obj == null) {
-                    logger.debug(logSystem, logComponent, logSubCat, 'No last proxy state found in redis');
+                    //logger.debug(logSystem, logComponent, logSubCat, 'No last proxy state found in redis');
                 }
                 else {
                     proxyState = obj;
@@ -276,7 +276,7 @@ module.exports = function(logger){
                         });
                     }
                     else {
-                        logger.debug(logSystem, logComponent, logSubCat, 'Proxy pool for ' + algorithm + ' disabled.');
+                        //logger.debug(logSystem, logComponent, logSubCat, 'Proxy pool for ' + algorithm + ' disabled.');
                     }
                 });
             });

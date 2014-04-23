@@ -296,8 +296,8 @@ var startWebsite = function(portalConfig, poolConfigs){
 
 var startProfitSwitch = function(portalConfig, poolConfigs){
 
-    if (!portalConfig.profitSwitch.enabled){
-        logger.error('Master', 'Profit', 'Profit auto switching disabled');
+    if (!portalConfig.profitSwitch || !portalConfig.profitSwitch.enabled){
+        //logger.error('Master', 'Profit', 'Profit auto switching disabled');
         return;
     }
 
