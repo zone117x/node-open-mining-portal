@@ -109,6 +109,7 @@ If your pool uses NOMP let us know and we will list your website here.
 * http://hashfaster.com
 * http://miningpoolhub.com
 * http://teamdoge.com
+* http://miningwith.us
 * http://kryptochaos.com
 * http://pool.uberpools.org
 
