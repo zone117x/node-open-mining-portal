@@ -366,11 +366,11 @@ function SetupForPool(logger, poolOptions, setupFinished){
                                 var reward = round.reward * (1 - processingConfig.feePercent);
 
                                 var totalShares = Object.keys(workerShares).reduce(function(p, c){
-                                    return p + parseInt(workerShares[c])
+                                    return p + parseFloat(workerShares[c])
                                 }, 0);
 
                                 for (var worker in workerShares){
-                                    var percent = parseInt(workerShares[worker]) / totalShares;
+                                    var percent = parseFloat(workerShares[worker]) / totalShares;
                                     var workerRewardTotal = Math.floor(reward * percent);
                                     if (!(worker in workerRewards)) workerRewards[worker] = 0;
                                     workerRewards[worker] += workerRewardTotal;
