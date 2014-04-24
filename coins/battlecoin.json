@@ -1,0 +1,5 @@
+{
+    "name": "Battlecoin",
+    "symbol": "BCX",
+    "algorithm": "sha256"
+}
