@@ -112,6 +112,7 @@ If your pool uses NOMP let us know and we will list your website here.
 * http://miningwith.us
 * http://kryptochaos.com
 * http://pool.uberpools.org
+* http://onebtcplace.com
 
 
 Usage
