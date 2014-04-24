@@ -113,7 +113,7 @@ If your pool uses NOMP let us know and we will list your website here.
 * http://kryptochaos.com
 * http://pool.uberpools.org
 * http://onebtcplace.com
-
+* https://minr.es
 
 Usage
 =====
