@@ -2,7 +2,7 @@ var redis = require('redis');
 var async = require('async');
 
 var Stratum = require('stratum-pool');
-
+var util = require('stratum-pool/lib/util.js');
 
 
 module.exports = function(logger){
@@ -38,8 +38,6 @@ module.exports = function(logger){
 
         });
     });
-
-
 };
 
 
@@ -572,7 +570,12 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     var totalAmountUnits = 0;
                     for (var address in workerPayments){
                         var coinUnits = toPrecision(workerPayments[address] / magnitude, coinPrecision);
-                        addressAmounts[address] = coinUnits;
+                        var properAddress = getProperAddress(address);
+                        if (!properAddress){
+                            logger.error(logSystem, logComponent, 'Could not convert pubkey ' + address + ' into address');
+                            continue;
+                        }
+                        addressAmounts[properAddress] = coinUnits;
                         totalAmountUnits += coinUnits;
                     }
 
@@ -628,6 +631,13 @@ function SetupForPool(logger, poolOptions, setupFinished){
     };
 
 
+    var getProperAddress = function(address){
+        if (address.length === 40){
+            return util.addressFromEx(poolOptions.address, address);
+        }
+        else return address;
+    };
+
     var withdrawalProfit = function(){
 
         if (!processingConfig.feeWithdrawalThreshold) return;
@@ -661,5 +671,4 @@ function SetupForPool(logger, poolOptions, setupFinished){
         });
 
     };
-
-};
+}
