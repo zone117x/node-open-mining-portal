@@ -51,11 +51,8 @@ Each and every share will be rewarded - even for rounds resulting in orphaned bl
 authentication. A minimalistic HTML5 front-end connects to the portals statistics API to display stats from from each
 pool such as connected miners, network/pool difficulty/hash rate, etc.
 
-* Automated switching of connected miners to different pools/coins is also easily done due to the multi-pool architecture
-of this software. To use this feature the switching must be controlled by your own script, such as one that calculates
-coin profitability via an API such as CoinChoose.com or CoinWarz.com (or calculated locally using daemon-reported network
-difficulties and exchange APIs). NOMP's regular payment processing and miner authentication which using coin address as stratum
-username will obviously not work with this coin switching feature - so you must control those with your own script as well.
+* Coin-switching ports using coin-networks and crypto-exchange APIs to detect profitability. Miner's connect to these ports
+with their public key which NOMP uses to derive an address for any coin needed to be paid out.
 
 
 #### Attack Mitigation
