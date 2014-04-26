@@ -212,43 +212,66 @@ Explanation for each field:
     },
 
 
-    /* In a proxy configuration, you can setup ports that accept miners for work based on a
-       specific algorithm instead of a specific coin.  Miners that connect to these ports are
+    /* With this switching configuration, you can setup ports that accept miners for work based on
+       a specific algorithm instead of a specific coin. Miners that connect to these ports are
        automatically switched a coin determined by the server. The default coin is the first
        configured pool for each algorithm and coin switching can be triggered using the
        cli.js script in the scripts folder.
 
-       Please note miner address authentication must be disabled when using NOMP in a proxy
-       configuration and that payout processing is left up to the server administrator. */
-    "proxy": {
-        "sha256": {
+       Miners connecting to these switching ports must use their public key in the format of
+       RIPEMD160(SHA256(public-key)). An address for each type of coin is derived from the miner's
+       public key, and payments are sent to that address. */
+    "switching": {
+        "switch1": {
             "enabled": false,
-            "port": "3333",
-            "diff": 10,
-            "varDiff": {
-                "minDiff": 16, //Minimum difficulty
-                "maxDiff": 512, //Network difficulty will be used if it is lower than this
-                "targetTime": 15, //Try to get 1 share per this many seconds
-                "retargetTime": 90, //Check to see if we should retarget every this many seconds
-                "variancePercent": 30 //Allow time to very this % from target without retargeting
+            "algorithm": "sha256",
+            "ports": {
+                "3333": {
+                    "diff": 10,
+                    "varDiff": {
+                        "minDiff": 16,
+                        "maxDiff": 512,
+                        "targetTime": 15,
+                        "retargetTime": 90,
+                        "variancePercent": 30
+                    }
+                }
             }
         },
-        "scrypt": {
+        "switch2": {
             "enabled": false,
-            "port": "4444",
-            "diff": 10,
-            "varDiff": {
-                "minDiff": 16, //Minimum difficulty
-                "maxDiff": 512, //Network difficulty will be used if it is lower than this
-                "targetTime": 15, //Try to get 1 share per this many seconds
-                "retargetTime": 90, //Check to see if we should retarget every this many seconds
-                "variancePercent": 30 //Allow time to very this % from target without retargeting
+            "algorithm": "scrypt",
+            "ports": {
+                "4444": {
+                    "diff": 10,
+                    "varDiff": {
+                        "minDiff": 16,
+                        "maxDiff": 512,
+                        "targetTime": 15,
+                        "retargetTime": 90,
+                        "variancePercent": 30
+                    }
+                }
             }
         },
-        "scrypt-n": {
+        "switch3": {
             "enabled": false,
-            "port": "5555"
+            "algorithm": "x11",
+            "ports": {
+                "5555": {
+                    "diff": 0.001
+                }
+            }
         }
+    },
+
+    "profitSwitch": {
+        "enabled": false,
+        "updateInterval": 600,
+        "depth": 0.90,
+        "usePoloniex": true,
+        "useCryptsy": true,
+        "useMintpal": true
     }
 }
 ````
