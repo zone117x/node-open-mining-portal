@@ -113,7 +113,8 @@ If your pool uses NOMP let us know and we will list your website here.
 * http://kryptochaos.com
 * http://pool.uberpools.org
 * http://onebtcplace.com
-* https://minr.es
+* http://minr.es
+* http://mining.theminingpools.com
 
 Usage
 =====
@@ -166,7 +167,12 @@ Explanation for each field:
     /* Specifies the level of log output verbosity. Anything more severy than the level specified
        will also be logged. */
     "logLevel": "debug", //or "warning", "error"
-    
+
+
+    /* The NOMP CLI (command-line interface) will listen for commands on this port. For example,
+       blocknotify messages are sent to NOMP through this. */
+    "cliPort": 17117,
+
     /* By default 'forks' is set to "auto" which will spawn one process/fork/worker for each CPU
        core in your system. Each of these workers will run a separate instance of your pool(s),
        and the kernel will load balance miners using these forks. Optionally, the 'forks' field
@@ -205,33 +211,12 @@ Explanation for each field:
         "port": 6379
     },
 
-    /* With this enabled, the master process listen on the configured port for messages from the
-       'scripts/blockNotify.js' script which your coin daemons can be configured to run when a
-       new block is available. When a blocknotify message is received, the master process uses
-       IPC (inter-process communication) to notify each thread about the message. Each thread
-       then sends the message to the appropriate coin pool. See "Setting up blocknotify" below to
-       set up your daemon to use this feature. */
-    "blockNotifyListener": {
-        "enabled": true,
-        "port": 8117,
-        "password": "test"
-    },
-    
-    /* With this enabled, the master process will listen on the configured port for messages from
-       the 'scripts/coinSwitch.js' script which will trigger your proxy pools to switch to the
-       specified coin (non-case-sensitive). This setting is used in conjuction with the proxy
-       feature below. */
-    "coinSwitchListener": {
-        "enabled": false,
-        "port": 8118,
-        "password": "test"
-    },
 
     /* In a proxy configuration, you can setup ports that accept miners for work based on a
        specific algorithm instead of a specific coin.  Miners that connect to these ports are
        automatically switched a coin determined by the server. The default coin is the first
        configured pool for each algorithm and coin switching can be triggered using the
-       coinSwitch.js script in the scripts folder.
+       cli.js script in the scripts folder.
 
        Please note miner address authentication must be disabled when using NOMP in a proxy
        configuration and that payout processing is left up to the server administrator. */
@@ -505,11 +490,11 @@ For more information on these configuration options see the [pool module documen
 1. In `config.json` set the port and password for `blockNotifyListener`
 2. In your daemon conf file set the `blocknotify` command to use:
 ```
-node [path to scripts/blockNotify.js] [listener host]:[listener port] [listener password] [coin name in config] %s
+node [path to cli.js] [coin name in config] [block hash symbol]
 ```
 Example: inside `dogecoin.conf` add the line
 ```
-blocknotify=node scripts/blockNotify.js 127.0.0.1:8117 mySuperSecurePassword dogecoin %s
+blocknotify=node /home/nomp/scripts/cli.js blocknotify dogecoin %s
 ```
 
 Alternatively, you can use a more efficient block notify script written in pure C. Build and usage instructions

@@ -5,8 +5,7 @@ var cluster = require('cluster');
 
 var async = require('async');
 var PoolLogger = require('./libs/logUtil.js');
-var BlocknotifyListener = require('./libs/blocknotifyListener.js');
-var CoinswitchListener = require('./libs/coinswitchListener.js');
+var CliListener = require('./libs/cliListener.js');
 var RedisBlocknotifyListener = require('./libs/redisblocknotifyListener.js');
 var PoolWorker = require('./libs/poolWorker.js');
 var PaymentProcessor = require('./libs/paymentProcessor.js');
@@ -82,18 +81,68 @@ if (cluster.isWorker){
 var buildPoolConfigs = function(){
     var configs = {};
     var configDir = 'pool_configs/';
+
+    var poolConfigFiles = [];
+
+
+    /* Get filenames of pool config json files that are enabled */
     fs.readdirSync(configDir).forEach(function(file){
         if (!fs.existsSync(configDir + file) || path.extname(configDir + file) !== '.json') return;
         var poolOptions = JSON.parse(JSON.minify(fs.readFileSync(configDir + file, {encoding: 'utf8'})));
         if (!poolOptions.enabled) return;
-        var coinFilePath = 'coins/' + poolOptions.coin;
+        poolOptions.fileName = file;
+        poolConfigFiles.push(poolOptions);
+    });
+
+
+    /* Ensure no pool uses any of the same ports as another pool */
+    for (var i = 0; i < poolConfigFiles.length; i++){
+        var ports = Object.keys(poolConfigFiles[i].ports);
+        for (var f = 0; f < poolConfigFiles.length; f++){
+            if (f === i) continue;
+            var portsF = Object.keys(poolConfigFiles[f].ports);
+            for (var g = 0; g < portsF.length; g++){
+                if (ports.indexOf(portsF[g]) !== -1){
+                    logger.error('Master', poolConfigFiles[f].fileName, 'Has same configured port of ' + portsF[g] + ' as ' + poolConfigFiles[i].fileName);
+                    process.exit(1);
+                    return;
+                }
+            }
+
+            if (poolConfigFiles[f].coin === poolConfigFiles[i].coin){
+                logger.error('Master', poolConfigFiles[f].fileName, 'Pool has same configured coin file coins/' + poolConfigFiles[f].coin + ' as ' + poolConfigFiles[i].fileName + ' pool');
+                process.exit(1);
+                return;
+            }
+
+        }
+    }
+
+
+    poolConfigFiles.forEach(function(poolOptions){
+
+        poolOptions.coinFileName = poolOptions.coin;
+
+        var coinFilePath = 'coins/' + poolOptions.coinFileName;
         if (!fs.existsSync(coinFilePath)){
-            logger.error('Master', poolOptions.coin, 'could not find file: ' + coinFilePath);
+            logger.error('Master', poolOptions.coinFileName, 'could not find file: ' + coinFilePath);
             return;
         }
 
         var coinProfile = JSON.parse(JSON.minify(fs.readFileSync(coinFilePath, {encoding: 'utf8'})));
         poolOptions.coin = coinProfile;
+
+        if (poolOptions.coin.name in configs){
+
+            logger.error('Master', poolOptions.fileName, 'coins/' + poolOptions.coinFileName
+                + ' has same configured coin name ' + poolOptions.coin.name + ' as coins/'
+                + configs[poolOptions.coin.name].coinFileName + ' used by pool config '
+                + configs[poolOptions.coin.name].fileName);
+
+            process.exit(1);
+            return;
+        }
+
         configs[poolOptions.coin.name] = poolOptions;
 
         if (!(coinProfile.algorithm in algos)){
@@ -128,6 +177,10 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
     if (Object.keys(poolConfigs).length === 0){
         logger.warning('Master', 'PoolSpawner', 'No pool configs exists or are enabled in pool_configs folder. No pools spawned.');
         return;
+    }
+
+    for (var p in poolConfigs){
+
     }
 
     var serializedConfigs = JSON.stringify(poolConfigs);
@@ -185,25 +238,34 @@ var spawnPoolWorkers = function(portalConfig, poolConfigs){
 };
 
 
-var startBlockListener = function(portalConfig){
-    //block notify options
-    //setup block notify here and use IPC to tell appropriate pools
-    var listener = new BlocknotifyListener(portalConfig.blockNotifyListener);
+var startCliListener = function(cliPort){
+    var listener = new CliListener(cliPort);
     listener.on('log', function(text){
-        logger.debug('Master', 'Blocknotify', text);
-    });
-    listener.on('hash', function(message){
+        logger.debug('Master', 'CLI', text);
+    }).on('command', function(command, params, options){
 
-        var ipcMessage = {type:'blocknotify', coin: message.coin, hash: message.hash};
-        Object.keys(cluster.workers).forEach(function(id) {
-            cluster.workers[id].send(ipcMessage);
-        });
+        switch(command){
+            case 'blocknotify':
+                Object.keys(cluster.workers).forEach(function(id) {
+                    cluster.workers[id].send({type: 'blocknotify', coin: params[0], hash: params[1]});
+                });
+                break;
+            case 'coinswitch':
+                Object.keys(cluster.workers).forEach(function(id) {
+                    cluster.workers[id].send({type: 'coinswitch', switchName: params[0], coin: params[1] });
+                });
+                break;
+            case 'restartpool':
+                Object.keys(cluster.workers).forEach(function(id) {
+                    cluster.workers[id].send({type: 'restartpool', coin: params[0] });
+                });
+        }
 
-    });
-    listener.start();
+        console.log('command: ' + JSON.stringify([command, params, options]));
+    }).start();
 };
 
-
+/*
 //
 // Receives authenticated events from coin switch listener and triggers proxy
 // to swtich to a new coin.  
@@ -219,7 +281,7 @@ var startCoinswitchListener = function(portalConfig){
             cluster.workers[id].send(ipcMessage);
         });
         var ipcMessage = { 
-            type:'switch', 
+            type:'coinswitch',
             coin: message.coin
         };
         Object.keys(cluster.workers).forEach(function(id) {
@@ -228,6 +290,7 @@ var startCoinswitchListener = function(portalConfig){
     });
     listener.start();
 };
+*/
 
 var startRedisBlockListener = function(portalConfig){
     //block notify options
@@ -324,14 +387,12 @@ var startProfitSwitch = function(portalConfig, poolConfigs){
 
     startPaymentProcessor(poolConfigs);
 
-    startBlockListener(portalConfig);
-
-    startCoinswitchListener(portalConfig);
-
     startRedisBlockListener(portalConfig);
 
     startWebsite(portalConfig, poolConfigs);
 
     startProfitSwitch(portalConfig, poolConfigs);
+
+    startCliListener(portalConfig.cliPort);
 
 })();

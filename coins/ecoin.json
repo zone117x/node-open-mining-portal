@@ -1,7 +1,0 @@
-{
-    "name": "Ecoin",
-    "symbol": "ECN",
-    "algorithm": "keccak",
-    "normalHashing": true,
-    "diffShift": 32
-}
