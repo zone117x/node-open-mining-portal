@@ -31,6 +31,7 @@ module.exports = function(logger){
         'home.html': '',
         'getting_started.html': 'getting_started',
         'stats.html': 'stats',
+        'tbs.html': 'tbs',
         'api.html': 'api',
         'admin.html': 'admin'
     };
