@@ -5,13 +5,23 @@ module.exports = function(logger, poolConfig){
     var mposConfig = poolConfig.shareProcessing.mpos;
     var coin = poolConfig.coin.name;
 
-    var connection;
+    //var connection;
+
 
     var logIdentify = 'MySQL';
     var logComponent = coin;
 
     function connect(){
-        connection = mysql.createConnection({
+
+        connection = mysql.createPool({
+            host: mposConfig.host,
+            port: mposConfig.port,
+            user: mposConfig.user,
+            password: mposConfig.password,
+            database: mposConfig.database
+        });
+
+        /*connection = mysql.createConnection({
             host: mposConfig.host,
             port: mposConfig.port,
             user: mposConfig.user,
@@ -33,7 +43,9 @@ module.exports = function(logger, poolConfig){
             else{
                 logger.error(logIdentify, logComponent, 'Database error: ' + JSON.stringify(err))
             }
-        });
+        });*/
+
+
     }
     connect();
 
