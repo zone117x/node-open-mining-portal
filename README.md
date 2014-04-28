@@ -170,7 +170,7 @@ Explanation for each field:
 
 
     /* The NOMP CLI (command-line interface) will listen for commands on this port. For example,
-       blocknotify messages are sent to NOMP through this. */
+       blocknotify messages are sent to NOMP through this. By default listen 0.0.0.0 */
     "cliPort": 17117,
 
     /* By default 'forks' is set to "auto" which will spawn one process/fork/worker for each CPU
