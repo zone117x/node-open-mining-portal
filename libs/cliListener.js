@@ -18,12 +18,14 @@ var listener = module.exports = function listener(port){
                 c.on('data', function (d) {
                     data += d;
                     if (data.slice(-1) === '\n') {
-                        c.end();
+                        var message = JSON.parse(data);
+                        _this.emit('command', message.command, message.params, message.options, function(message){
+                            c.end(message);
+                        });
                     }
                 });
                 c.on('end', function () {
-                    var message = JSON.parse(data);
-                    _this.emit('command', message.command, message.params, message.options);
+
                 });
             }
             catch(e){

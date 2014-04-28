@@ -45,7 +45,8 @@ coins at once. The pools use clustering to load balance across multiple CPU core
 
 * For reward/payment processing, shares are inserted into Redis (a fast NoSQL key/value store). The PROP (proportional)
 reward system is used with [Redis Transactions](http://redis.io/topics/transactions) for secure and super speedy payouts.
-Each and every share will be rewarded - even for rounds resulting in orphaned blocks.
+There is zero risk to the pool operator. Shares from rounds resulting in orphaned blocks will be merged into share in the
+current round so that each and every share will be rewarded
 
 * This portal does not have user accounts/logins/registrations. Instead, miners simply use their coin address for stratum
 authentication. A minimalistic HTML5 front-end connects to the portals statistics API to display stats from from each
@@ -108,10 +109,12 @@ If your pool uses NOMP let us know and we will list your website here.
 * http://teamdoge.com
 * http://miningwith.us
 * http://kryptochaos.com
-* http://pool.uberpools.org
+* http://uberpools.org
 * http://onebtcplace.com
 * http://minr.es
 * http://mining.theminingpools.com
+* http://www.omargpools.ca/pools.html
+* http://pool.trademybit.com/
 
 Usage
 =====

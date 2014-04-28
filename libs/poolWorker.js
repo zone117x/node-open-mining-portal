@@ -50,28 +50,10 @@ module.exports = function(logger){
                 var logSubCat = 'Thread ' + (parseInt(forkId) + 1);
 
                 var switchName = message.switchName;
-                if (!portalConfig.switching[switchName]) {
-                    logger.error(logSystem, logComponent, logSubCat, 'Switching key not recognized: ' + switchName);
-                }
 
-                var messageCoin = message.coin.toLowerCase();
-                var newCoin = Object.keys(pools).filter(function(p){
-                    return p.toLowerCase() === messageCoin;
-                })[0];
-
-                if (!newCoin){
-                    logger.error(logSystem, logComponent, logSubCat, 'Switch message to coin that is not recognized: ' + messageCoin);
-                    break;
-                }
+                var newCoin = message.coin;
 
                 var algo = poolConfigs[newCoin].coin.algorithm;
-
-                if (algo !== proxySwitch[switchName].algorithm){
-                    logger.error(logSystem, logComponent, logSubCat, 'Cannot switch a '
-                        + proxySwitch[switchName].algorithm
-                        + ' algo pool to coin ' + newCoin + ' with ' + algo + ' algo');
-                    break;
-                }
 
                 var newPool = pools[newCoin];
                 var oldCoin = proxySwitch[switchName].currentPool;

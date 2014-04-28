@@ -420,31 +420,28 @@ module.exports = function(logger){
     };
     this.getDaemonInfoForCoin = function(symbol, cfg, callback){
         var daemon = new Stratum.daemon.interface([cfg]);
-        daemon.once('online', function(){
-            daemon.cmd('getblocktemplate', [{"capabilities": [ "coinbasetxn", "workid", "coinbase/append" ]}], function(result){
-                if (result[0].error != null){
-                    logger.error(logSystem, symbol, 'Error while reading daemon info: ' + JSON.stringify(result[0]));
-                    callback(null); // fail gracefully for each coin
-                    return;
-                }
-                var coinStatus = profitStatus[symbolToAlgorithmMap[symbol]][symbol];
-                var response   = result[0].response;
-
-                // some shitcoins dont provide target, only bits, so we need to deal with both
-                var target = response.target ? bignum(response.target, 16) : util.bignumFromBitsHex(response.bits);
-                coinStatus.difficulty = parseFloat((diff1 / target.toNumber()).toFixed(9));
-                logger.debug(logSystem, symbol, 'difficulty is ' + coinStatus.difficulty);
-
-                coinStatus.reward = new Number(response.coinbasevalue / 100000000);
-                callback(null);
-            });
-        }).once('connectionFailed', function(error){
-            logger.error(logSystem, symbol, JSON.stringify(error));
-            callback(null); // fail gracefully for each coin
-        }).on('error', function(error){
+        daemon.on('error', function(error){
             logger.error(logSystem, symbol, JSON.stringify(error));
             callback(null); // fail gracefully for each coin
         }).init();
+
+        daemon.cmd('getblocktemplate', [{"capabilities": [ "coinbasetxn", "workid", "coinbase/append" ]}], function(result) {
+            if (result[0].error != null) {
+                logger.error(logSystem, symbol, 'Error while reading daemon info: ' + JSON.stringify(result[0]));
+                callback(null); // fail gracefully for each coin
+                return;
+            }
+            var coinStatus = profitStatus[symbolToAlgorithmMap[symbol]][symbol];
+            var response = result[0].response;
+
+            // some shitcoins dont provide target, only bits, so we need to deal with both
+            var target = response.target ? bignum(response.target, 16) : util.bignumFromBitsHex(response.bits);
+            coinStatus.difficulty = parseFloat((diff1 / target.toNumber()).toFixed(9));
+            logger.debug(logSystem, symbol, 'difficulty is ' + coinStatus.difficulty);
+
+            coinStatus.reward = response.coinbasevalue / 100000000;
+            callback(null);
+        });
     };
 
 
@@ -453,8 +450,8 @@ module.exports = function(logger){
         Object.keys(profitStatus).forEach(function(algo){
             Object.keys(profitStatus[algo]).forEach(function(symbol){
                 var coinStatus = profitStatus[symbolToAlgorithmMap[symbol]][symbol];
-                coinStatus.blocksPerMhPerHour = new Number(86400 / ((coinStatus.difficulty * Math.pow(2,32)) / (1 * 1000 * 1000)));
-                coinStatus.coinsPerMhPerHour = new Number(coinStatus.reward * coinStatus.blocksPerMhPerHour);
+                coinStatus.blocksPerMhPerHour = 86400 / ((coinStatus.difficulty * Math.pow(2,32)) / (1 * 1000 * 1000));
+                coinStatus.coinsPerMhPerHour = coinStatus.reward * coinStatus.blocksPerMhPerHour;
             });
         });
         callback(null);
@@ -467,7 +464,7 @@ module.exports = function(logger){
 
             var bestExchange;
             var bestCoin;
-            var bestBtcPerMhPerHour = new Number(0);
+            var bestBtcPerMhPerHour = 0;
 
             Object.keys(profitStatus[algo]).forEach(function(symbol) {
                 var coinStatus = profitStatus[algo][symbol];
@@ -475,7 +472,7 @@ module.exports = function(logger){
                 Object.keys(coinStatus.exchangeInfo).forEach(function(exchange){
                     var exchangeData = coinStatus.exchangeInfo[exchange];
                     if (exchangeData.hasOwnProperty('BTC') && exchangeData['BTC'].hasOwnProperty('weightedBid')){
-                        var btcPerMhPerHour = new Number(exchangeData['BTC'].weightedBid * coinStatus.coinsPerMhPerHour);
+                        var btcPerMhPerHour = exchangeData['BTC'].weightedBid * coinStatus.coinsPerMhPerHour;
                         if (btcPerMhPerHour > bestBtcPerMhPerHour){
                             bestBtcPerMhPerHour = btcPerMhPerHour;
                             bestExchange = exchange;
@@ -485,7 +482,7 @@ module.exports = function(logger){
                         logger.debug(logSystem, 'CALC', 'BTC/' + symbol + ' on ' + exchange + ' with ' + coinStatus.btcPerMhPerHour.toFixed(8) + ' BTC/day per Mh/s');
                     }
                     if (exchangeData.hasOwnProperty('LTC') && exchangeData['LTC'].hasOwnProperty('weightedBid')){
-                        var btcPerMhPerHour = new Number((exchangeData['LTC'].weightedBid * coinStatus.coinsPerMhPerHour) * exchangeData['LTC'].ltcToBtc);
+                        var btcPerMhPerHour = (exchangeData['LTC'].weightedBid * coinStatus.coinsPerMhPerHour) * exchangeData['LTC'].ltcToBtc;
                         if (btcPerMhPerHour > bestBtcPerMhPerHour){
                             bestBtcPerMhPerHour = btcPerMhPerHour;
                             bestExchange = exchange;
@@ -497,14 +494,21 @@ module.exports = function(logger){
                 });
             });
             logger.debug(logSystem, 'RESULT', 'Best coin for ' + algo + ' is ' + bestCoin + ' on ' + bestExchange + ' with ' + bestBtcPerMhPerHour.toFixed(8) + ' BTC/day per Mh/s');
-            if (portalConfig.coinSwitchListener.enabled){
-                var client = net.connect(portalConfig.coinSwitchListener.port, portalConfig.coinSwitchListener.host, function () {
-                    client.write(JSON.stringify({
-                        password: portalConfig.coinSwitchListener.password,
-                        coin: bestCoin
-                    }) + '\n');
-                });
-            }
+
+
+            var client = net.connect(portalConfig.cliPort, function () {
+                client.write(JSON.stringify({
+                    command: 'coinswitch',
+                    params: [bestCoin],
+                    options: {algorithm: algo}
+                }) + '\n');
+            }).on('error', function(error){
+                if (error.code === 'ECONNREFUSED')
+                    logger.error(logSystem, 'CLI', 'Could not connect to NOMP instance on port ' + portalConfig.cliPort);
+                else
+                    logger.error(logSystem, 'CLI', 'Socket error ' + JSON.stringify(error));
+            });
+
         });
     };
 

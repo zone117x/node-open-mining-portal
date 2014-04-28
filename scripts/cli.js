@@ -34,5 +34,4 @@ var client = net.connect(options.port || defaultPort, options.host || defaultHos
 }).on('data', function(data) {
     console.log(data.toString());
 }).on('close', function () {
-
 });

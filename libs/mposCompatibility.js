@@ -5,7 +5,7 @@ module.exports = function(logger, poolConfig){
     var mposConfig = poolConfig.shareProcessing.mpos;
     var coin = poolConfig.coin.name;
 
-    //var connection;
+    var connection;
 
 
     var logIdentify = 'MySQL';
@@ -20,30 +20,6 @@ module.exports = function(logger, poolConfig){
             password: mposConfig.password,
             database: mposConfig.database
         });
-
-        /*connection = mysql.createConnection({
-            host: mposConfig.host,
-            port: mposConfig.port,
-            user: mposConfig.user,
-            password: mposConfig.password,
-            database: mposConfig.database
-        });
-        connection.connect(function(err){
-            if (err)
-                logger.error(logIdentify, logComponent, 'Could not connect to mysql database: ' + JSON.stringify(err))
-            else{
-                logger.debug(logIdentify, logComponent, 'Successful connection to MySQL database');
-            }
-        });
-        connection.on('error', function(err){
-            if(err.code === 'PROTOCOL_CONNECTION_LOST') {
-                logger.warning(logIdentify, logComponent, 'Lost connection to MySQL database, attempting reconnection...');
-                connect();
-            }
-            else{
-                logger.error(logIdentify, logComponent, 'Database error: ' + JSON.stringify(err))
-            }
-        });*/
 
 
     }
