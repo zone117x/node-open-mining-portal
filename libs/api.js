@@ -34,7 +34,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 });
 
                 return;
-            case 'balances':
+            case 'balance':
 		var coin=require('url').parse(req.url, true).query.coin;
 		var address=require('url').parse(req.url, true).query.address;
 		var callback=null;
