@@ -284,8 +284,8 @@ module.exports = function(logger){
                         var p = pools[coinName];
                         if (poolConfigs[coinName].coin.algorithm === algorithm) {
                             for (var port in portalConfig.switching[switchName].ports) {
-                                if (portalConfig.switching[switchName].ports[port].vardiff)
-                                    p.setVarDiff(port, portalConfig.switching[switchName].ports[port].vardiff);
+                                if (portalConfig.switching[switchName].ports[port].varDiff)
+                                    p.setVarDiff(port, portalConfig.switching[switchName].ports[port].varDiff);
                             }
                         }
                     });
