@@ -7,7 +7,7 @@ responsive user-friendly front-end website featuring mining instructions, in-dep
 
 #### Table of Contents
 * [Features](#features)
-  * [Attack Mitigation](##attack-mitigation)
+  * [Attack Mitigation](#attack-mitigation)
   * [Security](#security)
   * [Planned Features](#planned-features)
 * [Community Support](#community--support)
@@ -45,17 +45,15 @@ coins at once. The pools use clustering to load balance across multiple CPU core
 
 * For reward/payment processing, shares are inserted into Redis (a fast NoSQL key/value store). The PROP (proportional)
 reward system is used with [Redis Transactions](http://redis.io/topics/transactions) for secure and super speedy payouts.
-Each and every share will be rewarded - even for rounds resulting in orphaned blocks.
+There is zero risk to the pool operator. Shares from rounds resulting in orphaned blocks will be merged into share in the
+current round so that each and every share will be rewarded
 
 * This portal does not have user accounts/logins/registrations. Instead, miners simply use their coin address for stratum
 authentication. A minimalistic HTML5 front-end connects to the portals statistics API to display stats from from each
 pool such as connected miners, network/pool difficulty/hash rate, etc.
 
-* Automated switching of connected miners to different pools/coins is also easily done due to the multi-pool architecture
-of this software. To use this feature the switching must be controlled by your own script, such as one that calculates
-coin profitability via an API such as CoinChoose.com or CoinWarz.com (or calculated locally using daemon-reported network
-difficulties and exchange APIs). NOMP's regular payment processing and miner authentication which using coin address as stratum
-username will obviously not work with this coin switching feature - so you must control those with your own script as well.
+* Coin-switching ports using coin-networks and crypto-exchange APIs to detect profitability. Miner's connect to these ports
+with their public key which NOMP uses to derive an address for any coin needed to be paid out.
 
 
 #### Attack Mitigation
@@ -108,9 +106,15 @@ If your pool uses NOMP let us know and we will list your website here.
 * http://suchpool.pw
 * http://hashfaster.com
 * http://miningpoolhub.com
+* http://teamdoge.com
+* http://miningwith.us
 * http://kryptochaos.com
-* http://pool.uberpools.org
-
+* http://uberpools.org
+* http://onebtcplace.com
+* http://minr.es
+* http://mining.theminingpools.com
+* http://www.omargpools.ca/pools.html
+* http://pool.trademybit.com/
 
 Usage
 =====
@@ -163,7 +167,12 @@ Explanation for each field:
     /* Specifies the level of log output verbosity. Anything more severy than the level specified
        will also be logged. */
     "logLevel": "debug", //or "warning", "error"
-    
+
+
+    /* The NOMP CLI (command-line interface) will listen for commands on this port. For example,
+       blocknotify messages are sent to NOMP through this. */
+    "cliPort": 17117,
+
     /* By default 'forks' is set to "auto" which will spawn one process/fork/worker for each CPU
        core in your system. Each of these workers will run a separate instance of your pool(s),
        and the kernel will load balance miners using these forks. Optionally, the 'forks' field
@@ -202,65 +211,67 @@ Explanation for each field:
         "port": 6379
     },
 
-    /* With this enabled, the master process listen on the configured port for messages from the
-       'scripts/blockNotify.js' script which your coin daemons can be configured to run when a
-       new block is available. When a blocknotify message is received, the master process uses
-       IPC (inter-process communication) to notify each thread about the message. Each thread
-       then sends the message to the appropriate coin pool. See "Setting up blocknotify" below to
-       set up your daemon to use this feature. */
-    "blockNotifyListener": {
-        "enabled": true,
-        "port": 8117,
-        "password": "test"
-    },
-    
-    /* With this enabled, the master process will listen on the configured port for messages from
-       the 'scripts/coinSwitch.js' script which will trigger your proxy pools to switch to the
-       specified coin (non-case-sensitive). This setting is used in conjuction with the proxy
-       feature below. */
-    "coinSwitchListener": {
-        "enabled": false,
-        "port": 8118,
-        "password": "test"
-    },
 
-    /* In a proxy configuration, you can setup ports that accept miners for work based on a
-       specific algorithm instead of a specific coin.  Miners that connect to these ports are
+    /* With this switching configuration, you can setup ports that accept miners for work based on
+       a specific algorithm instead of a specific coin. Miners that connect to these ports are
        automatically switched a coin determined by the server. The default coin is the first
        configured pool for each algorithm and coin switching can be triggered using the
-       coinSwitch.js script in the scripts folder.
+       cli.js script in the scripts folder.
 
-       Please note miner address authentication must be disabled when using NOMP in a proxy
-       configuration and that payout processing is left up to the server administrator. */
-    "proxy": {
-        "sha256": {
+       Miners connecting to these switching ports must use their public key in the format of
+       RIPEMD160(SHA256(public-key)). An address for each type of coin is derived from the miner's
+       public key, and payments are sent to that address. */
+    "switching": {
+        "switch1": {
             "enabled": false,
-            "port": "3333",
-            "diff": 10,
-            "varDiff": {
-                "minDiff": 16, //Minimum difficulty
-                "maxDiff": 512, //Network difficulty will be used if it is lower than this
-                "targetTime": 15, //Try to get 1 share per this many seconds
-                "retargetTime": 90, //Check to see if we should retarget every this many seconds
-                "variancePercent": 30 //Allow time to very this % from target without retargeting
+            "algorithm": "sha256",
+            "ports": {
+                "3333": {
+                    "diff": 10,
+                    "varDiff": {
+                        "minDiff": 16,
+                        "maxDiff": 512,
+                        "targetTime": 15,
+                        "retargetTime": 90,
+                        "variancePercent": 30
+                    }
+                }
             }
         },
-        "scrypt": {
+        "switch2": {
             "enabled": false,
-            "port": "4444",
-            "diff": 10,
-            "varDiff": {
-                "minDiff": 16, //Minimum difficulty
-                "maxDiff": 512, //Network difficulty will be used if it is lower than this
-                "targetTime": 15, //Try to get 1 share per this many seconds
-                "retargetTime": 90, //Check to see if we should retarget every this many seconds
-                "variancePercent": 30 //Allow time to very this % from target without retargeting
+            "algorithm": "scrypt",
+            "ports": {
+                "4444": {
+                    "diff": 10,
+                    "varDiff": {
+                        "minDiff": 16,
+                        "maxDiff": 512,
+                        "targetTime": 15,
+                        "retargetTime": 90,
+                        "variancePercent": 30
+                    }
+                }
             }
         },
-        "scrypt-n": {
+        "switch3": {
             "enabled": false,
-            "port": "5555"
+            "algorithm": "x11",
+            "ports": {
+                "5555": {
+                    "diff": 0.001
+                }
+            }
         }
+    },
+
+    "profitSwitch": {
+        "enabled": false,
+        "updateInterval": 600,
+        "depth": 0.90,
+        "usePoloniex": true,
+        "useCryptsy": true,
+        "useMintpal": true
     }
 }
 ````
@@ -302,8 +313,8 @@ Description of options:
        job broadcast. */
     "txRefreshInterval": 20000,
 
-    /* Some miner software is bugged and will consider the pool offline if it doesn't receive
-       anything for around a minute, so every time we broadcast jobs, set a timeout to rebroadcast
+    /* Some miner apps will consider the pool dead/offline if it doesn't receive anything new jobs
+       for around a minute, so every time we broadcast jobs, set a timeout to rebroadcast
        in this many seconds unless we find a new job. Set to zero or remove to disable this. */
     "jobRebroadcastTimeout": 55,
 
@@ -399,6 +410,10 @@ Description of options:
             "user": "me", //MySQL db user
             "password": "mypass", //MySQL db password
             "database": "ltc", //MySQL db database name
+
+            /* Unregistered workers can automatically be registered (added to database) on stratum
+               worker authentication if this is true. */
+            "autoCreateWorker": false,
 
             /* For when miner's authenticate: set to "password" for both worker name and password to
                be checked for in the database, set to "worker" for only work name to be checked, or
@@ -498,11 +513,11 @@ For more information on these configuration options see the [pool module documen
 1. In `config.json` set the port and password for `blockNotifyListener`
 2. In your daemon conf file set the `blocknotify` command to use:
 ```
-node [path to scripts/blockNotify.js] [listener host]:[listener port] [listener password] [coin name in config] %s
+node [path to cli.js] [coin name in config] [block hash symbol]
 ```
 Example: inside `dogecoin.conf` add the line
 ```
-blocknotify=node scripts/blockNotify.js 127.0.0.1:8117 mySuperSecurePassword dogecoin %s
+blocknotify=node /home/nomp/scripts/cli.js blocknotify dogecoin %s
 ```
 
 Alternatively, you can use a more efficient block notify script written in pure C. Build and usage instructions
@@ -526,7 +541,8 @@ output from NOMP.
 
 
 #### Upgrading NOMP
-When updating NOMP to the latest code its important to not only `git pull` the latest from this repo, but to also update the `node-statum-pool` module and any config files that may have been changed.
+When updating NOMP to the latest code its important to not only `git pull` the latest from this repo, but to also update
+the `node-statum-pool` and `node-multi-hashing` modules, and any config files that may have been changed.
 * Inside your NOMP directory (where the init.js script is) do `git pull` to get the latest NOMP code.
 * Remove the dependenices by deleting the `node_modules` directory with `rm -r node_modules`.
 * Run `npm update` to force updating/reinstalling of the dependencies.
@@ -549,7 +565,7 @@ Credits
 -------
 * [Jerry Brady / mintyfresh68](https://github.com/bluecircle) - got coin-switching fully working and developed proxy-per-algo feature
 * [Tony Dobbs](http://anthonydobbs.com) - designs for front-end and created the NOMP logo
-* [LucasJones(//github.com/LucasJones) - getting p2p block notify script working
+* [LucasJones](//github.com/LucasJones) - got p2p block notify working and implemented additional hashing algos
 * [vekexasia](//github.com/vekexasia) - co-developer & great tester
 * [TheSeven](//github.com/TheSeven) - answering an absurd amount of my questions and being a very helpful gentleman
 * [UdjinM6](//github.com/UdjinM6) - helped implement fee withdrawal in payment processing

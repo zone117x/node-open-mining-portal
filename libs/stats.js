@@ -148,7 +148,11 @@ module.exports = function(logger, portalConfig, poolConfigs){
                             symbol: poolConfigs[coinName].coin.symbol.toUpperCase(),
                             algorithm: poolConfigs[coinName].coin.algorithm,
                             hashrates: replies[i + 1],
-                            poolStats: replies[i + 2] != null ? replies[i + 2] : { validShares: 0, validBlocks: 0, invalidShares: 0 },
+                            poolStats: {
+                                validShares: replies[i + 2] ? (replies[i + 2].validShares || 0) : 0,
+                                validBlocks: replies[i + 2] ? (replies[i + 2].validBlocks || 0) : 0,
+                                invalidShares: replies[i + 2] ? (replies[i + 2].invalidShares || 0) : 0
+                            },
                             blocks: {
                                 pending: replies[i + 3],
                                 confirmed: replies[i + 4],
@@ -191,9 +195,10 @@ module.exports = function(logger, portalConfig, poolConfigs){
                     else
                         coinStats.workers[worker] = workerShares;
                 });
-                var shareMultiplier = algos[coinStats.algorithm].multiplier || 0;
-                var hashratePre = shareMultiplier * coinStats.shares / portalConfig.website.stats.hashrateWindow;
-                coinStats.hashrate = hashratePre | 0;
+
+                var shareMultiplier = Math.pow(2, 32) / algos[coinStats.algorithm].multiplier;
+                coinStats.hashrate = shareMultiplier * coinStats.shares / portalConfig.website.stats.hashrateWindow;
+
                 coinStats.workerCount = Object.keys(coinStats.workers).length;
                 portalStats.global.workers += coinStats.workerCount;
 

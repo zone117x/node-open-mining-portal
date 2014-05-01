@@ -1,0 +1,5 @@
+{
+    "name": "Mintcoin",
+    "symbol": "MINT",
+    "algorithm": "scrypt"
+}

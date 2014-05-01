@@ -2,7 +2,7 @@ var redis = require('redis');
 var async = require('async');
 
 var Stratum = require('stratum-pool');
-
+var util = require('stratum-pool/lib/util.js');
 
 
 module.exports = function(logger){
@@ -38,8 +38,6 @@ module.exports = function(logger){
 
         });
     });
-
-
 };
 
 
@@ -216,6 +214,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     return ['gettransaction', [r.txHash]];
                 });
 
+                batchRPCcommand.push(['getaccount', [poolOptions.address]]);
+
                 daemon.batchCmd(batchRPCcommand, function(error, txDetails){
 
                     if (error || !txDetails){
@@ -224,7 +224,15 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         return;
                     }
 
+                    var addressAccount;
+
                     txDetails.forEach(function(tx, i){
+
+                        if (i === txDetails.length - 1){
+                            addressAccount = tx.result;
+                            return;
+                        }
+
                         var round = rounds[i];
 
                         if (tx.error && tx.error.code === -5 || round.blockHash !== tx.result.blockhash){
@@ -273,7 +281,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                                  rpc.gettransaction.amount tells us how much we get in whole coin units. Therefore,
                                  we simply divide the two to get the magnitude. I don't know math, there is probably
                                  a better term than 'magnitude'. Sue me or do a pull request to fix it. */
-                                var roundMagnitude = r.reward / r.amount;
+                                var roundMagnitude = Math.round(r.reward / r.amount);
 
                                 if (!magnitude) {
                                     magnitude = roundMagnitude;
@@ -303,7 +311,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         callback('Check finished - no confirmed or orphaned blocks found');
                     }
                     else{
-                        callback(null, rounds, magnitude);
+                        callback(null, rounds, magnitude, addressAccount);
                     }
                 });
             },
@@ -311,7 +319,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
             /* Does a batch redis call to get shares contributed to each round. Then calculates the reward
                amount owned to each miner for each round. */
-            function(rounds, magnitude, callback){
+            function(rounds, magnitude, addressAccount, callback){
 
 
                 var shareLookups = rounds.map(function(r){
@@ -356,11 +364,11 @@ function SetupForPool(logger, poolOptions, setupFinished){
                                 var reward = round.reward * (1 - processingConfig.feePercent);
 
                                 var totalShares = Object.keys(workerShares).reduce(function(p, c){
-                                    return p + parseInt(workerShares[c])
+                                    return p + parseFloat(workerShares[c])
                                 }, 0);
 
                                 for (var worker in workerShares){
-                                    var percent = parseInt(workerShares[worker]) / totalShares;
+                                    var percent = parseFloat(workerShares[worker]) / totalShares;
                                     var workerRewardTotal = Math.floor(reward * percent);
                                     if (!(worker in workerRewards)) workerRewards[worker] = 0;
                                     workerRewards[worker] += workerRewardTotal;
@@ -370,13 +378,13 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                     });
 
-                    callback(null, rounds, magnitude, workerRewards, orphanMergeCommands);
+                    callback(null, rounds, magnitude, workerRewards, orphanMergeCommands, addressAccount);
                 });
             },
 
 
             /* Does a batch call to redis to get worker existing balances from coin_balances*/
-            function(rounds, magnitude, workerRewards, orphanMergeCommands, callback){
+            function(rounds, magnitude, workerRewards, orphanMergeCommands, addressAccount, callback){
 
                 var workers = Object.keys(workerRewards);
 
@@ -394,7 +402,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     }
 
 
-                    callback(null, rounds, magnitude, workerRewards, orphanMergeCommands, workerBalances);
+                    callback(null, rounds, magnitude, workerRewards, orphanMergeCommands, workerBalances, addressAccount);
                 });
 
             },
@@ -406,12 +414,11 @@ function SetupForPool(logger, poolOptions, setupFinished){
              when deciding the sent balance, it the difference should be -1*amount they had in db,
              if not sending the balance, the differnce should be +(the amount they earned this round)
              */
-            function(rounds, magnitude, workerRewards, orphanMergeCommands, workerBalances, callback){
+            function(rounds, magnitude, workerRewards, orphanMergeCommands, workerBalances, addressAccount, callback){
 
                 //number of satoshis in a single coin unit - this can be different for coins so we calculate it :)
 
-
-                daemon.cmd('getbalance', [''], function(results){
+                daemon.cmd('getbalance', [addressAccount || ''], function(results){
 
                     var totalBalance = results[0].response * magnitude;
                     var toBePaid = 0;
@@ -474,9 +481,9 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         /* TODO: Need to convert all these variables into whole coin units before displaying because
                            humans aren't good at reading satoshi units. */
                         callback('Check finished - payments would wipe out minimum reserve, tried to pay out ' +
-                            toBePaid + ' and collect ' + feeAmountToBeCollected + ' as fees' +
-                            ' but only have ' + totalBalance + '. Left over balance would be ' + balanceLeftOver +
-                            ', needs to be at least ' + minReserveSatoshis);
+                            (toBePaid/magnitude) + ' and collect ' + (feeAmountToBeCollected/magnitude) + ' as fees' +
+                            ' but only have ' + (totalBalance/magnitude) + '. Left over balance would be ' + (balanceLeftOver/magnitude) +
+                            ', needs to be at least ' + (minReserveSatoshis/magnitude));
                         return;
                     }
 
@@ -495,7 +502,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             }
                         })();
                         movePendingCommands.push(['smove', coin + '_blocksPending', coin + destinationSet, r.serialized]);
-                        roundsToDelete.push(coin + '_shares:round' + r.height)
+                        if (r.category === 'generate')
+                            roundsToDelete.push(coin + '_shares:round' + r.height)
                     });
 
                     var finalRedisCommands = [];
@@ -522,23 +530,23 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                     finalRedisCommands.push(['bgsave']);
 
-                    callback(null, magnitude, workerPayments, finalRedisCommands);
+                    callback(null, magnitude, workerPayments, finalRedisCommands, addressAccount);
 
                 });
             },
 
-            function(magnitude, workerPayments, finalRedisCommands, callback) {
+            function(magnitude, workerPayments, finalRedisCommands, addressAccount, callback) {
                 /* Save final redis cleanout commands in case something goes wrong during payments */
                 redisClient.set(coin + '_finalRedisCommands', JSON.stringify(finalRedisCommands), function(error, reply) {
                     if (error){
                         callback('Check finished - error with saving finalRedisCommands' + JSON.stringify(error));
                         return;
                     }
-                    callback(null, magnitude, workerPayments, finalRedisCommands);
+                    callback(null, magnitude, workerPayments, finalRedisCommands, addressAccount);
                 });
             },
 
-            function(magnitude, workerPayments, finalRedisCommands, callback){
+            function(magnitude, workerPayments, finalRedisCommands, addressAccount, callback){
 
                 //This does the final all-or-nothing atom transaction if block deamon sent payments
                 var finalizeRedisTx = function(){
@@ -563,14 +571,19 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     var totalAmountUnits = 0;
                     for (var address in workerPayments){
                         var coinUnits = toPrecision(workerPayments[address] / magnitude, coinPrecision);
-                        addressAmounts[address] = coinUnits;
+                        var properAddress = getProperAddress(address);
+                        if (!properAddress){
+                            logger.error(logSystem, logComponent, 'Could not convert pubkey ' + address + ' into address');
+                            continue;
+                        }
+                        addressAmounts[properAddress] = coinUnits;
                         totalAmountUnits += coinUnits;
                     }
 
                     logger.debug(logSystem, logComponent, 'Payments to be sent to: ' + JSON.stringify(addressAmounts));
 
                     processingPayments = true;
-                    daemon.cmd('sendmany', ['', addressAmounts], function(results){
+                    daemon.cmd('sendmany', [addressAccount || '', addressAmounts], function(results){
 
                         if (results[0].error){
                             callback('Check finished - error with sendmany ' + JSON.stringify(results[0].error));
@@ -591,7 +604,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             }
                             var feeAmountUnits = parseFloat((totalAmountUnits / (1 - processingConfig.feePercent) * processingConfig.feePercent).toFixed(coinPrecision));
                             var poolFees = feeAmountUnits - results[0].response.fee;
-                            daemon.cmd('move', ['', processingConfig.feeCollectAccount, poolFees], function(results){
+                            daemon.cmd('move', [addressAccount || '', processingConfig.feeCollectAccount, poolFees], function(results){
                                 if (results[0].error){
                                     callback('Check finished - error with move ' + JSON.stringify(results[0].error));
                                     return;
@@ -619,6 +632,13 @@ function SetupForPool(logger, poolOptions, setupFinished){
     };
 
 
+    var getProperAddress = function(address){
+        if (address.length === 40){
+            return util.addressFromEx(poolOptions.address, address);
+        }
+        else return address;
+    };
+
     var withdrawalProfit = function(){
 
         if (!processingConfig.feeWithdrawalThreshold) return;
@@ -641,7 +661,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                 daemon.cmd('sendmany', [processingConfig.feeCollectAccount, withdrawal], function(results){
                     if (results[0].error){
-                        logger.debug(logSystem, logComponent, 'Profit withdrawal finished - error with sendmany '
+                        logger.debug(logSystem, logComponent, 'Profit withdrawal of ' + withdrawalAmount + ' failed - error with sendmany '
                             + JSON.stringify(results[0].error));
                         return;
                     }
@@ -652,5 +672,4 @@ function SetupForPool(logger, poolOptions, setupFinished){
         });
 
     };
-
-};
+}

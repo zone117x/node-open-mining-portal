@@ -1,6 +1,6 @@
 {
     "name": "node-open-mining-portal",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "An extremely efficient, highly scalable, all-in-one, easy to setup cryptocurrency mining pool",
     "keywords": [
         "stratum",
