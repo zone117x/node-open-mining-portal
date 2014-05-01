@@ -502,7 +502,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             }
                         })();
                         movePendingCommands.push(['smove', coin + '_blocksPending', coin + destinationSet, r.serialized]);
-                        roundsToDelete.push(coin + '_shares:round' + r.height)
+                        if (r.category === 'generate')
+                            roundsToDelete.push(coin + '_shares:round' + r.height)
                     });
 
                     var finalRedisCommands = [];
@@ -660,7 +661,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                 daemon.cmd('sendmany', [processingConfig.feeCollectAccount, withdrawal], function(results){
                     if (results[0].error){
-                        logger.debug(logSystem, logComponent, 'Profit withdrawal finished - error with sendmany '
+                        logger.debug(logSystem, logComponent, 'Profit withdrawal of ' + withdrawalAmount + ' failed - error with sendmany '
                             + JSON.stringify(results[0].error));
                         return;
                     }
