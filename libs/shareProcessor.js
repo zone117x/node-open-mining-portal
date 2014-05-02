@@ -16,8 +16,7 @@ value: a hash with..
 
 module.exports = function(logger, poolConfig){
 
-    var internalConfig = poolConfig.shareProcessing.internal;
-    var redisConfig = internalConfig.redis;
+    var redisConfig = poolConfig.redis;
     var coin = poolConfig.coin.name;
 
     var forkId = process.env.forkId;
@@ -60,7 +59,7 @@ module.exports = function(logger, poolConfig){
 
         if (isValidBlock){
             redisCommands.push(['rename', coin + '_shares:roundCurrent', coin + '_shares:round' + shareData.height]);
-            redisCommands.push(['sadd', coin + '_blocksPending', [shareData.blockHash, shareData.txHash, shareData.height, shareData.reward].join(':')]);
+            redisCommands.push(['sadd', coin + '_blocksPending', [shareData.blockHash, shareData.txHash, shareData.height].join(':')]);
             redisCommands.push(['hincrby', coin + '_stats', 'validBlocks', 1]);
         }
         else if (shareData.blockHash){
@@ -70,8 +69,6 @@ module.exports = function(logger, poolConfig){
         connection.multi(redisCommands).exec(function(err, replies){
             if (err)
                 logger.error(logSystem, logComponent, logSubCat, 'Error with share processor multi ' + JSON.stringify(err));
-            //else
-                //logger.debug(logSystem, logComponent, logSubCat, 'Share data and stats recorded');
         });
 
 

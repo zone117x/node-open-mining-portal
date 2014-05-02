@@ -151,7 +151,7 @@ module.exports = function(logger){
                         for (var pName in poolConfigs){
                             if (pName.toLowerCase() === c)
                                 return {
-                                    daemon: poolConfigs[pName].shareProcessing.internal.daemon,
+                                    daemon: poolConfigs[pName].paymentProcessing.daemon,
                                     address: poolConfigs[pName].address
                                 }
                         }

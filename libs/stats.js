@@ -35,14 +35,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
 
         var poolConfig = poolConfigs[coin];
 
-        if (!poolConfig.shareProcessing || !poolConfig.shareProcessing.internal){
-            logger.error(logSystem, coin, 'Cannot do stats without internal share processing setup');
-            canDoStats = false;
-            return;
-        }
-
-        var internalConfig = poolConfig.shareProcessing.internal;
-        var redisConfig = internalConfig.redis;
+        var redisConfig = poolConfig.redis;
 
         for (var i = 0; i < redisClients.length; i++){
             var client = redisClients[i];
@@ -115,7 +108,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
             var redisCommands = [];
 
 
-            var redisComamndTemplates = [
+            var redisCommandTemplates = [
                 ['zremrangebyscore', '_hashrate', '-inf', '(' + windowTime],
                 ['zrangebyscore', '_hashrate', windowTime, '+inf'],
                 ['hgetall', '_stats'],
@@ -124,10 +117,10 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 ['scard', '_blocksOrphaned']
             ];
 
-            var commandsPerCoin = redisComamndTemplates.length;
+            var commandsPerCoin = redisCommandTemplates.length;
 
             client.coins.map(function(coin){
-                redisComamndTemplates.map(function(t){
+                redisCommandTemplates.map(function(t){
                     var clonedTemplates = t.slice(0);
                     clonedTemplates[1] = coin + clonedTemplates[1];
                     redisCommands.push(clonedTemplates);

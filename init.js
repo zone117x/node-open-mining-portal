@@ -161,13 +161,6 @@ var spawnPoolWorkers = function(){
 
     Object.keys(poolConfigs).forEach(function(coin){
         var p = poolConfigs[coin];
-        var internalEnabled = p.shareProcessing && p.shareProcessing.internal && p.shareProcessing.internal.enabled;
-        var mposEnabled = p.shareProcessing && p.shareProcessing.mpos && p.shareProcessing.mpos.enabled;
-
-        if (!internalEnabled && !mposEnabled){
-            logger.error('Master', coin, 'Share processing is not configured so a pool cannot be started for this coin.');
-            delete poolConfigs[coin];
-        }
 
         if (!Array.isArray(p.daemons) || p.daemons.length < 1){
             logger.error('Master', coin, 'No daemons configured so a pool cannot be started for this coin.');
@@ -364,7 +357,7 @@ var startPaymentProcessor = function(){
     var enabledForAny = false;
     for (var pool in poolConfigs){
         var p = poolConfigs[pool];
-        var enabled = p.enabled && p.shareProcessing && p.shareProcessing.internal && p.shareProcessing.internal.enabled;
+        var enabled = p.enabled && p.paymentProcessing && p.paymentProcessing.enabled;
         if (enabled){
             enabledForAny = true;
             break;

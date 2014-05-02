@@ -284,13 +284,22 @@ Here is an example of the required fields:
 {
     "name": "Litecoin",
     "symbol": "ltc",
-    "algorithm": "scrypt", //or "sha256", "scrypt-jane", "scrypt-n", "quark", "x11"
-    "txMessages": false, //or true (not required, defaults to false)
-    "mposDiffMultiplier": 256, //only for x11 coins in mpos mode, set to 256 (optional)
+    "algorithm": "scrypt",
+
+    /* Magic value only required for setting up p2p block notifications. It is found in the daemon
+       source code as the pchMessageStart variable.
+       For example, litecoin mainnet magic: http://git.io/Bi8YFw
+       And for litecoin testnet magic: http://git.io/NXBYJA */
+    "peerMagic": "fbc0b6db" //optional
+    "peerMagicTestnet": "fcc1b7dc" //optional
+
+    //"txMessages": false, //options - defaults to false
+
+    //"mposDiffMultiplier": 256, //options - only for x11 coins in mpos mode
 }
 ````
 
-For additional documentation how to configure coins *(especially important for scrypt-n and scrypt-jane coins)*
+For additional documentation how to configure coins and their different algorithms
 see [these instructions](//github.com/zone117x/node-stratum-pool#module-usage).
 
 
@@ -306,6 +315,17 @@ Description of options:
     "coin": "litecoin.json", //Reference to coin config file in 'coins' directory
 
     "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
+
+    /* Block rewards go to the configured pool wallet address to later be paid out to miners,
+       except for a percentages that can go to pool operator(s) as pool fees or donations.
+       Addresses or hashed public keys can be used. */
+    "rewardRecipients": {
+        "n37vuNFkXfk15uFnGoVyHZ6PYQxppD3QqK": 1.5, //1.5% goes to pool op
+        "mirj3LtZxbSTharhtXvotqtJXUY7ki5qfx": 0.5, //0.5% goes to a pool co-owner
+
+        //0.1% donation to NOMP to help support development
+        "22851477d63a085dbc2398c8430af1c09e7343f6": 0.1
+    },
 
     "blockRefreshInterval": 1000, //How often to poll RPC daemons for new blocks, in milliseconds
 
@@ -332,94 +352,66 @@ Description of options:
        miners/pools that deal with scrypt use a guesstimated one that is about 5.86% off from the
        actual one. So here we can set a tolerable threshold for if a share is slightly too low
        due to mining apps using incorrect max diffs and this pool using correct max diffs. */
-    "shareVariancePercent": 10,
+    "shareVariancePercent": 2,
 
     /* Enable for client IP addresses to be detected when using a load balancer with TCP proxy
        protocol enabled, such as HAProxy with 'send-proxy' param:
        http://haproxy.1wt.eu/download/1.5/doc/configuration.txt */
     "tcpProxyProtocol": false,
 
+    /* To receive payments, miners must connect with their address or mining key as their username.
+       This option will only authenticate miners using an address or mining key. */
+    "validateWorkerAddress": true,
 
-    /* This determines what to do with submitted shares (and stratum worker authentication).
-       You have two options: 
-        1) Enable internal and disable mpos = this portal to handle all share payments.
-        2) Enable mpos and disable internal = shares will be inserted into MySQL database
-           for MPOS to process. */
-    "shareProcessing": {
+    "paymentProcessing": {
+        "enabled": true,
 
-        "internal": {
-            "enabled": true,
+        /* Every this many seconds get submitted blocks from redis, use daemon RPC to check
+           their confirmation status, if confirmed then get shares from redis that contributed
+           to block and send out payments. */
+        "paymentInterval": 30,
 
-            /* When workers connect, to receive payments, their address must be used as the worker
-               name. If this option is true, on worker authentication, their address will be
-               verified via a validateaddress API call to the daemon. Miners with invalid addresses
-               will be rejected. */
-            "validateWorkerAddress": true,
+        /* Minimum number of coins that a miner must earn before sending payment. Typically,
+           a higher minimum means less transactions fees (you profit more) but miners see
+           payments less frequently (they dislike). Opposite for a lower minimum payment. */
+        "minimumPayment": 0.01,
 
-            /* Every this many seconds get submitted blocks from redis, use daemon RPC to check
-               their confirmation status, if confirmed then get shares from redis that contributed
-               to block and send out payments. */
-            "paymentInterval": 30,
-
-            /* Minimum number of coins that a miner must earn before sending payment. Typically,
-               a higher minimum means less transactions fees (you profit more) but miners see
-               payments less frequently (they dislike). Opposite for a lower minimum payment. */
-            "minimumPayment": 0.001,
-
-            /* Minimum number of coins to keep in pool wallet. It is recommended to deposit at
-               at least this many coins into the pool wallet when first starting the pool. */
-            "minimumReserve": 10,
-
-            /* (2% default) What percent fee your pool takes from the block reward. */
-            "feePercent": 0.02,
-
-            /* Name of the daemon account to use when moving coin profit within daemon wallet. */
-            "feeCollectAccount": "feesCollected",
-
-            /* Your address that receives pool revenue from fees. */
-            "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
-
-            /* How many coins from fee revenue must accumulate on top of the
-               minimum reserve amount in order to trigger withdrawal to fee address. The higher
-               this threshold, the less of your profit goes to transactions fees. */
-            "feeWithdrawalThreshold": 5,
-
-            /* This daemon is used to send out payments. It MUST be for the daemon that owns the
-               configured 'address' that receives the block rewards, otherwise the daemon will not
-               be able to confirm blocks or send out payments. */
-            "daemon": {
-                "host": "127.0.0.1",
-                "port": 19332,
-                "user": "litecoinrpc",
-                "password": "testnet"
-            },
-
-            /* Redis database used for storing share and block submission data. */
-            "redis": {
-                "host": "127.0.0.1",
-                "port": 6379
-            }
-        },
-
-        /* Enabled mpos and shares will be inserted into share table in a MySQL database. You may 
-           also want to use the "emitInvalidBlockHashes" option below if you require it. */
-        "mpos": { 
-            "enabled": false,
-            "host": "127.0.0.1", //MySQL db host
-            "port": 3306, //MySQL db port
-            "user": "me", //MySQL db user
-            "password": "mypass", //MySQL db password
-            "database": "ltc", //MySQL db database name
-
-            /* Unregistered workers can automatically be registered (added to database) on stratum
-               worker authentication if this is true. */
-            "autoCreateWorker": false,
-
-            /* For when miner's authenticate: set to "password" for both worker name and password to
-               be checked for in the database, set to "worker" for only work name to be checked, or
-               don't use this option (set to "none") for no auth checks */
-            "stratumAuth": "password"
+        /* This daemon is used to send out payments. It MUST be for the daemon that owns the
+           configured 'address' that receives the block rewards, otherwise the daemon will not
+           be able to confirm blocks or send out payments. */
+        "daemon": {
+            "host": "127.0.0.1",
+            "port": 19332,
+            "user": "litecoinrpc",
+            "password": "testnet"
         }
+    },
+
+    /* Redis database used for storing share and block submission data and payment processing. */
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6379
+    }
+
+    /* Enabled this mode and shares will be inserted into in a MySQL database. You may also want
+       to use the "emitInvalidBlockHashes" option below if you require it. The config options
+       "redis" and "paymentProcessing" will be ignored/unused if this is enabled. */
+    "mposMode": {
+        "enabled": false,
+        "host": "127.0.0.1", //MySQL db host
+        "port": 3306, //MySQL db port
+        "user": "me", //MySQL db user
+        "password": "mypass", //MySQL db password
+        "database": "ltc", //MySQL db database name
+
+        /* Checks for valid password in database when miners connect. */
+        "checkPassword": true,
+
+        /* Unregistered workers can automatically be registered (added to database) on stratum
+           worker authentication if this is true. */
+        "autoCreateWorker": false
+
+
     },
 
     /* If a worker is submitting a high threshold of invalid shares we can temporarily ban their IP
@@ -476,8 +468,8 @@ Description of options:
 
     /* This allows the pool to connect to the daemon as a node peer to receive block updates.
        It may be the most efficient way to get block updates (faster than polling, less
-       intensive than blocknotify script). It requires additional setup: the 'magic' field must
-       be exact (extracted from the coin source code). */
+       intensive than blocknotify script). It requires the additional field "peerMagic" in
+       the coin config. */
     "p2p": {
         "enabled": false,
 
@@ -490,13 +482,7 @@ Description of options:
         /* If your coin daemon is new enough (i.e. not a shitcoin) then it will support a p2p
            feature that prevents the daemon from spamming our peer node with unnecessary
            transaction data. Assume its supported but if you have problems try disabling it. */
-        "disableTransactions": true,
-
-        /* Magic value is different for main/testnet and for each coin. It is found in the daemon
-           source code as the pchMessageStart variable.
-           For example, litecoin mainnet magic: http://git.io/Bi8YFw
-           And for litecoin testnet magic: http://git.io/NXBYJA */
-        "magic": "fcc1b7dc"
+        "disableTransactions": true
     }
 }
 

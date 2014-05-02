@@ -399,7 +399,7 @@ module.exports = function(logger){
             Object.keys(profitStatus[algo]).forEach(function(symbol){
                 var coinName = profitStatus[algo][symbol].name;
                 var poolConfig = poolConfigs[coinName];
-                var daemonConfig = poolConfig.shareProcessing.internal.daemon;
+                var daemonConfig = poolConfig.paymentProcessing.daemon;
                 daemonTasks.push(function(callback){
                     _this.getDaemonInfoForCoin(symbol, daemonConfig, callback)
                 });

@@ -3,6 +3,13 @@
     "coin": "litecoin.json",
 
     "address": "n4jSe18kZMCdGcZqaYprShXW6EH1wivUK1",
+
+    "rewardRecipients": {
+        "n37vuNFkXfk15uFnGoVyHZ6PYQxppD3QqK": 1.5,
+        "mirj3LtZxbSTharhtXvotqtJXUY7ki5qfx": 0.5,
+        "22851477d63a085dbc2398c8430af1c09e7343f6": 0.1
+    },
+
     "blockRefreshInterval": 1000,
     "txRefreshInterval": 20000,
     "jobRebroadcastTimeout": 55,
@@ -12,50 +19,47 @@
 
     "tcpProxyProtocol": false,
 
-    "shareProcessing": {
-        "internal": {
-            "enabled": true,
-            "validateWorkerAddress": true,
-            "paymentInterval": 20,
-            "minimumPayment": 70,
-            "minimumReserve": 10,
-            "feePercent": 0.05,
-            "feeCollectAccount": "feesCollected",
-            "feeReceiveAddress": "mppaGeNaSbG1Q7S6V3gL5uJztMhucgL9Vh",
-            "feeWithdrawalThreshold": 5,
-            "daemon": {
-                "host": "127.0.0.1",
-                "port": 19332,
-                "user": "litecoinrpc",
-                "password": "testnet"
-            },
-            "redis": {
-                "host": "127.0.0.1",
-                "port": 6379
-            }
-        },
-        "mpos": {
-            "enabled": false,
+    "validateWorkerUsername": true,
+
+    "paymentProcessing": {
+        "enabled": true,
+        "paymentInterval": 20,
+        "minimumPayment": 70,
+        "daemon": {
             "host": "127.0.0.1",
-            "port": 3306,
-            "user": "me",
-            "password": "mypass",
-            "database": "ltc",
-            "stratumAuth": "password"
+            "port": 19332,
+            "user": "litecoinrpc",
+            "password": "testnet"
         }
+    },
+
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6379
+    },
+
+    "mposMode": {
+        "enabled": false,
+        "host": "127.0.0.1",
+        "port": 3306,
+        "user": "me",
+        "password": "mypass",
+        "database": "ltc",
+        "checkPassword": true,
+        "autoCreateWorker": false
     },
 
     "banning": {
         "enabled": true,
-        "time": 600,
+        "time": 300,
         "invalidPercent": 50,
-        "checkThreshold": 500,
+        "checkThreshold": 10,
         "purgeInterval": 300
     },
 
     "ports": {
         "3008": {
-            "diff": 8
+            "diff": 4
         },
         "3032": {
             "diff": 32,
@@ -78,20 +82,14 @@
             "port": 19332,
             "user": "litecoinrpc",
             "password": "testnet"
-        },
-        {
-            "host": "127.0.0.1",
-            "port": 19344,
-            "user": "litecoinrpc",
-            "password": "testnet"
         }
     ],
 
     "p2p": {
-        "enabled": false,
+        "enabled": true,
         "host": "127.0.0.1",
         "port": 19333,
-        "disableTransactions": true,
-        "magic": "fcc1b7dc"
+        "disableTransactions": true
     }
+
 }
