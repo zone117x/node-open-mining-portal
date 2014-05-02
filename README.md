@@ -317,7 +317,7 @@ Description of options:
     "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
 
     /* Block rewards go to the configured pool wallet address to later be paid out to miners,
-       except for a percentages that can go to pool operator(s) as pool fees or donations.
+       except for a percentage that can go to pool operator(s) as pool fees or donations.
        Addresses or hashed public keys can be used. */
     "rewardRecipients": {
         "n37vuNFkXfk15uFnGoVyHZ6PYQxppD3QqK": 1.5, //1.5% goes to pool op
@@ -391,7 +391,7 @@ Description of options:
     "redis": {
         "host": "127.0.0.1",
         "port": 6379
-    }
+    },
 
     /* Enabled this mode and shares will be inserted into in a MySQL database. You may also want
        to use the "emitInvalidBlockHashes" option below if you require it. The config options
