@@ -1,0 +1,7 @@
+{
+     "name": "saffroncoin",
+     "symbol": "SFR",
+     "algorithm": "scrypt",
+     "peerMagic": "cf0567ea",
+     "peerMagicTestnet": "01f555a4"
+}
