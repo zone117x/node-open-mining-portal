@@ -1,0 +1,7 @@
+{
+     "name": "saffroncoin",
+     "symbol": "SAF",
+     "algorithm": "scrypt",
+     "peerMagic": "fbc0b6db",
+     "peerMagicTestnet": "01f555a4"
+}
