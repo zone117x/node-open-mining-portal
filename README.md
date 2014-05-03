@@ -361,7 +361,7 @@ Description of options:
 
     /* To receive payments, miners must connect with their address or mining key as their username.
        This option will only authenticate miners using an address or mining key. */
-    "validateWorkerAddress": true,
+    "validateWorkerUsername": true,
 
     "paymentProcessing": {
         "enabled": true,
