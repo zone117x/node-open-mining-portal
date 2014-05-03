@@ -1,6 +1,6 @@
 {
      "name": "saffroncoin",
-     "symbol": "SAF",
+     "symbol": "SFR",
      "algorithm": "scrypt",
      "peerMagic": "fbc0b6db",
      "peerMagicTestnet": "01f555a4"
