@@ -372,7 +372,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             trySend(higherPercent);
                         }
                         else if (result.error) {
-                            logger.error(logSystem, logComponent, 'Error trying to send payments wtih RCP sendmany '
+                            logger.error(logSystem, logComponent, 'Error trying to send payments with RPC sendmany '
                                 + JSON.stringify(result.error));
                             callback(true);
                         }
