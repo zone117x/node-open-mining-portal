@@ -317,13 +317,15 @@ Description of options:
     "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
 
     /* Block rewards go to the configured pool wallet address to later be paid out to miners,
-       except for a percentage that can go to pool operator(s) as pool fees or donations.
-       Addresses or hashed public keys can be used. */
+       except for a percentage that can go to, for examples, pool operator(s) as pool fees or
+       or to donations address. Addresses or hashed public keys can be used. Here is an example
+       of rewards going to the main pool op, a pool co-owner, and NOMP donation. */
     "rewardRecipients": {
         "n37vuNFkXfk15uFnGoVyHZ6PYQxppD3QqK": 1.5, //1.5% goes to pool op
         "mirj3LtZxbSTharhtXvotqtJXUY7ki5qfx": 0.5, //0.5% goes to a pool co-owner
 
         //0.1% donation to NOMP to help support development
+        //This NOMP pubkey and accept any type of coin
         "22851477d63a085dbc2398c8430af1c09e7343f6": 0.1
     },
 
