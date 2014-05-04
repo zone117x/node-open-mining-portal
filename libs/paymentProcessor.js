@@ -237,7 +237,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
 
                         if (!generationTx && tx.result.details.length === 1){
-                            generationTx = tx.results.details[0];
+                            generationTx = tx.result.details[0];
                         }
 
                         if (!generationTx){
