@@ -235,6 +235,11 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             return tx.address === poolOptions.address;
                         })[0];
 
+
+                        if (!generationTx && tx.result.details.length === 1){
+                            generationTx = tx.results.details[0];
+                        }
+
                         if (!generationTx){
                             logger.error(logSystem, logComponent, 'Missing output details to pool address for transaction '
                                 + round.txHash);
@@ -243,7 +248,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                         round.category = generationTx.category;
                         if (round.category === 'generate') {
-                            round.reward = generationTx.amount;
+                            round.reward = generationTx.amount || generationTx.value;
                         }
 
 
