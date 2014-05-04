@@ -90,7 +90,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     callback();
                 }
                 catch(e){
-                    logger.error(logSystem, logComponent, 'Error detecting number of satoshis in a coin, cannot do payment processing');
+                    logger.error(logSystem, logComponent, 'Error detecting number of satoshis in a coin, cannot do payment processing. Tried parsing: ' + result.data);
                     callback(true);
                 }
 
