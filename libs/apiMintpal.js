@@ -1,5 +1,6 @@
 var request = require('request');
 var nonce   = require('nonce');
+var crypto = require('crypto');
 
 module.exports = function() {
     'use strict';
