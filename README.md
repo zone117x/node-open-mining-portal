@@ -324,8 +324,8 @@ Description of options:
         "n37vuNFkXfk15uFnGoVyHZ6PYQxppD3QqK": 1.5, //1.5% goes to pool op
         "mirj3LtZxbSTharhtXvotqtJXUY7ki5qfx": 0.5, //0.5% goes to a pool co-owner
 
-        //0.1% donation to NOMP to help support development
-        //This NOMP pubkey and accept any type of coin
+        //0.1% donation to NOMP. This pubkey can accept any type of coin, please leave this in
+          your config to help support NOMP development.
         "22851477d63a085dbc2398c8430af1c09e7343f6": 0.1
     },
 
