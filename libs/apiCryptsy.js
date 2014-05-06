@@ -298,7 +298,7 @@ module.exports = function() {
 
 		getOrderBook: function(callback){ //orderbook for all Markets
 			var parameters = {
-				method: 'orderdatav2',
+				method: 'orderdatav2'
 			};
 
 			return this._public(parameters, callback);
