@@ -211,9 +211,20 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         var round = rounds[i];
 
                         if (tx.error && tx.error.code === -5){
-                            logger.error(logSystem, logComponent, 'Daemon reports invalid transaction ' + round.txHash + ' '
-                                + JSON.stringify(tx.error));
-                            return;
+                            var dropKicked = !!rounds.filter(function(r){
+                                return r.height === round.height && r.blockhash !== round.blockhash && r.category !== 'dropkicked';
+                            }).length;
+
+                            if (dropKicked){
+                                logger.warning(logSystem, logComponent,
+                                        'A block was drop-kicked orphaned'
+                                        + ' - we found a better block at the same height, solution '
+                                        + round.blockhash + " round " + round.height);
+                                round.category = 'dropkicked';
+                            }
+                            else{
+                                round.category = 'orphan';
+                            }
                         }
                         else if (tx.error || !tx.result){
                             logger.error(logSystem, logComponent, 'Odd error with gettransaction ' + round.txHash + ' '
@@ -221,9 +232,11 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             return;
                         }
                         else if (round.blockHash !== tx.result.blockhash){
-                            logger.error(logSystem, logComponent, 'Daemon reports blockhash ' + tx.result.blockhash
-                                + ' for tx ' + round.txHash + ' is not the one we have stored: ' + round.blockHash);
-                            return;
+                            if(tx.result.details[0].category !== 'orphan') {
+                                logger.error(logSystem, logComponent, 'Daemon reports blockhash ' + tx.result.blockhash
+                                    + ' for tx ' + round.txHash + ' is not the one we have stored: ' + round.blockHash);
+                                return;
+                            }
                         }
                         else if (!(tx.result.details instanceof Array)){
                             logger.error(logSystem, logComponent, 'Details array missing from transaction '
@@ -231,26 +244,27 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             return;
                         }
 
-                        var generationTx = tx.result.details.filter(function(tx){
-                            return tx.address === poolOptions.address;
-                        })[0];
+                        if(!round.category) {
+                            var generationTx = tx.result.details.filter(function (tx) {
+                                return tx.address === poolOptions.address;
+                            })[0];
 
 
-                        if (!generationTx && tx.result.details.length === 1){
-                            generationTx = tx.result.details[0];
+                            if (!generationTx && tx.result.details.length === 1) {
+                                generationTx = tx.result.details[0];
+                            }
+
+                            if (!generationTx) {
+                                logger.error(logSystem, logComponent, 'Missing output details to pool address for transaction '
+                                    + round.txHash);
+                                return;
+                            }
+                            round.category = generationTx.category || tx.result.details[0].category;
                         }
 
-                        if (!generationTx){
-                            logger.error(logSystem, logComponent, 'Missing output details to pool address for transaction '
-                                + round.txHash);
-                            return;
-                        }
-
-                        round.category = generationTx.category;
                         if (round.category === 'generate') {
                             round.reward = generationTx.amount || generationTx.value;
                         }
-
 
                     });
 
@@ -261,6 +275,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             case 'generate':
                                 return true;
                             case 'orphan':
+                                return true;
+                            case 'dropkicked':
                                 return true;
                             default:
                                 return false;
@@ -371,7 +387,6 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     daemon.cmd('sendmany', [addressAccount || '', addressAmounts], function (result) {
                         if (result.error && result.error.code === -6) {
                             var higherPercent = withholdPercent + 0.01;
-                            console.log('asdfasdfsadfasdf');
                             logger.warning(logSystem, logComponent, 'Not enough funds to send out payments, decreasing rewards by '
                                 + (higherPercent * 100) + '% and retrying');
                             trySend(higherPercent);
@@ -439,6 +454,9 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         case 'generate':
                             movePendingCommands.push(['smove', coin + '_blocksPending', coin + '_blocksConfirmed', r.serialized]);
                             roundsToDelete.push(coin + '_shares:round' + r.height);
+                            break;
+                        case 'dropkicked':
+                            movePendingCommands.push(['smove', coin + '_blocksPending', coin + '_blocksDropkicked', r.serialized]);
                             break;
                     }
 
