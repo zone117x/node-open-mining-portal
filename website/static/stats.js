@@ -390,17 +390,45 @@ function displayCharts(){
     }
 }
 
-$(function() {
-    timeHolder = new Date().getTime();
-    createCharts();
-});
+function getInternetExplorerVersion()
+{
+    var rv = -1; // Return value assumes failure.
+    if (navigator.appName == 'Microsoft Internet Explorer')
+    {
+        var ua = navigator.userAgent;
+        var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+        if (re.exec(ua) != null)
+            rv = parseFloat( RegExp.$1 );
+    }
+    return rv;
+}
 
-$.getJSON('/api/pool_stats', function (data) {
-    statData = data;
-    buildChartData(3600);
-    displayCharts();
-    console.log("time to load page: " + (new Date().getTime() - timeHolder));
-});
+(function ($) {
+    var ver = getInternetExplorerVersion();
+    if (ver !== -1 && ver<=10.0) {
+        $(window).load(function(){
+            timeHolder = new Date().getTime();
+            createCharts();
+            $.getJSON('/api/pool_stats', function (data) {
+                statData = data;
+                buildChartData(3600);
+                displayCharts();
+                console.log("time to load: " + (new Date().getTime() - timeHolder));
+            });
+        });
+    } else {
+        $(function() {
+            timeHolder = new Date().getTime();
+            createCharts();
+            $.getJSON('/api/pool_stats', function (data) {
+                statData = data;
+                buildChartData(3600);
+                displayCharts();
+                console.log("time to load: " + (new Date().getTime() - timeHolder));
+            });
+        });
+    }
+}(jQuery));
 
 statsSource.addEventListener('message', function(e){ //Stays active when hot-swapping pages
     var stats = JSON.parse(e.data);
@@ -463,5 +491,5 @@ statsSource.addEventListener('message', function(e){ //Stays active when hot-swa
         $('#statsBlocksConfirmed' + pool).text(stats.pools[pool].blocks.confirmed);
         $('#statsBlocksOrphaned' + pool).text(stats.pools[pool].blocks.orphaned);
     }
-    console.log("time to update ststs: " + (new Date().getTime() - timeHolder));
+    console.log("time to update stats: " + (new Date().getTime() - timeHolder));
 });
