@@ -331,9 +331,6 @@ Description of options:
 
     "blockRefreshInterval": 1000, //How often to poll RPC daemons for new blocks, in milliseconds
 
-    /* How many milliseconds should have passed before new block transactions will trigger a new
-       job broadcast. */
-    "txRefreshInterval": 20000,
 
     /* Some miner apps will consider the pool dead/offline if it doesn't receive anything new jobs
        for around a minute, so every time we broadcast jobs, set a timeout to rebroadcast
