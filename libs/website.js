@@ -155,10 +155,12 @@ module.exports = function(logger){
                                 }
                         }
                     })();
-                    var daemon = new Stratum.daemon.interface([coinInfo.daemon]);
+                    var daemon = new Stratum.daemon.interface([coinInfo.daemon], function(severity, message){
+                        logger[severity](logSystem, c, message);
+                    });
                     daemon.cmd('dumpprivkey', [coinInfo.address], function(result){
                         if (result[0].error){
-                            logger.error(logSystem, 'daemon', 'Could not dumpprivkey for ' + c + ' ' + JSON.stringify(result[0].error));
+                            logger.error(logSystem, c, 'Could not dumpprivkey for ' + c + ' ' + JSON.stringify(result[0].error));
                             cback();
                             return;
                         }

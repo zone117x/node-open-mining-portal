@@ -134,30 +134,24 @@ module.exports = function(logger){
                 if (poolOptions.validateWorkerUsername !== true)
                     authCallback(true);
                 else {
-                    port = port.toString();
-                    if (portalConfig.switching) {
-                        for (var switchName in portalConfig.switching) {
-                            if (portalConfig.switching[switchName].enabled && Object.keys(portalConfig.switching[switchName].ports).indexOf(port) !== -1) {
-                                if (workerName.length === 40) {
-                                    try {
-                                        new Buffer(workerName, 'hex');
-                                        authCallback(true);
-                                    }
-                                    catch (e) {
-                                        authCallback(false);
-                                    }
-                                }
-                                else
-                                    authCallback(false);
-                                return;
-                            }
+                    if (workerName.length === 40) {
+                        try {
+                            new Buffer(workerName, 'hex');
+                            authCallback(true);
+                        }
+                        catch (e) {
+                            authCallback(false);
                         }
                     }
+                    else {
+                        pool.daemon.cmd('validateaddress', [workerName], function (results) {
+                            var isValid = results.filter(function (r) {
+                                return r.response.isvalid
+                            }).length > 0;
+                            authCallback(isValid);
+                        });
+                    }
 
-                    pool.daemon.cmd('validateaddress', [workerName], function(results){
-                        var isValid = results.filter(function(r){return r.response.isvalid}).length > 0;
-                        authCallback(isValid);
-                    });
                 }
             };
 

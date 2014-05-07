@@ -49,7 +49,9 @@ function SetupForPool(logger, poolOptions, setupFinished){
     var logSystem = 'Payments';
     var logComponent = coin;
 
-    var daemon = new Stratum.daemon.interface([processingConfig.daemon]);
+    var daemon = new Stratum.daemon.interface([processingConfig.daemon], function(severity, message){
+        logger[severity](logSystem, logComponent, message);
+    });
     var redisClient = redis.createClient(poolOptions.redis.port, poolOptions.redis.host);
 
     var magnitude;
@@ -211,23 +213,18 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         var round = rounds[i];
 
                         if (tx.error && tx.error.code === -5){
-                            logger.error(logSystem, logComponent, 'Daemon reports invalid transaction ' + round.txHash + ' '
-                                + JSON.stringify(tx.error));
+                            logger.warning(logSystem, logComponent, 'Daemon reports invalid transaction: ' + round.txHash);
+                            round.category = 'kicked';
+                            return;
+                        }
+                        else if (!tx.result.details || (tx.result.details && tx.result.details.length === 0)){
+                            logger.warning(logSystem, logComponent, 'Daemon reports no details for transaction: ' + round.txHash);
+                            round.category = 'kicked';
                             return;
                         }
                         else if (tx.error || !tx.result){
                             logger.error(logSystem, logComponent, 'Odd error with gettransaction ' + round.txHash + ' '
                                 + JSON.stringify(tx));
-                            return;
-                        }
-                        else if (round.blockHash !== tx.result.blockhash){
-                            logger.error(logSystem, logComponent, 'Daemon reports blockhash ' + tx.result.blockhash
-                                + ' for tx ' + round.txHash + ' is not the one we have stored: ' + round.blockHash);
-                            return;
-                        }
-                        else if (!(tx.result.details instanceof Array)){
-                            logger.error(logSystem, logComponent, 'Details array missing from transaction '
-                                + round.txHash);
                             return;
                         }
 
@@ -251,16 +248,29 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             round.reward = generationTx.amount || generationTx.value;
                         }
 
-
                     });
+
+                    var canDeleteShares = function(r){
+                        for (var i = 0; i < rounds.length; i++){
+                            var compareR = rounds[i];
+                            if ((compareR.height === r.height)
+                                && (compareR.category !== 'kicked')
+                                && (compareR.category !== 'orphan')
+                                && (compareR.serialized !== r.serialized)){
+                                return false;
+                            }
+                        }
+                        return true;
+                    };
 
 
                     //Filter out all rounds that are immature (not confirmed or orphaned yet)
                     rounds = rounds.filter(function(r){
                         switch (r.category) {
-                            case 'generate':
-                                return true;
                             case 'orphan':
+                            case 'kicked':
+                                r.canDeleteShares = canDeleteShares(r);
+                            case 'generate':
                                 return true;
                             default:
                                 return false;
@@ -303,11 +313,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         }
 
                         switch (round.category){
+                            case 'kicked':
                             case 'orphan':
-                                /* Each block that gets orphaned, all the shares go into the current round so that
-                                   miners still get a reward for their work. This seems unfair to those that just
-                                   started mining during this current round, but over time it balances out and rewards
-                                   loyal miners. */
                                 round.workerShares = workerShares;
                                 break;
 
@@ -371,7 +378,6 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     daemon.cmd('sendmany', [addressAccount || '', addressAmounts], function (result) {
                         if (result.error && result.error.code === -6) {
                             var higherPercent = withholdPercent + 0.01;
-                            console.log('asdfasdfsadfasdf');
                             logger.warning(logSystem, logComponent, 'Not enough funds to send out payments, decreasing rewards by '
                                 + (higherPercent * 100) + '% and retrying');
                             trySend(higherPercent);
@@ -425,21 +431,30 @@ function SetupForPool(logger, poolOptions, setupFinished){
                 var roundsToDelete = [];
                 var orphanMergeCommands = [];
 
+                var moveSharesToCurrent = function(r){
+                    var workerShares = r.workerShares;
+                    Object.keys(workerShares).forEach(function(worker){
+                        orphanMergeCommands.push(['hincrby', coin + '_shares:roundCurrent',
+                            worker, workerShares[worker]]);
+                    });
+                };
+
                 rounds.forEach(function(r){
 
                     switch(r.category){
+                        case 'kicked':
+                            movePendingCommands.push(['smove', coin + '_blocksPending', coin + '_blocksKicked', r.serialized]);
                         case 'orphan':
                             movePendingCommands.push(['smove', coin + '_blocksPending', coin + '_blocksOrphaned', r.serialized]);
-                            var workerShares = r.workerShares;
-                            Object.keys(workerShares).forEach(function(worker){
-                                orphanMergeCommands.push(['hincrby', coin + '_shares:roundCurrent',
-                                    worker, workerShares[worker]]);
-                            });
-                            break;
+                            if (r.canDeleteShares){
+                                moveSharesToCurrent(r);
+                                roundsToDelete.push(coin + '_shares:round' + r.height);
+                            }
+                            return;
                         case 'generate':
                             movePendingCommands.push(['smove', coin + '_blocksPending', coin + '_blocksConfirmed', r.serialized]);
                             roundsToDelete.push(coin + '_shares:round' + r.height);
-                            break;
+                            return;
                     }
 
                 });
