@@ -347,12 +347,6 @@ Description of options:
     /* Sometimes you want the block hashes even for shares that aren't block candidates. */
     "emitInvalidBlockHashes": false,
 
-    /* We use proper maximum algorithm difficulties found in the coin daemon source code. Most
-       miners/pools that deal with scrypt use a guesstimated one that is about 5.86% off from the
-       actual one. So here we can set a tolerable threshold for if a share is slightly too low
-       due to mining apps using incorrect max diffs and this pool using correct max diffs. */
-    "shareVariancePercent": 2,
-
     /* Enable for client IP addresses to be detected when using a load balancer with TCP proxy
        protocol enabled, such as HAProxy with 'send-proxy' param:
        http://haproxy.1wt.eu/download/1.5/doc/configuration.txt */

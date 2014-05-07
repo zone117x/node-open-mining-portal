@@ -19,6 +19,7 @@ module.exports = function(logger, poolConfig){
     var redisConfig = poolConfig.redis;
     var coin = poolConfig.coin.name;
 
+
     var forkId = process.env.forkId;
     var logSystem = 'Pool';
     var logComponent = coin;
@@ -51,7 +52,8 @@ module.exports = function(logger, poolConfig){
                doesn't overwrite an existing entry, and timestamp as score lets us query shares from last X minutes to
                generate hashrate for each worker and pool. */
             var dateNow = Date.now();
-            redisCommands.push(['zadd', coin + '_hashrate', dateNow / 1000 | 0, [shareData.difficulty, shareData.worker, dateNow].join(':')]);
+            var hashrateData = [shareData.difficulty, shareData.worker, dateNow];
+            redisCommands.push(['zadd', coin + '_hashrate', dateNow / 1000 | 0, hashrateData.join(':')]);
         }
         else{
             redisCommands.push(['hincrby', coin + '_stats', 'invalidShares', 1]);

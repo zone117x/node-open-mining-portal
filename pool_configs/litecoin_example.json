@@ -14,7 +14,6 @@
     "jobRebroadcastTimeout": 55,
     "connectionTimeout": 600,
     "emitInvalidBlockHashes": false,
-    "shareVariancePercent": 15,
 
     "tcpProxyProtocol": false,
 
