@@ -5,6 +5,10 @@ This portal is an extremely efficient, highly scalable, all-in-one, easy to setu
 entirely in Node.js. It contains a stratum poolserver; reward/payment/share processor; and a (*not yet completed*)
 responsive user-friendly front-end website featuring mining instructions, in-depth live statistics, and an admin center.
 
+#### Production Usage Notice
+This is beta software. All of the following are things that can change and break an existing NOMP setup: functionality of any feature, structure of configuratoin files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data.
+
+
 #### Table of Contents
 * [Features](#features)
   * [Attack Mitigation](#attack-mitigation)
