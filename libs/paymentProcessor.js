@@ -49,7 +49,9 @@ function SetupForPool(logger, poolOptions, setupFinished){
     var logSystem = 'Payments';
     var logComponent = coin;
 
-    var daemon = new Stratum.daemon.interface([processingConfig.daemon]);
+    var daemon = new Stratum.daemon.interface([processingConfig.daemon], function(severity, message){
+        logger[severity](logSystem, logComponent, message);
+    });
     var redisClient = redis.createClient(poolOptions.redis.port, poolOptions.redis.host);
 
     var magnitude;
