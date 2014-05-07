@@ -121,6 +121,10 @@ function SetupForPool(logger, poolOptions, setupFinished){
         return parseFloat((satoshis / magnitude).toFixed(coinPrecision));
     };
 
+    var coinsToSatoshies = function(coins){
+        return coins * magnitude;
+    };
+
     /* Deal with numbers in smallest possible units (satoshis) as much as possible. This greatly helps with accuracy
        when rounding and whatnot. When we are storing numbers for only humans to see, store in whole coin units. */
 
@@ -163,7 +167,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                     var workers = {};
                     for (var w in results[0]){
-                        workers[w] = {balance: parseInt(results[0][w])};
+                        workers[w] = {balance: coinsToSatoshies(parseInt(results[0][w]))};
                     }
 
                     var rounds = results[1].map(function(r){
@@ -376,9 +380,10 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     }
 
                     daemon.cmd('sendmany', [addressAccount || '', addressAmounts], function (result) {
+                        //Check if payments failed because wallet doesn't have enough coins to pay for tx fees
                         if (result.error && result.error.code === -6) {
                             var higherPercent = withholdPercent + 0.01;
-                            logger.warning(logSystem, logComponent, 'Not enough funds to send out payments, decreasing rewards by '
+                            logger.warning(logSystem, logComponent, 'Not enough funds to cover the tx fees for sending out payments, decreasing rewards by '
                                 + (higherPercent * 100) + '% and retrying');
                             trySend(higherPercent);
                         }
@@ -413,10 +418,10 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     var worker = workers[w];
                     if (worker.balanceChange !== 0){
                         balanceUpdateCommands.push([
-                            'hincrby',
+                            'hincrbyfloat',
                             coin + '_balances',
                             w,
-                            worker.balanceChange
+                            satoshisToCoins(worker.balanceChange)
                         ]);
                     }
                     if (worker.sent !== 0){
