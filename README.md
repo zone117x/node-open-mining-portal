@@ -5,6 +5,10 @@ This portal is an extremely efficient, highly scalable, all-in-one, easy to setu
 entirely in Node.js. It contains a stratum poolserver; reward/payment/share processor; and a (*not yet completed*)
 responsive user-friendly front-end website featuring mining instructions, in-depth live statistics, and an admin center.
 
+#### Production Usage Notice
+This is beta software. All of the following are things that can change and break an existing NOMP setup: functionality of any feature, structure of configuratoin files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data.
+
+
 #### Table of Contents
 * [Features](#features)
   * [Attack Mitigation](#attack-mitigation)
@@ -331,9 +335,6 @@ Description of options:
 
     "blockRefreshInterval": 1000, //How often to poll RPC daemons for new blocks, in milliseconds
 
-    /* How many milliseconds should have passed before new block transactions will trigger a new
-       job broadcast. */
-    "txRefreshInterval": 20000,
 
     /* Some miner apps will consider the pool dead/offline if it doesn't receive anything new jobs
        for around a minute, so every time we broadcast jobs, set a timeout to rebroadcast
@@ -349,12 +350,6 @@ Description of options:
 
     /* Sometimes you want the block hashes even for shares that aren't block candidates. */
     "emitInvalidBlockHashes": false,
-
-    /* We use proper maximum algorithm difficulties found in the coin daemon source code. Most
-       miners/pools that deal with scrypt use a guesstimated one that is about 5.86% off from the
-       actual one. So here we can set a tolerable threshold for if a share is slightly too low
-       due to mining apps using incorrect max diffs and this pool using correct max diffs. */
-    "shareVariancePercent": 2,
 
     /* Enable for client IP addresses to be detected when using a load balancer with TCP proxy
        protocol enabled, such as HAProxy with 'send-proxy' param:

@@ -273,9 +273,15 @@ module.exports = function(logger){
         res.send(500, 'Something broke!');
     });
 
-    app.listen(portalConfig.website.port, function(){
-        logger.debug(logSystem, 'Server', 'Website started on port ' + portalConfig.website.port);
-    });
+    try {
+        app.listen(portalConfig.website.port, function () {
+            logger.debug(logSystem, 'Server', 'Website started on port ' + portalConfig.website.port);
+        });
+    }
+    catch(e){
+        logger.error(logSystem, 'Server', 'Could not start website on port ' + portalConfig.website.port
+            +  ' - its either in use or you do not have permission');
+    }
 
 
 };

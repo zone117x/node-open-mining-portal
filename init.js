@@ -56,7 +56,6 @@ catch(e){
 }
 
 
-
 if (cluster.isWorker){
 
     switch(process.env.workerType){
@@ -132,6 +131,7 @@ var buildPoolConfigs = function(){
 
         var coinProfile = JSON.parse(JSON.minify(fs.readFileSync(coinFilePath, {encoding: 'utf8'})));
         poolOptions.coin = coinProfile;
+        poolOptions.coin.name = poolOptions.coin.name.toLowerCase();
 
         if (poolOptions.coin.name in configs){
 
