@@ -26,7 +26,8 @@ var poolConfigs;
 
 
 var logger = new PoolLogger({
-    logLevel: portalConfig.logLevel
+    logLevel: portalConfig.logLevel,
+    logColors: portalConfig.logColors
 });
 
 

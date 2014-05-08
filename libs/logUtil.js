@@ -30,6 +30,7 @@ var PoolLogger = function (configuration) {
 
 
     var logLevelInt = severityValues[configuration.logLevel];
+    var logColors = configuration.logColors;
 
 
 
@@ -45,16 +46,28 @@ var PoolLogger = function (configuration) {
         }
 
         var entryDesc = dateFormat(new Date(), 'yyyy-mm-dd HH:MM:ss') + ' [' + system + ']\t';
-        entryDesc = severityToColor(severity, entryDesc);
+        if (logColors) {
+            entryDesc = severityToColor(severity, entryDesc);
 
-        var logString =
-                entryDesc +
-                ('[' + component + '] ').italic;
+            var logString =
+                    entryDesc +
+                    ('[' + component + '] ').italic;
 
-        if (subcat)
-            logString += ('(' + subcat + ') ').bold.grey
+            if (subcat)
+                logString += ('(' + subcat + ') ').bold.grey;
 
-        logString += text.grey;
+            logString += text.grey;
+        }
+        else {
+            var logString =
+                    entryDesc +
+                    '[' + component + '] ';
+
+            if (subcat)
+                logString += '(' + subcat + ') ';
+
+            logString += text;
+        }
 
         console.log(logString);
 

@@ -1,5 +1,6 @@
 {
     "logLevel": "debug",
+    "logColors": true,
 
     "cliPort": 17117,
 
