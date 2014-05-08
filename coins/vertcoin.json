@@ -2,6 +2,6 @@
     "name": "Vertcoin",
     "symbol": "VTC",
     "algorithm": "scrypt-n",
-	"peerMagic": "fabfb5da",
-	"peerMagicTestnet": "76657274"
+    "peerMagic": "fabfb5da",
+    "peerMagicTestnet": "76657274"
 }
