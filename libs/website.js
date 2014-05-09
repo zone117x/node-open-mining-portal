@@ -275,12 +275,12 @@ module.exports = function(logger){
     });
 
     try {
-        app.listen(portalConfig.website.port, function () {
-            logger.debug(logSystem, 'Server', 'Website started on port ' + portalConfig.website.port);
+        app.listen(portalConfig.website.port, portalConfig.website.host, function () {
+            logger.debug(logSystem, 'Server', 'Website started on ' + portalConfig.website.host + ':' + portalConfig.website.port);
         });
     }
     catch(e){
-        logger.error(logSystem, 'Server', 'Could not start website on port ' + portalConfig.website.port
+        logger.error(logSystem, 'Server', 'Could not start website on ' + portalConfig.website.host + ':' + portalConfig.website.port
             +  ' - its either in use or you do not have permission');
     }
 
