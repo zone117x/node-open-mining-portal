@@ -152,8 +152,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                 startRedisTimer();
                 redisClient.multi([
-                    ['hgetall', coin + '_balances'],
-                    ['smembers', coin + '_blocksPending']
+                    ['hgetall', coin + ':balances'],
+                    ['smembers', coin + ':blocksPending']
                 ]).exec(function(error, results){
                     endRedisTimer();
 
@@ -294,7 +294,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
 
                 var shareLookups = rounds.map(function(r){
-                    return ['hgetall', coin + '_shares:round' + r.height]
+                    return ['hgetall', coin + ':shares:round' + r.height]
                 });
 
                 startRedisTimer();
@@ -419,13 +419,13 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     if (worker.balanceChange !== 0){
                         balanceUpdateCommands.push([
                             'hincrbyfloat',
-                            coin + '_balances',
+                            coin + ':balances',
                             w,
                             satoshisToCoins(worker.balanceChange)
                         ]);
                     }
                     if (worker.sent !== 0){
-                        workerPayoutsCommand.push(['hincrbyfloat', coin + '_payouts', w, worker.sent]);
+                        workerPayoutsCommand.push(['hincrbyfloat', coin + ':payouts', w, worker.sent]);
                         totalPaid += worker.sent;
                     }
                 }
@@ -439,7 +439,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                 var moveSharesToCurrent = function(r){
                     var workerShares = r.workerShares;
                     Object.keys(workerShares).forEach(function(worker){
-                        orphanMergeCommands.push(['hincrby', coin + '_shares:roundCurrent',
+                        orphanMergeCommands.push(['hincrby', coin + ':shares:roundCurrent',
                             worker, workerShares[worker]]);
                     });
                 };
@@ -448,17 +448,17 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                     switch(r.category){
                         case 'kicked':
-                            movePendingCommands.push(['smove', coin + '_blocksPending', coin + '_blocksKicked', r.serialized]);
+                            movePendingCommands.push(['smove', coin + ':blocksPending', coin + ':blocksKicked', r.serialized]);
                         case 'orphan':
-                            movePendingCommands.push(['smove', coin + '_blocksPending', coin + '_blocksOrphaned', r.serialized]);
+                            movePendingCommands.push(['smove', coin + ':blocksPending', coin + ':blocksOrphaned', r.serialized]);
                             if (r.canDeleteShares){
                                 moveSharesToCurrent(r);
-                                roundsToDelete.push(coin + '_shares:round' + r.height);
+                                roundsToDelete.push(coin + ':shares:round' + r.height);
                             }
                             return;
                         case 'generate':
-                            movePendingCommands.push(['smove', coin + '_blocksPending', coin + '_blocksConfirmed', r.serialized]);
-                            roundsToDelete.push(coin + '_shares:round' + r.height);
+                            movePendingCommands.push(['smove', coin + ':blocksPending', coin + ':blocksConfirmed', r.serialized]);
+                            roundsToDelete.push(coin + ':shares:round' + r.height);
                             return;
                     }
 
@@ -482,7 +482,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     finalRedisCommands.push(['del'].concat(roundsToDelete));
 
                 if (totalPaid !== 0)
-                    finalRedisCommands.push(['hincrbyfloat', coin + '_stats', 'totalPaid', totalPaid]);
+                    finalRedisCommands.push(['hincrbyfloat', coin + ':stats', 'totalPaid', totalPaid]);
 
                 if (finalRedisCommands.length === 0){
                     callback();
