@@ -6,7 +6,7 @@ entirely in Node.js. It contains a stratum poolserver; reward/payment/share proc
 responsive user-friendly front-end website featuring mining instructions, in-depth live statistics, and an admin center.
 
 #### Production Usage Notice
-This is beta software. All of the following are things that can change and break an existing NOMP setup: functionality of any feature, structure of configuratoin files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data.
+This is beta software. All of the following are things that can change and break an existing NOMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data.
 
 
 #### Table of Contents
@@ -171,6 +171,10 @@ Explanation for each field:
     /* Specifies the level of log output verbosity. Anything more severy than the level specified
        will also be logged. */
     "logLevel": "debug", //or "warning", "error"
+    
+    /* By default NOMP logs to console and gives pretty colors. If you direct that output to a
+       log file then disable this feature to avoid nasty characters in your log file. */
+    "logColors": true, 
 
 
     /* The NOMP CLI (command-line interface) will listen for commands on this port. For example,
@@ -189,6 +193,9 @@ Explanation for each field:
     /* This is the front-end. Its not finished. When it is finished, this comment will say so. */
     "website": {
         "enabled": true,
+        /* If you are using a reverse-proxy like nginx to display the website then set this to
+           127.0.0.1 to not expose the port. */
+        "host": "0.0.0.0",
         "port": 80,
         /* Used for displaying stratum connection data on the Getting Started page. */
         "stratumHost": "cryppit.com",
