@@ -4,9 +4,10 @@ var os = require('os');
 var cluster = require('cluster');
 
 var async = require('async');
+var extend = require('extend');
+
 var PoolLogger = require('./libs/logUtil.js');
 var CliListener = require('./libs/cliListener.js');
-var RedisBlocknotifyListener = require('./libs/redisblocknotifyListener.js');
 var PoolWorker = require('./libs/poolWorker.js');
 var PaymentProcessor = require('./libs/paymentProcessor.js');
 var Website = require('./libs/website.js');
@@ -144,6 +145,19 @@ var buildPoolConfigs = function(){
             process.exit(1);
             return;
         }
+
+        for (var option in portalConfig.defaultPoolConfigs){
+            if (!(option in poolOptions)){
+                var toCloneOption = portalConfig.defaultPoolConfigs[option];
+                var clonedOption = {};
+                if (toCloneOption.constructor === Object)
+                    extend(true, clonedOption, toCloneOption);
+                else
+                    clonedOption = toCloneOption;
+                poolOptions[option] = clonedOption;
+            }
+        }
+
 
         configs[poolOptions.coin.name] = poolOptions;
 
@@ -334,24 +348,6 @@ var processCoinSwitchCommand = function(params, options, reply){
 };
 
 
-var startRedisBlockListener = function(){
-    //block notify options
-    //setup block notify here and use IPC to tell appropriate pools
-
-    if (!portalConfig.redisBlockNotifyListener.enabled) return;
-
-    var listener = new RedisBlocknotifyListener(portalConfig.redisBlockNotifyListener);
-    listener.on('log', function(text){
-        logger.debug('Master', 'blocknotify', text);
-    }).on('hash', function (message) {
-        var ipcMessage = {type:'blocknotify', coin: message.coin, hash: message.hash};
-        Object.keys(cluster.workers).forEach(function(id) {
-            cluster.workers[id].send(ipcMessage);
-        });
-    });
-    listener.start();
-};
-
 
 var startPaymentProcessor = function(){
 
@@ -428,8 +424,6 @@ var startProfitSwitch = function(){
     spawnPoolWorkers();
 
     startPaymentProcessor();
-
-    startRedisBlockListener();
 
     startWebsite();
 

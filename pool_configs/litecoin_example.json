@@ -6,18 +6,8 @@
 
     "rewardRecipients": {
         "n37vuNFkXfk15uFnGoVyHZ6PYQxppD3QqK": 1.5,
-        "mirj3LtZxbSTharhtXvotqtJXUY7ki5qfx": 0.5,
         "22851477d63a085dbc2398c8430af1c09e7343f6": 0.1
     },
-
-    "blockRefreshInterval": 1000,
-    "jobRebroadcastTimeout": 55,
-    "connectionTimeout": 600,
-    "emitInvalidBlockHashes": false,
-
-    "tcpProxyProtocol": false,
-
-    "validateWorkerUsername": true,
 
     "paymentProcessing": {
         "enabled": true,
@@ -26,38 +16,14 @@
         "daemon": {
             "host": "127.0.0.1",
             "port": 19332,
-            "user": "litecoinrpc",
-            "password": "testnet"
+            "user": "testuser",
+            "password": "testpass"
         }
-    },
-
-    "redis": {
-        "host": "127.0.0.1",
-        "port": 6379
-    },
-
-    "mposMode": {
-        "enabled": false,
-        "host": "127.0.0.1",
-        "port": 3306,
-        "user": "me",
-        "password": "mypass",
-        "database": "ltc",
-        "checkPassword": true,
-        "autoCreateWorker": false
-    },
-
-    "banning": {
-        "enabled": true,
-        "time": 300,
-        "invalidPercent": 50,
-        "checkThreshold": 10,
-        "purgeInterval": 300
     },
 
     "ports": {
         "3008": {
-            "diff": 4
+            "diff": 8
         },
         "3032": {
             "diff": 32,
@@ -78,8 +44,8 @@
         {
             "host": "127.0.0.1",
             "port": 19332,
-            "user": "litecoinrpc",
-            "password": "testnet"
+            "user": "testuser",
+            "password": "testpass"
         }
     ],
 
@@ -88,6 +54,17 @@
         "host": "127.0.0.1",
         "port": 19333,
         "disableTransactions": true
+    },
+
+    "mposMode": {
+        "enabled": false,
+        "host": "127.0.0.1",
+        "port": 3306,
+        "user": "me",
+        "password": "mypass",
+        "database": "ltc",
+        "checkPassword": true,
+        "autoCreateWorker": false
     }
 
 }

@@ -6,7 +6,7 @@ entirely in Node.js. It contains a stratum poolserver; reward/payment/share proc
 responsive user-friendly front-end website featuring mining instructions, in-depth live statistics, and an admin center.
 
 #### Production Usage Notice
-This is beta software. All of the following are things that can change and break an existing NOMP setup: functionality of any feature, structure of configuratoin files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data.
+This is beta software. All of the following are things that can change and break an existing NOMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data.
 
 
 #### Table of Contents
@@ -171,6 +171,10 @@ Explanation for each field:
     /* Specifies the level of log output verbosity. Anything more severy than the level specified
        will also be logged. */
     "logLevel": "debug", //or "warning", "error"
+    
+    /* By default NOMP logs to console and gives pretty colors. If you direct that output to a
+       log file then disable this feature to avoid nasty characters in your log file. */
+    "logColors": true, 
 
 
     /* The NOMP CLI (command-line interface) will listen for commands on this port. For example,
@@ -185,10 +189,54 @@ Explanation for each field:
         "enabled": true,
         "forks": "auto"
     },
+    
+    /* Pool config file will inherit these default values if they are not set. */
+    "defaultPoolConfigs": {
+    
+        /* Poll RPC daemons for new blocks every this many milliseconds. */
+        "blockRefreshInterval": 1000,
+        
+        /* If no new blocks are available for this many seconds update and rebroadcast job. */
+        "jobRebroadcastTimeout": 55,
+        
+        /* Disconnect workers that haven't submitted shares for this many seconds. */
+        "connectionTimeout": 600,
+        
+        /* (For MPOS mode) Store the block hashes for shares that aren't block candidates. */
+        "emitInvalidBlockHashes": false,
+        
+        /* This option will only authenticate miners using an address or mining key. */
+        "validateWorkerUsername": true,
+        
+        /* Enable for client IP addresses to be detected when using a load balancer with TCP
+           proxy protocol enabled, such as HAProxy with 'send-proxy' param:
+           http://haproxy.1wt.eu/download/1.5/doc/configuration.txt */
+        "tcpProxyProtocol": false,
+        
+        /* If under low-diff share attack we can ban their IP to reduce system/network load. If
+           running behind HAProxy be sure to enable 'tcpProxyProtocol', otherwise you'll end up
+           banning your own IP address (and therefore all workers). */
+        "banning": {
+            "enabled": true,
+            "time": 600, //How many seconds to ban worker for
+            "invalidPercent": 50, //What percent of invalid shares triggers ban
+            "checkThreshold": 500, //Perform check when this many shares have been submitted
+            "purgeInterval": 300 //Every this many seconds clear out the list of old bans
+        },
+        
+        /* Used for storing share and block submission data and payment processing. */
+        "redis": {
+            "host": "127.0.0.1",
+            "port": 6379
+        }
+    },
 
     /* This is the front-end. Its not finished. When it is finished, this comment will say so. */
     "website": {
         "enabled": true,
+        /* If you are using a reverse-proxy like nginx to display the website then set this to
+           127.0.0.1 to not expose the port. */
+        "host": "0.0.0.0",
         "port": 80,
         /* Used for displaying stratum connection data on the Getting Started page. */
         "stratumHost": "cryppit.com",
@@ -333,33 +381,6 @@ Description of options:
         "22851477d63a085dbc2398c8430af1c09e7343f6": 0.1
     },
 
-    "blockRefreshInterval": 1000, //How often to poll RPC daemons for new blocks, in milliseconds
-
-
-    /* Some miner apps will consider the pool dead/offline if it doesn't receive anything new jobs
-       for around a minute, so every time we broadcast jobs, set a timeout to rebroadcast
-       in this many seconds unless we find a new job. Set to zero or remove to disable this. */
-    "jobRebroadcastTimeout": 55,
-
-    //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
-
-    /* Some attackers will create thousands of workers that use up all available socket connections,
-       usually the workers are zombies and don't submit shares after connecting. This feature
-       detects those and disconnects them. */
-    "connectionTimeout": 600, //Remove workers that haven't been in contact for this many seconds
-
-    /* Sometimes you want the block hashes even for shares that aren't block candidates. */
-    "emitInvalidBlockHashes": false,
-
-    /* Enable for client IP addresses to be detected when using a load balancer with TCP proxy
-       protocol enabled, such as HAProxy with 'send-proxy' param:
-       http://haproxy.1wt.eu/download/1.5/doc/configuration.txt */
-    "tcpProxyProtocol": false,
-
-    /* To receive payments, miners must connect with their address or mining key as their username.
-       This option will only authenticate miners using an address or mining key. */
-    "validateWorkerUsername": true,
-
     "paymentProcessing": {
         "enabled": true,
 
@@ -379,48 +400,9 @@ Description of options:
         "daemon": {
             "host": "127.0.0.1",
             "port": 19332,
-            "user": "litecoinrpc",
-            "password": "testnet"
+            "user": "testuser",
+            "password": "testpass"
         }
-    },
-
-    /* Redis database used for storing share and block submission data and payment processing. */
-    "redis": {
-        "host": "127.0.0.1",
-        "port": 6379
-    },
-
-    /* Enabled this mode and shares will be inserted into in a MySQL database. You may also want
-       to use the "emitInvalidBlockHashes" option below if you require it. The config options
-       "redis" and "paymentProcessing" will be ignored/unused if this is enabled. */
-    "mposMode": {
-        "enabled": false,
-        "host": "127.0.0.1", //MySQL db host
-        "port": 3306, //MySQL db port
-        "user": "me", //MySQL db user
-        "password": "mypass", //MySQL db password
-        "database": "ltc", //MySQL db database name
-
-        /* Checks for valid password in database when miners connect. */
-        "checkPassword": true,
-
-        /* Unregistered workers can automatically be registered (added to database) on stratum
-           worker authentication if this is true. */
-        "autoCreateWorker": false
-
-
-    },
-
-    /* If a worker is submitting a high threshold of invalid shares we can temporarily ban their IP
-       to reduce system/network load. Also useful to fight against flooding attacks. If running
-       behind something like HAProxy be sure to enable 'tcpProxyProtocol', otherwise you'll end up
-       banning your own IP address (and therefore all workers). */
-    "banning": {
-        "enabled": true,
-        "time": 600, //How many seconds to ban worker for
-        "invalidPercent": 50, //What percent of invalid shares triggers ban
-        "checkThreshold": 500, //Check invalid percent when this many shares have been submitted
-        "purgeInterval": 300 //Every this many seconds clear out the list of old bans
     },
 
     /* Each pool can have as many ports for your miners to connect to as you wish. Each port can
@@ -445,23 +427,15 @@ Description of options:
         }
     },
 
-    /* For redundancy, recommended to have at least two daemon instances running in case one
-       drops out-of-sync or offline. */
+    /* More than one daemon instances can be setup in case one drops out-of-sync or dies. */
     "daemons": [
         {   //Main daemon instance
             "host": "127.0.0.1",
             "port": 19332,
-            "user": "litecoinrpc",
-            "password": "testnet"
-        },
-        {   //Backup daemon instance
-            "host": "127.0.0.1",
-            "port": 19344,
-            "user": "litecoinrpc",
-            "password": "testnet"
+            "user": "testuser",
+            "password": "testpass"
         }
     ],
-
 
     /* This allows the pool to connect to the daemon as a node peer to receive block updates.
        It may be the most efficient way to get block updates (faster than polling, less
@@ -480,6 +454,25 @@ Description of options:
            feature that prevents the daemon from spamming our peer node with unnecessary
            transaction data. Assume its supported but if you have problems try disabling it. */
         "disableTransactions": true
+    },
+    
+    /* Enabled this mode and shares will be inserted into in a MySQL database. You may also want
+       to use the "emitInvalidBlockHashes" option below if you require it. The config options
+       "redis" and "paymentProcessing" will be ignored/unused if this is enabled. */
+    "mposMode": {
+        "enabled": false,
+        "host": "127.0.0.1", //MySQL db host
+        "port": 3306, //MySQL db port
+        "user": "me", //MySQL db user
+        "password": "mypass", //MySQL db password
+        "database": "ltc", //MySQL db database name
+
+        /* Checks for valid password in database when miners connect. */
+        "checkPassword": true,
+
+        /* Unregistered workers can automatically be registered (added to database) on stratum
+           worker authentication if this is true. */
+        "autoCreateWorker": false
     }
 }
 
