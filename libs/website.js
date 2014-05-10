@@ -151,15 +151,17 @@ module.exports = function(logger){
                         for (var pName in poolConfigs){
                             if (pName.toLowerCase() === c)
                                 return {
-                                    daemon: poolConfigs[pName].shareProcessing.internal.daemon,
+                                    daemon: poolConfigs[pName].paymentProcessing.daemon,
                                     address: poolConfigs[pName].address
                                 }
                         }
                     })();
-                    var daemon = new Stratum.daemon.interface([coinInfo.daemon]);
+                    var daemon = new Stratum.daemon.interface([coinInfo.daemon], function(severity, message){
+                        logger[severity](logSystem, c, message);
+                    });
                     daemon.cmd('dumpprivkey', [coinInfo.address], function(result){
                         if (result[0].error){
-                            logger.error(logSystem, 'daemon', 'Could not dumpprivkey for ' + c + ' ' + JSON.stringify(result[0].error));
+                            logger.error(logSystem, c, 'Could not dumpprivkey for ' + c + ' ' + JSON.stringify(result[0].error));
                             cback();
                             return;
                         }
@@ -272,9 +274,15 @@ module.exports = function(logger){
         res.send(500, 'Something broke!');
     });
 
-    app.listen(portalConfig.website.port, function(){
-        logger.debug(logSystem, 'Server', 'Website started on port ' + portalConfig.website.port);
-    });
+    try {
+        app.listen(portalConfig.website.port, portalConfig.website.host, function () {
+            logger.debug(logSystem, 'Server', 'Website started on ' + portalConfig.website.host + ':' + portalConfig.website.port);
+        });
+    }
+    catch(e){
+        logger.error(logSystem, 'Server', 'Could not start website on ' + portalConfig.website.host + ':' + portalConfig.website.port
+            +  ' - its either in use or you do not have permission');
+    }
 
 
 };

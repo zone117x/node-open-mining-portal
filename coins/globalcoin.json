@@ -1,0 +1,7 @@
+{
+    "name": "Globalcoin",
+    "symbol": "GLC",
+    "algorithm": "scrypt",
+    "peerMagic": "fcd9b7dd",
+    "peerMagicTestnet": "fbc0b8db"
+}

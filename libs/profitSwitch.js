@@ -399,7 +399,7 @@ module.exports = function(logger){
             Object.keys(profitStatus[algo]).forEach(function(symbol){
                 var coinName = profitStatus[algo][symbol].name;
                 var poolConfig = poolConfigs[coinName];
-                var daemonConfig = poolConfig.shareProcessing.internal.daemon;
+                var daemonConfig = poolConfig.paymentProcessing.daemon;
                 daemonTasks.push(function(callback){
                     _this.getDaemonInfoForCoin(symbol, daemonConfig, callback)
                 });
@@ -419,11 +419,10 @@ module.exports = function(logger){
         });
     };
     this.getDaemonInfoForCoin = function(symbol, cfg, callback){
-        var daemon = new Stratum.daemon.interface([cfg]);
-        daemon.on('error', function(error){
-            logger.error(logSystem, symbol, JSON.stringify(error));
+        var daemon = new Stratum.daemon.interface([cfg], function(severity, message){
+            logger[severity](logSystem, symbol, message);
             callback(null); // fail gracefully for each coin
-        }).init();
+        });
 
         daemon.cmd('getblocktemplate', [{"capabilities": [ "coinbasetxn", "workid", "coinbase/append" ]}], function(result) {
             if (result[0].error != null) {

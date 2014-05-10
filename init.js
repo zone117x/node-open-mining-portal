@@ -4,9 +4,10 @@ var os = require('os');
 var cluster = require('cluster');
 
 var async = require('async');
+var extend = require('extend');
+
 var PoolLogger = require('./libs/logUtil.js');
 var CliListener = require('./libs/cliListener.js');
-var RedisBlocknotifyListener = require('./libs/redisblocknotifyListener.js');
 var PoolWorker = require('./libs/poolWorker.js');
 var PaymentProcessor = require('./libs/paymentProcessor.js');
 var Website = require('./libs/website.js');
@@ -26,7 +27,8 @@ var poolConfigs;
 
 
 var logger = new PoolLogger({
-    logLevel: portalConfig.logLevel
+    logLevel: portalConfig.logLevel,
+    logColors: portalConfig.logColors
 });
 
 
@@ -49,12 +51,20 @@ try{
         if (cluster.isMaster)
             logger.warning('POSIX', 'Connection Limit', '(Safe to ignore) Must be ran as root to increase resource limits');
     }
+    finally {
+        // Find out which user used sudo through the environment variable
+        var uid = parseInt(process.env.SUDO_UID);
+        // Set our server's uid to that user
+        if (uid) {
+            process.setuid(uid);
+            logger.debug('POSIX', 'Connection Limit', 'Raised to 100K concurrent connections, now running as non-root user: ' + process.getuid());
+        }
+    }
 }
 catch(e){
     if (cluster.isMaster)
         logger.debug('POSIX', 'Connection Limit', '(Safe to ignore) POSIX module not installed and resource (connection) limit was not raised');
 }
-
 
 
 if (cluster.isWorker){
@@ -132,6 +142,7 @@ var buildPoolConfigs = function(){
 
         var coinProfile = JSON.parse(JSON.minify(fs.readFileSync(coinFilePath, {encoding: 'utf8'})));
         poolOptions.coin = coinProfile;
+        poolOptions.coin.name = poolOptions.coin.name.toLowerCase();
 
         if (poolOptions.coin.name in configs){
 
@@ -143,6 +154,19 @@ var buildPoolConfigs = function(){
             process.exit(1);
             return;
         }
+
+        for (var option in portalConfig.defaultPoolConfigs){
+            if (!(option in poolOptions)){
+                var toCloneOption = portalConfig.defaultPoolConfigs[option];
+                var clonedOption = {};
+                if (toCloneOption.constructor === Object)
+                    extend(true, clonedOption, toCloneOption);
+                else
+                    clonedOption = toCloneOption;
+                poolOptions[option] = clonedOption;
+            }
+        }
+
 
         configs[poolOptions.coin.name] = poolOptions;
 
@@ -161,13 +185,6 @@ var spawnPoolWorkers = function(){
 
     Object.keys(poolConfigs).forEach(function(coin){
         var p = poolConfigs[coin];
-        var internalEnabled = p.shareProcessing && p.shareProcessing.internal && p.shareProcessing.internal.enabled;
-        var mposEnabled = p.shareProcessing && p.shareProcessing.mpos && p.shareProcessing.mpos.enabled;
-
-        if (!internalEnabled && !mposEnabled){
-            logger.error('Master', coin, 'Share processing is not configured so a pool cannot be started for this coin.');
-            delete poolConfigs[coin];
-        }
 
         if (!Array.isArray(p.daemons) || p.daemons.length < 1){
             logger.error('Master', coin, 'No daemons configured so a pool cannot be started for this coin.');
@@ -340,31 +357,13 @@ var processCoinSwitchCommand = function(params, options, reply){
 };
 
 
-var startRedisBlockListener = function(){
-    //block notify options
-    //setup block notify here and use IPC to tell appropriate pools
-
-    if (!portalConfig.redisBlockNotifyListener.enabled) return;
-
-    var listener = new RedisBlocknotifyListener(portalConfig.redisBlockNotifyListener);
-    listener.on('log', function(text){
-        logger.debug('Master', 'blocknotify', text);
-    }).on('hash', function (message) {
-        var ipcMessage = {type:'blocknotify', coin: message.coin, hash: message.hash};
-        Object.keys(cluster.workers).forEach(function(id) {
-            cluster.workers[id].send(ipcMessage);
-        });
-    });
-    listener.start();
-};
-
 
 var startPaymentProcessor = function(){
 
     var enabledForAny = false;
     for (var pool in poolConfigs){
         var p = poolConfigs[pool];
-        var enabled = p.enabled && p.shareProcessing && p.shareProcessing.internal && p.shareProcessing.internal.enabled;
+        var enabled = p.enabled && p.paymentProcessing && p.paymentProcessing.enabled;
         if (enabled){
             enabledForAny = true;
             break;
@@ -434,8 +433,6 @@ var startProfitSwitch = function(){
     spawnPoolWorkers();
 
     startPaymentProcessor();
-
-    startRedisBlockListener();
 
     startWebsite();
 

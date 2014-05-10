@@ -108,10 +108,8 @@ module.exports = function(logger){
             diff: function(){}
         };
 
-        var shareProcessing = poolOptions.shareProcessing;
-
         //Functions required for MPOS compatibility
-        if (shareProcessing && shareProcessing.mpos && shareProcessing.mpos.enabled){
+        if (poolOptions.mposMode && poolOptions.mposMode.enabled){
             var mposCompat = new MposCompatibility(logger, poolOptions);
 
             handlers.auth = function(port, workerName, password, authCallback){
@@ -128,38 +126,32 @@ module.exports = function(logger){
         }
 
         //Functions required for internal payment processing
-        else if (shareProcessing && shareProcessing.internal && shareProcessing.internal.enabled){
+        else{
 
             var shareProcessor = new ShareProcessor(logger, poolOptions);
 
             handlers.auth = function(port, workerName, password, authCallback){
-                if (shareProcessing.internal.validateWorkerAddress !== true)
+                if (poolOptions.validateWorkerUsername !== true)
                     authCallback(true);
                 else {
-                    port = port.toString();
-                    if (portalConfig.switching) {
-                        for (var switchName in portalConfig.switching) {
-                            if (portalConfig.switching[switchName].enabled && Object.keys(portalConfig.switching[switchName].ports).indexOf(port) !== -1) {
-                                if (workerName.length === 40) {
-                                    try {
-                                        new Buffer(workerName, 'hex');
-                                        authCallback(true);
-                                    }
-                                    catch (e) {
-                                        authCallback(false);
-                                    }
-                                }
-                                else
-                                    authCallback(false);
-                                return;
-                            }
+                    if (workerName.length === 40) {
+                        try {
+                            new Buffer(workerName, 'hex');
+                            authCallback(true);
+                        }
+                        catch (e) {
+                            authCallback(false);
                         }
                     }
+                    else {
+                        pool.daemon.cmd('validateaddress', [workerName], function (results) {
+                            var isValid = results.filter(function (r) {
+                                return r.response.isvalid
+                            }).length > 0;
+                            authCallback(isValid);
+                        });
+                    }
 
-                    pool.daemon.cmd('validateaddress', [workerName], function(results){
-                        var isValid = results.filter(function(r){return r.response.isvalid}).length > 0;
-                        authCallback(isValid);
-                    });
                 }
             };
 
@@ -238,10 +230,7 @@ module.exports = function(logger){
         });*/
 
         redisClient.hgetall("proxyState", function(error, obj) {
-            if (error || obj == null) {
-                //logger.debug(logSystem, logComponent, logSubCat, 'No last proxy state found in redis');
-            }
-            else {
+            if (!error && obj) {
                 proxyState = obj;
                 logger.debug(logSystem, logComponent, logSubCat, 'Last proxy state loaded from redis');
             }
@@ -258,64 +247,49 @@ module.exports = function(logger){
 
                 var algorithm = portalConfig.switching[switchName].algorithm;
 
-                if (portalConfig.switching[switchName].enabled === true) {
-                    var initalPool = proxyState.hasOwnProperty(algorithm) ? proxyState[algorithm] : _this.getFirstPoolForAlgorithm(algorithm);
-                    proxySwitch[switchName] = {
-                        algorithm: algorithm,
-                        ports: portalConfig.switching[switchName].ports,
-                        currentPool: initalPool,
-                        servers: []
-                    };
+                if (!portalConfig.switching[switchName].enabled) return;
 
 
-                    // Copy diff and vardiff configuation into pools that match our algorithm so the stratum server can pick them up
-                    //
-                    // Note: This seems a bit wonky and brittle - better if proxy just used the diff config of the port it was
-                    // routed into instead.
-                    //
-                    /*if (portalConfig.proxy[algorithm].hasOwnProperty('varDiff')) {
-                        proxySwitch[algorithm].varDiff = new Stratum.varDiff(proxySwitch[algorithm].port, portalConfig.proxy[algorithm].varDiff);
-                        proxySwitch[algorithm].diff = portalConfig.proxy[algorithm].diff;
-                    }*/
+                var initalPool = proxyState.hasOwnProperty(algorithm) ? proxyState[algorithm] : _this.getFirstPoolForAlgorithm(algorithm);
+                proxySwitch[switchName] = {
+                    algorithm: algorithm,
+                    ports: portalConfig.switching[switchName].ports,
+                    currentPool: initalPool,
+                    servers: []
+                };
 
 
-
-                    Object.keys(pools).forEach(function (coinName) {
-                        var p = pools[coinName];
-                        if (poolConfigs[coinName].coin.algorithm === algorithm) {
-                            for (var port in portalConfig.switching[switchName].ports) {
-                                if (portalConfig.switching[switchName].ports[port].varDiff)
-                                    p.setVarDiff(port, portalConfig.switching[switchName].ports[port].varDiff);
-                            }
+                Object.keys(pools).forEach(function (coinName) {
+                    var p = pools[coinName];
+                    if (poolConfigs[coinName].coin.algorithm === algorithm) {
+                        for (var port in portalConfig.switching[switchName].ports) {
+                            if (portalConfig.switching[switchName].ports[port].varDiff)
+                                p.setVarDiff(port, portalConfig.switching[switchName].ports[port].varDiff);
                         }
+                    }
+                });
+
+
+                Object.keys(proxySwitch[switchName].ports).forEach(function(port){
+                    var f = net.createServer(function(socket) {
+                        var currentPool = proxySwitch[switchName].currentPool;
+
+                        logger.debug(logSystem, 'Connect', logSubCat, 'Connection to '
+                            + switchName + ' from '
+                            + socket.remoteAddress + ' on '
+                            + port + ' routing to ' + currentPool);
+
+                        pools[currentPool].getStratumServer().handleNewClient(socket);
+
+                    }).listen(parseInt(port), function() {
+                        logger.debug(logSystem, logComponent, logSubCat, 'Switching "' + switchName
+                            + '" listening for ' + algorithm
+                            + ' on port ' + port
+                            + ' into ' + proxySwitch[switchName].currentPool);
                     });
+                    proxySwitch[switchName].servers.push(f);
+                });
 
-
-                    Object.keys(proxySwitch[switchName].ports).forEach(function(port){
-                        var f = net.createServer(function(socket) {
-                            var currentPool = proxySwitch[switchName].currentPool;
-
-                            logger.debug(logSystem, 'Connect', logSubCat, 'Connection to '
-                                + switchName + ' from '
-                                + socket.remoteAddress + ' on '
-                                + port + ' routing to ' + currentPool);
-
-                            pools[currentPool].getStratumServer().handleNewClient(socket);
-
-                        }).listen(parseInt(port), function() {
-                            logger.debug(logSystem, logComponent, logSubCat, 'Switching "' + switchName
-                                + '" listening for ' + algorithm
-                                + ' on port ' + port
-                                + ' into ' + proxySwitch[switchName].currentPool);
-                        });
-                        proxySwitch[switchName].servers.push(f);
-                    });
-
-
-                }
-                else {
-                    //logger.debug(logSystem, logComponent, logSubCat, 'Proxy pool for ' + algorithm + ' disabled.');
-                }
             });
         });
     }

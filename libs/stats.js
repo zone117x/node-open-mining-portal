@@ -35,14 +35,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
 
         var poolConfig = poolConfigs[coin];
 
-        if (!poolConfig.shareProcessing || !poolConfig.shareProcessing.internal){
-            logger.error(logSystem, coin, 'Cannot do stats without internal share processing setup');
-            canDoStats = false;
-            return;
-        }
-
-        var internalConfig = poolConfig.shareProcessing.internal;
-        var redisConfig = internalConfig.redis;
+        var redisConfig = poolConfig.redis;
 
         for (var i = 0; i < redisClients.length; i++){
             var client = redisClients[i];
@@ -115,19 +108,19 @@ module.exports = function(logger, portalConfig, poolConfigs){
             var redisCommands = [];
 
 
-            var redisComamndTemplates = [
-                ['zremrangebyscore', '_hashrate', '-inf', '(' + windowTime],
-                ['zrangebyscore', '_hashrate', windowTime, '+inf'],
-                ['hgetall', '_stats'],
-                ['scard', '_blocksPending'],
-                ['scard', '_blocksConfirmed'],
-                ['scard', '_blocksOrphaned']
+            var redisCommandTemplates = [
+                ['zremrangebyscore', ':hashrate', '-inf', '(' + windowTime],
+                ['zrangebyscore', ':hashrate', windowTime, '+inf'],
+                ['hgetall', ':stats'],
+                ['scard', ':blocksPending'],
+                ['scard', ':blocksConfirmed'],
+                ['scard', ':blocksOrphaned']
             ];
 
-            var commandsPerCoin = redisComamndTemplates.length;
+            var commandsPerCoin = redisCommandTemplates.length;
 
             client.coins.map(function(coin){
-                redisComamndTemplates.map(function(t){
+                redisCommandTemplates.map(function(t){
                     var clonedTemplates = t.slice(0);
                     clonedTemplates[1] = coin + clonedTemplates[1];
                     redisCommands.push(clonedTemplates);
@@ -151,7 +144,8 @@ module.exports = function(logger, portalConfig, poolConfigs){
                             poolStats: {
                                 validShares: replies[i + 2] ? (replies[i + 2].validShares || 0) : 0,
                                 validBlocks: replies[i + 2] ? (replies[i + 2].validBlocks || 0) : 0,
-                                invalidShares: replies[i + 2] ? (replies[i + 2].invalidShares || 0) : 0
+                                invalidShares: replies[i + 2] ? (replies[i + 2].invalidShares || 0) : 0,
+                                totalPaid: replies[i + 2] ? (replies[i + 2].totalPaid || 0) : 0
                             },
                             blocks: {
                                 pending: replies[i + 3],

@@ -1,5 +1,7 @@
 {
     "name": "GlobalDenomination",
     "symbol": "GDN",
-    "algorithm": "x11"
+    "algorithm": "x11",
+    "peerMagic": "fec3b9de",
+    "peerMagicTestnet": "fec4bade"
 }

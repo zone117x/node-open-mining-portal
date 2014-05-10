@@ -5,6 +5,10 @@ This portal is an extremely efficient, highly scalable, all-in-one, easy to setu
 entirely in Node.js. It contains a stratum poolserver; reward/payment/share processor; and a (*not yet completed*)
 responsive user-friendly front-end website featuring mining instructions, in-depth live statistics, and an admin center.
 
+#### Production Usage Notice
+This is beta software. All of the following are things that can change and break an existing NOMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data.
+
+
 #### Table of Contents
 * [Features](#features)
   * [Attack Mitigation](#attack-mitigation)
@@ -148,6 +152,8 @@ a good pool operator. For starters be sure to read:
 
 #### 1) Downloading & Installing
 
+[**Redis security warning**](http://redis.io/topics/security): be sure firewall access to redis - an easy way is to include `bind 127.0.0.1` in your `redis.conf` file
+
 Clone the repository and run `npm update` for all the dependencies to be installed:
 
 ```bash
@@ -167,6 +173,10 @@ Explanation for each field:
     /* Specifies the level of log output verbosity. Anything more severy than the level specified
        will also be logged. */
     "logLevel": "debug", //or "warning", "error"
+    
+    /* By default NOMP logs to console and gives pretty colors. If you direct that output to a
+       log file then disable this feature to avoid nasty characters in your log file. */
+    "logColors": true, 
 
 
     /* The NOMP CLI (command-line interface) will listen for commands on this port. For example,
@@ -181,10 +191,54 @@ Explanation for each field:
         "enabled": true,
         "forks": "auto"
     },
+    
+    /* Pool config file will inherit these default values if they are not set. */
+    "defaultPoolConfigs": {
+    
+        /* Poll RPC daemons for new blocks every this many milliseconds. */
+        "blockRefreshInterval": 1000,
+        
+        /* If no new blocks are available for this many seconds update and rebroadcast job. */
+        "jobRebroadcastTimeout": 55,
+        
+        /* Disconnect workers that haven't submitted shares for this many seconds. */
+        "connectionTimeout": 600,
+        
+        /* (For MPOS mode) Store the block hashes for shares that aren't block candidates. */
+        "emitInvalidBlockHashes": false,
+        
+        /* This option will only authenticate miners using an address or mining key. */
+        "validateWorkerUsername": true,
+        
+        /* Enable for client IP addresses to be detected when using a load balancer with TCP
+           proxy protocol enabled, such as HAProxy with 'send-proxy' param:
+           http://haproxy.1wt.eu/download/1.5/doc/configuration.txt */
+        "tcpProxyProtocol": false,
+        
+        /* If under low-diff share attack we can ban their IP to reduce system/network load. If
+           running behind HAProxy be sure to enable 'tcpProxyProtocol', otherwise you'll end up
+           banning your own IP address (and therefore all workers). */
+        "banning": {
+            "enabled": true,
+            "time": 600, //How many seconds to ban worker for
+            "invalidPercent": 50, //What percent of invalid shares triggers ban
+            "checkThreshold": 500, //Perform check when this many shares have been submitted
+            "purgeInterval": 300 //Every this many seconds clear out the list of old bans
+        },
+        
+        /* Used for storing share and block submission data and payment processing. */
+        "redis": {
+            "host": "127.0.0.1",
+            "port": 6379
+        }
+    },
 
     /* This is the front-end. Its not finished. When it is finished, this comment will say so. */
     "website": {
         "enabled": true,
+        /* If you are using a reverse-proxy like nginx to display the website then set this to
+           127.0.0.1 to not expose the port. */
+        "host": "0.0.0.0",
         "port": 80,
         /* Used for displaying stratum connection data on the Getting Started page. */
         "stratumHost": "cryppit.com",
@@ -284,13 +338,22 @@ Here is an example of the required fields:
 {
     "name": "Litecoin",
     "symbol": "ltc",
-    "algorithm": "scrypt", //or "sha256", "scrypt-jane", "scrypt-n", "quark", "x11"
-    "txMessages": false, //or true (not required, defaults to false)
-    "mposDiffMultiplier": 256, //only for x11 coins in mpos mode, set to 256 (optional)
+    "algorithm": "scrypt",
+
+    /* Magic value only required for setting up p2p block notifications. It is found in the daemon
+       source code as the pchMessageStart variable.
+       For example, litecoin mainnet magic: http://git.io/Bi8YFw
+       And for litecoin testnet magic: http://git.io/NXBYJA */
+    "peerMagic": "fbc0b6db" //optional
+    "peerMagicTestnet": "fcc1b7dc" //optional
+
+    //"txMessages": false, //options - defaults to false
+
+    //"mposDiffMultiplier": 256, //options - only for x11 coins in mpos mode
 }
 ````
 
-For additional documentation how to configure coins *(especially important for scrypt-n and scrypt-jane coins)*
+For additional documentation how to configure coins and their different algorithms
 see [these instructions](//github.com/zone117x/node-stratum-pool#module-usage).
 
 
@@ -307,131 +370,41 @@ Description of options:
 
     "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
 
-    "blockRefreshInterval": 1000, //How often to poll RPC daemons for new blocks, in milliseconds
+    /* Block rewards go to the configured pool wallet address to later be paid out to miners,
+       except for a percentage that can go to, for examples, pool operator(s) as pool fees or
+       or to donations address. Addresses or hashed public keys can be used. Here is an example
+       of rewards going to the main pool op, a pool co-owner, and NOMP donation. */
+    "rewardRecipients": {
+        "n37vuNFkXfk15uFnGoVyHZ6PYQxppD3QqK": 1.5, //1.5% goes to pool op
+        "mirj3LtZxbSTharhtXvotqtJXUY7ki5qfx": 0.5, //0.5% goes to a pool co-owner
 
-    /* How many milliseconds should have passed before new block transactions will trigger a new
-       job broadcast. */
-    "txRefreshInterval": 20000,
-
-    /* Some miner apps will consider the pool dead/offline if it doesn't receive anything new jobs
-       for around a minute, so every time we broadcast jobs, set a timeout to rebroadcast
-       in this many seconds unless we find a new job. Set to zero or remove to disable this. */
-    "jobRebroadcastTimeout": 55,
-
-    //instanceId: 37, //Recommend not using this because a crypto-random one will be generated
-
-    /* Some attackers will create thousands of workers that use up all available socket connections,
-       usually the workers are zombies and don't submit shares after connecting. This feature
-       detects those and disconnects them. */
-    "connectionTimeout": 600, //Remove workers that haven't been in contact for this many seconds
-
-    /* Sometimes you want the block hashes even for shares that aren't block candidates. */
-    "emitInvalidBlockHashes": false,
-
-    /* We use proper maximum algorithm difficulties found in the coin daemon source code. Most
-       miners/pools that deal with scrypt use a guesstimated one that is about 5.86% off from the
-       actual one. So here we can set a tolerable threshold for if a share is slightly too low
-       due to mining apps using incorrect max diffs and this pool using correct max diffs. */
-    "shareVariancePercent": 10,
-
-    /* Enable for client IP addresses to be detected when using a load balancer with TCP proxy
-       protocol enabled, such as HAProxy with 'send-proxy' param:
-       http://haproxy.1wt.eu/download/1.5/doc/configuration.txt */
-    "tcpProxyProtocol": false,
-
-
-    /* This determines what to do with submitted shares (and stratum worker authentication).
-       You have two options: 
-        1) Enable internal and disable mpos = this portal to handle all share payments.
-        2) Enable mpos and disable internal = shares will be inserted into MySQL database
-           for MPOS to process. */
-    "shareProcessing": {
-
-        "internal": {
-            "enabled": true,
-
-            /* When workers connect, to receive payments, their address must be used as the worker
-               name. If this option is true, on worker authentication, their address will be
-               verified via a validateaddress API call to the daemon. Miners with invalid addresses
-               will be rejected. */
-            "validateWorkerAddress": true,
-
-            /* Every this many seconds get submitted blocks from redis, use daemon RPC to check
-               their confirmation status, if confirmed then get shares from redis that contributed
-               to block and send out payments. */
-            "paymentInterval": 30,
-
-            /* Minimum number of coins that a miner must earn before sending payment. Typically,
-               a higher minimum means less transactions fees (you profit more) but miners see
-               payments less frequently (they dislike). Opposite for a lower minimum payment. */
-            "minimumPayment": 0.001,
-
-            /* Minimum number of coins to keep in pool wallet. It is recommended to deposit at
-               at least this many coins into the pool wallet when first starting the pool. */
-            "minimumReserve": 10,
-
-            /* (2% default) What percent fee your pool takes from the block reward. */
-            "feePercent": 0.02,
-
-            /* Name of the daemon account to use when moving coin profit within daemon wallet. */
-            "feeCollectAccount": "feesCollected",
-
-            /* Your address that receives pool revenue from fees. */
-            "feeReceiveAddress": "LZz44iyF4zLCXJTU8RxztyyJZBntdS6fvv",
-
-            /* How many coins from fee revenue must accumulate on top of the
-               minimum reserve amount in order to trigger withdrawal to fee address. The higher
-               this threshold, the less of your profit goes to transactions fees. */
-            "feeWithdrawalThreshold": 5,
-
-            /* This daemon is used to send out payments. It MUST be for the daemon that owns the
-               configured 'address' that receives the block rewards, otherwise the daemon will not
-               be able to confirm blocks or send out payments. */
-            "daemon": {
-                "host": "127.0.0.1",
-                "port": 19332,
-                "user": "litecoinrpc",
-                "password": "testnet"
-            },
-
-            /* Redis database used for storing share and block submission data. */
-            "redis": {
-                "host": "127.0.0.1",
-                "port": 6379
-            }
-        },
-
-        /* Enabled mpos and shares will be inserted into share table in a MySQL database. You may 
-           also want to use the "emitInvalidBlockHashes" option below if you require it. */
-        "mpos": { 
-            "enabled": false,
-            "host": "127.0.0.1", //MySQL db host
-            "port": 3306, //MySQL db port
-            "user": "me", //MySQL db user
-            "password": "mypass", //MySQL db password
-            "database": "ltc", //MySQL db database name
-
-            /* Unregistered workers can automatically be registered (added to database) on stratum
-               worker authentication if this is true. */
-            "autoCreateWorker": false,
-
-            /* For when miner's authenticate: set to "password" for both worker name and password to
-               be checked for in the database, set to "worker" for only work name to be checked, or
-               don't use this option (set to "none") for no auth checks */
-            "stratumAuth": "password"
-        }
+        /* 0.1% donation to NOMP. This pubkey can accept any type of coin, please leave this in
+           your config to help support NOMP development. */
+        "22851477d63a085dbc2398c8430af1c09e7343f6": 0.1
     },
 
-    /* If a worker is submitting a high threshold of invalid shares we can temporarily ban their IP
-       to reduce system/network load. Also useful to fight against flooding attacks. If running
-       behind something like HAProxy be sure to enable 'tcpProxyProtocol', otherwise you'll end up
-       banning your own IP address (and therefore all workers). */
-    "banning": {
+    "paymentProcessing": {
         "enabled": true,
-        "time": 600, //How many seconds to ban worker for
-        "invalidPercent": 50, //What percent of invalid shares triggers ban
-        "checkThreshold": 500, //Check invalid percent when this many shares have been submitted
-        "purgeInterval": 300 //Every this many seconds clear out the list of old bans
+
+        /* Every this many seconds get submitted blocks from redis, use daemon RPC to check
+           their confirmation status, if confirmed then get shares from redis that contributed
+           to block and send out payments. */
+        "paymentInterval": 30,
+
+        /* Minimum number of coins that a miner must earn before sending payment. Typically,
+           a higher minimum means less transactions fees (you profit more) but miners see
+           payments less frequently (they dislike). Opposite for a lower minimum payment. */
+        "minimumPayment": 0.01,
+
+        /* This daemon is used to send out payments. It MUST be for the daemon that owns the
+           configured 'address' that receives the block rewards, otherwise the daemon will not
+           be able to confirm blocks or send out payments. */
+        "daemon": {
+            "host": "127.0.0.1",
+            "port": 19332,
+            "user": "testuser",
+            "password": "testpass"
+        }
     },
 
     /* Each pool can have as many ports for your miners to connect to as you wish. Each port can
@@ -456,28 +429,20 @@ Description of options:
         }
     },
 
-    /* For redundancy, recommended to have at least two daemon instances running in case one
-       drops out-of-sync or offline. */
+    /* More than one daemon instances can be setup in case one drops out-of-sync or dies. */
     "daemons": [
         {   //Main daemon instance
             "host": "127.0.0.1",
             "port": 19332,
-            "user": "litecoinrpc",
-            "password": "testnet"
-        },
-        {   //Backup daemon instance
-            "host": "127.0.0.1",
-            "port": 19344,
-            "user": "litecoinrpc",
-            "password": "testnet"
+            "user": "testuser",
+            "password": "testpass"
         }
     ],
 
-
     /* This allows the pool to connect to the daemon as a node peer to receive block updates.
        It may be the most efficient way to get block updates (faster than polling, less
-       intensive than blocknotify script). It requires additional setup: the 'magic' field must
-       be exact (extracted from the coin source code). */
+       intensive than blocknotify script). It requires the additional field "peerMagic" in
+       the coin config. */
     "p2p": {
         "enabled": false,
 
@@ -490,13 +455,26 @@ Description of options:
         /* If your coin daemon is new enough (i.e. not a shitcoin) then it will support a p2p
            feature that prevents the daemon from spamming our peer node with unnecessary
            transaction data. Assume its supported but if you have problems try disabling it. */
-        "disableTransactions": true,
+        "disableTransactions": true
+    },
+    
+    /* Enabled this mode and shares will be inserted into in a MySQL database. You may also want
+       to use the "emitInvalidBlockHashes" option below if you require it. The config options
+       "redis" and "paymentProcessing" will be ignored/unused if this is enabled. */
+    "mposMode": {
+        "enabled": false,
+        "host": "127.0.0.1", //MySQL db host
+        "port": 3306, //MySQL db port
+        "user": "me", //MySQL db user
+        "password": "mypass", //MySQL db password
+        "database": "ltc", //MySQL db database name
 
-        /* Magic value is different for main/testnet and for each coin. It is found in the daemon
-           source code as the pchMessageStart variable.
-           For example, litecoin mainnet magic: http://git.io/Bi8YFw
-           And for litecoin testnet magic: http://git.io/NXBYJA */
-        "magic": "fcc1b7dc"
+        /* Checks for valid password in database when miners connect. */
+        "checkPassword": true,
+
+        /* Unregistered workers can automatically be registered (added to database) on stratum
+           worker authentication if this is true. */
+        "autoCreateWorker": false
     }
 }
 
@@ -572,6 +550,7 @@ Credits
 * [Alex Petrov / sysmanalex](https://github.com/sysmanalex) - contributed the pure C block notify script
 * [svirusxxx](//github.com/svirusxxx) - sponsored development of MPOS mode
 * [icecube45](//github.com/icecube45) - helping out with the repo wiki
+* [Fcases](//github.com/Fcases) - ordered me a pizza <3
 * Those that contributed to [node-stratum-pool](//github.com/zone117x/node-stratum-pool#credits)
 
 

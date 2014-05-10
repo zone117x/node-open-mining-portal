@@ -2,31 +2,30 @@ var mysql = require('mysql');
 var cluster = require('cluster');
 module.exports = function(logger, poolConfig){
 
-    var mposConfig = poolConfig.shareProcessing.mpos;
+    var mposConfig = poolConfig.mposMode;
     var coin = poolConfig.coin.name;
 
-    var connection;
+    var connection = mysql.createPool({
+        host: mposConfig.host,
+        port: mposConfig.port,
+        user: mposConfig.user,
+        password: mposConfig.password,
+        database: mposConfig.database
+    });
 
 
     var logIdentify = 'MySQL';
     var logComponent = coin;
 
-    function connect(){
 
-        connection = mysql.createPool({
-            host: mposConfig.host,
-            port: mposConfig.port,
-            user: mposConfig.user,
-            password: mposConfig.password,
-            database: mposConfig.database
-        });
-
-
-    }
-    connect();
 
     this.handleAuth = function(workerName, password, authCallback){
-        
+
+        if (poolConfig.validateWorkerUsername !== true && mposConfig.autoCreateWorker !== true){
+            authCallback(true);
+            return;
+        }
+
         connection.query(
             'SELECT password FROM pool_worker WHERE username = LOWER(?)',
             [workerName.toLowerCase()],
@@ -65,16 +64,15 @@ module.exports = function(logger, poolConfig){
                                 }
                             }
                         );
-                    }else{
+                    }
+                    else{
                         authCallback(false);
                     }
                 }
-                else if (mposConfig.stratumAuth === 'worker')
-                    authCallback(true);
-                else if (result[0].password === password)
-                    authCallback(true)
-                else
+                else if (mposConfig.checkPassword &&  result[0].password !== password)
                     authCallback(false);
+                else
+                    authCallback(true);
             }
         );
 

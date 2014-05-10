@@ -1,5 +1,7 @@
 {
     "name": "Litecoin",
     "symbol": "LTC",
-    "algorithm": "scrypt"
+    "algorithm": "scrypt",
+    "peerMagic": "fbc0b6db",
+    "peerMagicTestnet": "fcc1b7dc"
 }

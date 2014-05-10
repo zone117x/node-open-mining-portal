@@ -1,5 +1,6 @@
 {
     "name": "Starcoin",
     "symbol": "STR",
-    "algorithm": "scrypt"
+    "algorithm": "scrypt",
+    "peerMagic": "e4e8effd"
 }
