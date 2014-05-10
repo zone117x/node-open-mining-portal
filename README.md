@@ -152,7 +152,7 @@ a good pool operator. For starters be sure to read:
 
 #### 1) Downloading & Installing
 
-[**Redis security warning**](http://redis.io/topics/security): be sure firewall access to redis, and easy way is to include `bind 127.0.0.1` in your `redis.conf` file
+[**Redis security warning**](http://redis.io/topics/security): be sure firewall access to redis - an easy way is to include `bind 127.0.0.1` in your `redis.conf` file
 
 Clone the repository and run `npm update` for all the dependencies to be installed:
 
