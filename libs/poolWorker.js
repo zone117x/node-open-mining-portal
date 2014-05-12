@@ -95,8 +95,8 @@ module.exports = function(logger){
     });
 
 
-    Object.keys(poolConfigs).forEach(function(coin) {
 
+    var createAndStartPool(coin){
         var poolOptions = poolConfigs[coin];
 
         var logSystem = 'Pool';
@@ -207,6 +207,10 @@ module.exports = function(logger){
 
         pool.start();
         pools[poolOptions.coin.name] = pool;
+    }
+
+    Object.keys(poolConfigs).forEach(function(coin) {
+        createAndStartPool(coin);
     });
 
 
