@@ -96,7 +96,7 @@ module.exports = function(logger){
 
 
 
-    var createAndStartPool(coin){
+    var createAndStartPool = function(coin){
         var poolOptions = poolConfigs[coin];
 
         var logSystem = 'Pool';
