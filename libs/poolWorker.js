@@ -33,14 +33,15 @@ module.exports = function(logger){
 
             case 'blocknotify':
 
-                var messageCoin = message.coin.toLowerCase();
-                var poolTarget = Object.keys(pools).filter(function(p){
-                    return p.toLowerCase() === messageCoin;
-                })[0];
+                if (message.coin) {
+                    var messageCoin = message.coin.toLowerCase();
+                    var poolTarget = Object.keys(pools).filter(function(p){
+                        return p.toLowerCase() === messageCoin;
+                    })[0];
 
-                if (poolTarget)
-                    pools[poolTarget].processBlockNotify(message.hash, 'blocknotify script');
-
+                    if (poolTarget)
+                        pools[poolTarget].processBlockNotify(message.hash, 'blocknotify script');
+                }
                 break;
 
             // IPC message for pool switching
