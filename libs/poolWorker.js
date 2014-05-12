@@ -31,6 +31,17 @@ module.exports = function(logger){
                 }
                 break;
 
+            case 'reloadpool':
+                if (message.coin) {
+                    var messageCoin = message.coin.toLowerCase();
+                    var poolTarget = Object.keys(pools).filter(function(p){
+                        return p.toLowerCase() === messageCoin;
+                    })[0];
+                    poolConfigs  = JSON.parse(message.pools);
+                    createAndStartPool(messageCoin);
+                }
+                break;
+
             case 'blocknotify':
 
                 if (message.coin) {
