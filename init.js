@@ -273,9 +273,9 @@ var startCliListener = function(){
                 processCoinSwitchCommand(params, options, reply);
                 break;
             case 'reloadpool':
-                poolConfigsString =  JSON.stringify(buildPoolConfigs());
+                poolConfigs = buildPoolConfigs();
                 Object.keys(cluster.workers).forEach(function(id) {
-                    cluster.workers[id].send({type: 'reloadpool', coin: params[0], pools:poolConfigsString });
+                    cluster.workers[id].send({type: 'reloadpool', coin: params[0], pools: JSON.stringify(poolConfigs) });
                 });
                 reply('reloaded pool ' + params[0]);
                 break;
