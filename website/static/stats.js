@@ -128,6 +128,10 @@ function getReadableHashRateString(hashrate, version){
     }
 }
 
+function capitaliseFirstLetter(string){
+    return string.charAt(0).toUpperCase() + string.substring(1);
+}
+
 function timeOfDayFormat(timestamp){
     var tempTime = moment(timestamp).format('MMM Do - h:mm A');
     if (tempTime.indexOf('0') === 0) tempTime = tempTime.slice(1);
