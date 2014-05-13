@@ -109,12 +109,12 @@ module.exports = function(logger, portalConfig, poolConfigs){
 
 
             var redisCommandTemplates = [
-                ['zremrangebyscore', '_hashrate', '-inf', '(' + windowTime],
-                ['zrangebyscore', '_hashrate', windowTime, '+inf'],
-                ['hgetall', '_stats'],
-                ['scard', '_blocksPending'],
-                ['scard', '_blocksConfirmed'],
-                ['scard', '_blocksOrphaned']
+                ['zremrangebyscore', ':hashrate', '-inf', '(' + windowTime],
+                ['zrangebyscore', ':hashrate', windowTime, '+inf'],
+                ['hgetall', ':stats'],
+                ['scard', ':blocksPending'],
+                ['scard', ':blocksConfirmed'],
+                ['scard', ':blocksOrphaned']
             ];
 
             var commandsPerCoin = redisCommandTemplates.length;

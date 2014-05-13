@@ -1,5 +1,7 @@
 {
     "name": "Lottocoin",
     "symbol": "LOT",
-    "algorithm": "scrypt"
+    "algorithm": "scrypt",
+    "peerMagic": "a5fdb6c1",
+    "peerMagicTestnet": "fdc3b6f1"	
 }

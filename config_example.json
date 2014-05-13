@@ -1,5 +1,6 @@
 {
     "logLevel": "debug",
+    "logColors": true,
 
     "cliPort": 17117,
 
@@ -8,8 +9,29 @@
         "forks": "auto"
     },
 
+    "defaultPoolConfigs": {
+        "blockRefreshInterval": 1000,
+        "jobRebroadcastTimeout": 55,
+        "connectionTimeout": 600,
+        "emitInvalidBlockHashes": false,
+        "validateWorkerUsername": true,
+        "tcpProxyProtocol": false,
+        "banning": {
+            "enabled": true,
+            "time": 600,
+            "invalidPercent": 50,
+            "checkThreshold": 500,
+            "purgeInterval": 300
+        },
+        "redis": {
+            "host": "127.0.0.1",
+            "port": 6379
+        }
+    },
+
     "website": {
         "enabled": true,
+        "host": "0.0.0.0",
         "port": 80,
         "stratumHost": "cryppit.com",
         "stats": {
@@ -79,12 +101,5 @@
         "usePoloniex": true,
         "useCryptsy": true,
         "useMintpal": true
-    },
-
-    "redisBlockNotifyListener": {
-        "enabled": false,
-        "redisPort": 6379,
-        "redisHost": "hostname",
-        "psubscribeKey": "newblocks:*"
     }
 }
