@@ -265,8 +265,22 @@ module.exports = function(logger){
 
                 if (!portalConfig.switching[switchName].enabled) return;
 
-
-                var initalPool = proxyState.hasOwnProperty(algorithm) ? proxyState[algorithm] : _this.getFirstPoolForAlgorithm(algorithm);
+                var initalPool;
+                
+                if (proxyState.hasOwnProperty(algorithm) && poolConfigs.hasOwnProperty(proxyState[algorithm])) {
+                    initalPool = proxyState[algorithm];
+                } else {
+                    initalPool = _this.getFirstPoolForAlgorithm(algorithm);
+                    redisClient.hset('proxyState', algorithm, initalPool, function(error, obj) {
+                        if (error) {
+                            logger.error(logSystem, logComponent, logSubCat, 'Redis error writing proxy config: ' + JSON.stringify(err))
+                        }
+                        else {
+                            logger.debug(logSystem, logComponent, logSubCat, 'Proxy state saved to redis for ' + algorithm);
+                        }
+                    });
+                }
+                
                 proxySwitch[switchName] = {
                     algorithm: algorithm,
                     ports: portalConfig.switching[switchName].ports,
