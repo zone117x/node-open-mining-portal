@@ -38,6 +38,7 @@ module.exports = function(logger){
         'getting_started.html': 'getting_started',
         'stats.html': 'stats',
         'tbs.html': 'tbs',
+        'wks.html': 'wks',
         'api.html': 'api',
         'admin.html': 'admin',
         'mining_key.html': 'mining_key'
