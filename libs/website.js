@@ -240,7 +240,7 @@ module.exports = function(logger){
         next();
     });
 
-    app.get('/key.html', function(reg, res, next){
+    app.get('/key.html', function(req, res, next){
         res.end(keyScriptProcessed);
     });
 
