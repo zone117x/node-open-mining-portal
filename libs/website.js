@@ -38,6 +38,7 @@ module.exports = function(logger){
         'getting_started.html': 'getting_started',
         'stats.html': 'stats',
         'tbs.html': 'tbs',
+        'workers.html': 'workers',
         'api.html': 'api',
         'admin.html': 'admin',
         'mining_key.html': 'mining_key'
@@ -240,7 +241,7 @@ module.exports = function(logger){
         next();
     });
 
-    app.get('/key.html', function(reg, res, next){
+    app.get('/key.html', function(req, res, next){
         res.end(keyScriptProcessed);
     });
 

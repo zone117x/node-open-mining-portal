@@ -170,7 +170,7 @@ Inside the `config_example.json` file, ensure the default configuration will wor
 Explanation for each field:
 ````javascript
 {
-    /* Specifies the level of log output verbosity. Anything more severy than the level specified
+    /* Specifies the level of log output verbosity. Anything more severe than the level specified
        will also be logged. */
     "logLevel": "debug", //or "warning", "error"
     

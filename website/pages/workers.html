@@ -1,0 +1,66 @@
+<style>
+
+    #topCharts {
+        padding: 18px;
+    }
+
+    #topCharts > div > div > svg {
+        display: block;
+        height: 280px;
+    }
+
+    .chartWrapper {
+        border: solid 1px #c7c7c7;
+        border-radius: 5px;
+        padding: 5px;
+        margin-bottom: 18px;
+    }
+
+    .chartLabel {
+        font-size: 1.2em;
+        text-align: center;
+        padding: 4px;
+    }
+
+    .chartHolder {
+
+    }
+
+    table {
+        width: 100%;
+    }
+
+</style>
+
+
+<div id="topCharts">
+
+{{ for(var pool in it.stats.pools) { }}
+
+    <div class="chartWrapper">
+        <div class="chartLabel">{{=it.stats.pools[pool].name}}</div>
+        <div class="chartHolder">
+            <table class="pure-table">
+                <thead>
+                <tr>
+                    <th>Address</th>
+                    <th>Shares</th>
+                    <th>Invalid shares</th>
+                    <th>Efficiency</th>
+                    <th>Hashrate</th>
+                </tr>
+                </thead>
+                {{ for(var worker in it.stats.pools[pool].workers) { }}
+                   {{var workerstat = it.stats.pools[pool].workers[worker];}}
+                    <tr class="pure-table-odd">
+                        <td>{{=worker}}</td>
+                        <td>{{=Math.floor(workerstat.shares)}}</td>
+                        <td>{{=Math.floor(workerstat.invalidshares)}}</td>
+                        <td>{{? workerstat.shares > 0}} {{=Math.floor(10000 * workerstat.shares / (workerstat.shares + workerstat.invalidshares)) / 100}}% {{??}} 0% {{?}}</td>
+                        <td>{{=workerstat.hashrateString}}</td>
+                    </tr>
+                {{ } }}
+            </table>
+        </div>
+    </div>
+{{ } }}
