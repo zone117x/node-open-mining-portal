@@ -37,6 +37,7 @@ module.exports = function(logger){
         'home.html': '',
         'getting_started.html': 'getting_started',
         'stats.html': 'stats',
+        'workers.html': 'workers',
         'api.html': 'api',
         'admin.html': 'admin',
         'mining_key.html': 'mining_key'
