@@ -1,5 +1,6 @@
 {
     "name": "OpenSourcecoin",
     "symbol": "OSC",
-    "algorithm": "sha256"
+    "algorithm": "sha256",
+    "txMessages" : true    
 }
