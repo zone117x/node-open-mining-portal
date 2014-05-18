@@ -329,24 +329,30 @@ function createCharts() {
 
 function displayCharts(){
     for (var i = 0; i < poolKeys.length; i++) {
-        poolWorkerChart.addSeries({
-            type: 'area',
-            name: capitaliseFirstLetter(poolWorkerData[i].key),
-            data: poolWorkerData[i].values,
-            lineWidth: 2
-        }, false);
-        poolHashrateChart.addSeries({
-            type: 'spline',
-            name: capitaliseFirstLetter(poolHashrateData[i].key),
-            data: poolHashrateData[i].values,
-            lineWidth: 2
-        }, false);
-        poolBlockPendingChart.addSeries({
-            type: 'column',
-            name: capitaliseFirstLetter(poolBlockPendingData[i].key),
-            data: poolBlockPendingData[i].values,
-            pointWidth: ((poolBlockPendingChart.chartWidth / statData.length) - columnBuffer)
-        }, false);
+        if(poolWorkerChart.series.length < poolKeys.length) {
+            poolWorkerChart.addSeries({
+                type: 'area',
+                name: capitaliseFirstLetter(poolWorkerData[i].key),
+                data: poolWorkerData[i].values,
+                lineWidth: 2
+            }, false);
+        }
+        if(poolHashrateChart.series.length < poolKeys.length) {
+            poolHashrateChart.addSeries({
+                type: 'spline',
+                name: capitaliseFirstLetter(poolHashrateData[i].key),
+                data: poolHashrateData[i].values,
+                lineWidth: 2
+            }, false);
+        }
+        if(poolBlockPendingChart.series.length < poolKeys.length) {
+            poolBlockPendingChart.addSeries({
+                type: 'column',
+                name: capitaliseFirstLetter(poolBlockPendingData[i].key),
+                data: poolBlockPendingData[i].values,
+                pointWidth: ((poolBlockPendingChart.chartWidth / statData.length) - columnBuffer)
+            }, false);
+        }
 
         if (typeof poolColors !== "undefined") {
             var pName = poolKeys[i].toLowerCase();
