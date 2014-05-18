@@ -179,7 +179,6 @@ function createCharts() {
         },
         series: []
     });
-
     poolHashrateChart = new Highcharts.Chart({
         chart: {
             renderTo: 'poolHashRateChart',
@@ -350,7 +349,7 @@ function displayCharts(){
         }, false);
 
         if (typeof poolColors !== "undefined") {
-            var pName = capitaliseFirstLetter(poolKeys[i]);
+            var pName = poolKeys[i].toLowerCase();
             poolWorkerChart.series[i].update({color: poolColors[pName].color}, false);
             poolHashrateChart.series[i].update({color: poolColors[pName].color}, false);
             poolBlockPendingChart.series[i].update({color: poolColors[pName].color}, false);
@@ -365,7 +364,7 @@ function savePoolColors() {
     poolColors = {};
     if(poolWorkerChart.series[0]) {
         $.each(poolWorkerChart.series.reverse(), function(i) {
-            var b = poolColors[poolWorkerChart.series[i].name] = ({
+            var b = poolColors[poolWorkerChart.series[i].name.toLowerCase()] = ({
                 color: ''
             });
             b.color = poolWorkerChart.series[i].color;
@@ -485,7 +484,7 @@ statsSource.addEventListener('message', function(e){ //Stays active when hot-swa
                 if (poolWorkerData[i].key === pool) {
                     poolWorkerData[i].values.shift();
                     poolWorkerData[i].values.push([time, pool in stats.pools ? stats.pools[pool].workerCount : 0]);
-                    if(poolWorkerChart.series[f].name === capitaliseFirstLetter(pool)) {
+                    if(poolWorkerChart.series[f].name.toLowerCase() === pool) {
                         poolWorkerChart.series[f].addPoint([time, pool in stats.pools ? stats.pools[pool].workerCount : 0], true);
                     }
                     break;
@@ -495,7 +494,7 @@ statsSource.addEventListener('message', function(e){ //Stays active when hot-swa
                 if (poolHashrateData[i].key === pool) {
                     poolHashrateData[i].values.shift();
                     poolHashrateData[i].values.push([time, pool in stats.pools ? stats.pools[pool].hashrate : 0]);
-                    if(poolHashrateChart.series[f].name === capitaliseFirstLetter(pool)) {
+                    if(poolHashrateChart.series[f].name.toLowerCase() === pool) {
                         poolHashrateChart.series[f].setData(poolHashrateData[i].values, true);
                     }
                     break;
@@ -505,7 +504,7 @@ statsSource.addEventListener('message', function(e){ //Stays active when hot-swa
                 if (poolBlockPendingData[i].key === pool) {
                     poolBlockPendingData[i].values.shift();
                     poolBlockPendingData[i].values.push([time, pool in stats.pools ? stats.pools[pool].blocks.pending : 0]);
-                    if(poolBlockPendingChart.series[f].name === capitaliseFirstLetter(pool)) {
+                    if(poolBlockPendingChart.series[f].name.toLowerCase() === pool) {
                         poolBlockPendingChart.series[f].setData(poolBlockPendingData[i].values, false);
                         poolBlockPendingChart.series[f].update({pointWidth: ((poolBlockPendingChart.chartWidth / poolBlockPendingChart.series[f].data.length) - columnBuffer)}, true);
                     }
