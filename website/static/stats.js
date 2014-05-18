@@ -11,18 +11,19 @@ var poolKeys = [];
 
 var timeHolder;
 var columnBuffer = 0;
+var poolColors;
 
-function buildChartData(interval){
-    var retentionTime = (((Date.now() / 1000) - interval) | 0);
-    for (var i = 0; i < statData.length; i++){
-        if (retentionTime < statData[i].time){
-            if (i > 0) {
-                statData = statData.slice(i);
-            }
+function trimData(data, interval) {
+    var retentionTime = Date.now() / 1000 - interval | 0;
+    for (var i = data.length - 1; i >= 0; i--){
+        if (retentionTime > data[i].time){
+            statData = data.slice(i);
             break;
         }
     }
+}
 
+function buildChartData(){
     var pools = {};
 
     poolKeys = [];
@@ -82,68 +83,21 @@ function buildChartData(interval){
     }
 }
 
-function removeSeries() {
-    for (var p = poolKeys.length-1; p > -1; p--){
-        poolWorkerChart.series[p].remove(false);
-        poolHashrateChart.series[p].remove(false);
-        poolBlockPendingChart.series[p].remove(false);
-    }
-}
-
-function getReadableHashRateString(hashrate, version){
-    if(version == 'default') {
-        var i = -1;
-        var byteUnits = [ ' KH', ' MH', ' GH', ' TH', ' PH' ];
-        do {
-            hashrate = hashrate / 1024;
-            i++;
-        } while (hashrate > 1024);
-        return Math.round(hashrate) + byteUnits[i];
-    } else if(version == 'beta') {
-        if (hashrate > Math.pow(1000, 4)) {
-            return (hashrate / Math.pow(1000, 4)) + ' TH/s';
-        }
-        if (hashrate > Math.pow(1000, 3)) {
-            return (hashrate / Math.pow(1000, 3)) + ' GH/s';
-        }
-        if (hashrate > Math.pow(1000, 2)) {
-            return (hashrate / Math.pow(1000, 2)) + ' MH/s';
-        }
-        if (hashrate > Math.pow(1000, 1)) {
-            return (hashrate / Math.pow(1000, 1)) + ' KH/s';
-        }
-        return hashrate + ' H/s';
-    } else if(version == 'tooltip') {
-        if (hashrate > Math.pow(1000, 4)) {
-            return (hashrate / Math.pow(1000, 4)).toFixed(2) + ' TH/s';
-        } else if (hashrate > Math.pow(1000, 3)) {
-            return (hashrate / Math.pow(1000, 3)).toFixed(2) + ' GH/s';
-        } else if (hashrate > Math.pow(1000, 2)) {
-            return (hashrate / Math.pow(1000, 2)).toFixed(2) + ' MH/s';
-        } else if (hashrate > Math.pow(1000, 1)) {
-            return (hashrate / Math.pow(1000, 1)).toFixed(2) + ' KH/s';
-        } else {
-            return hashrate + ' H/s';
-        }
-    }
-}
-
-function capitaliseFirstLetter(string){
-    return string.charAt(0).toUpperCase() + string.substring(1);
-}
-
-function timeOfDayFormat(timestamp){
-    var tempTime = moment(timestamp).format('MMM Do - h:mm A');
-    if (tempTime.indexOf('0') === 0) tempTime = tempTime.slice(1);
-    return tempTime;
+function removeAllSeries() {
+    while(poolWorkerChart.series.length > 0)
+        poolWorkerChart.series[0].remove();
+    while(poolHashrateChart.series.length > 0)
+        poolHashrateChart.series[0].remove();
+    while(poolBlockPendingChart.series.length > 0)
+        poolBlockPendingChart.series[0].remove();
 }
 
 function changeGraphTimePeriod(timePeriod, sender) {
     timeHolder = new Date().getTime();
-    removeSeries();
+    removeAllSeries();
     $.getJSON('/api/pool_stats', function (data) {
-        statData = data;
-        buildChartData(timePeriod); //Set interval
+        trimData(data, timePeriod);
+        buildChartData();
         displayCharts();
         console.log("time to changeTimePeriod: " + (new Date().getTime() - timeHolder));
     });
@@ -200,11 +154,12 @@ function createCharts() {
             useHTML: false,
             shared: true,
             crosshairs: true,
+            useHTML: true,
             formatter: function () {
                 var s = '<b>' + timeOfDayFormat(this.x) + '</b>';
 
                 $.each(this.points, function (i, point) {
-                    s += '<br/> <span style="fill:' + point.series.color + '" x="8" dy="16">●</span> ' + point.series.name + ': ' + point.y;
+                    s += '<br/> <span style="color:' + point.series.color + '" x="8" dy="16">&#9679;</span> ' + point.series.name + ': ' + point.y;
                 });
                 return s;
             }
@@ -271,13 +226,14 @@ function createCharts() {
             shared: true,
             valueSuffix: ' H/s',
             crosshairs: true,
+            useHTML: true,
             formatter: function () {
                 var s = '<b>' + timeOfDayFormat(this.x) + '</b>';
 
                 var hashrate = 0;
                 $.each(this.points, function (i, point) {
                     val = getReadableHashRateString(point.y, 'tooltip');
-                    s += '<br/> <span style="fill:' + point.series.color + '" x="8" dy="16">●</span> ' + point.series.name + ': ' + val;
+                    s += '<br/> <span style="color:' + point.series.color + '" x="8" dy="16">&#9679;</span> ' + point.series.name + ': ' + val;
                 });
                 return s;
             }
@@ -345,11 +301,12 @@ function createCharts() {
         tooltip: {
             shared: true,
             crosshairs: false,
+            useHTML: true,
             formatter: function () {
                 var s = '<b>' + timeOfDayFormat(this.x) + '</b>';
 
                 $.each(this.points, function (i, point) {
-                    s += '<br/> <span style="fill:' + point.series.color + '" x="8" dy="16">●</span> ' + point.series.name + ': ' + point.y;
+                    s += '<br/> <span style="color:' + point.series.color + '" x="8" dy="16">&#9679;</span> ' + point.series.name + ': ' + point.y;
                 });
                 return s;
             }
@@ -372,30 +329,51 @@ function createCharts() {
 }
 
 function displayCharts(){
-    for(var i = 0; i < poolKeys.length; i++) {
+    for (var i = 0; i < poolKeys.length; i++) {
         poolWorkerChart.addSeries({
             type: 'area',
-            name: poolWorkerData[i].key,
+            name: capitaliseFirstLetter(poolWorkerData[i].key),
             data: poolWorkerData[i].values,
             lineWidth: 2
-        });
+        }, false);
         poolHashrateChart.addSeries({
             type: 'spline',
-            name: poolHashrateData[i].key,
+            name: capitaliseFirstLetter(poolHashrateData[i].key),
             data: poolHashrateData[i].values,
             lineWidth: 2
-        });
+        }, false);
         poolBlockPendingChart.addSeries({
             type: 'column',
-            name: poolBlockPendingData[i].key,
+            name: capitaliseFirstLetter(poolBlockPendingData[i].key),
             data: poolBlockPendingData[i].values,
             pointWidth: ((poolBlockPendingChart.chartWidth / statData.length) - columnBuffer)
+        }, false);
+
+        if (typeof poolColors !== "undefined") {
+            var pName = capitaliseFirstLetter(poolKeys[i]);
+            poolWorkerChart.series[i].update({color: poolColors[pName].color}, false);
+            poolHashrateChart.series[i].update({color: poolColors[pName].color}, false);
+            poolBlockPendingChart.series[i].update({color: poolColors[pName].color}, false);
+        }
+    }
+    poolWorkerChart.redraw();
+    poolHashrateChart.redraw();
+    poolBlockPendingChart.redraw();
+}
+
+function savePoolColors() {
+    poolColors = {};
+    if(poolWorkerChart.series[0]) {
+        $.each(poolWorkerChart.series.reverse(), function(i) {
+            var b = poolColors[poolWorkerChart.series[i].name] = ({
+                color: ''
+            });
+            b.color = poolWorkerChart.series[i].color;
         });
     }
 }
 
-function getInternetExplorerVersion()
-{
+function getInternetExplorerVersion(){
     var rv = -1; // Return value assumes failure.
     if (navigator.appName == 'Microsoft Internet Explorer')
     {
@@ -407,27 +385,76 @@ function getInternetExplorerVersion()
     return rv;
 }
 
-(function ($) {
+function getReadableHashRateString(hashrate, version){
+    if(version == 'default') {
+        var i = -1;
+        var byteUnits = [ ' KH', ' MH', ' GH', ' TH', ' PH' ];
+        do {
+            hashrate = hashrate / 1024;
+            i++;
+        } while (hashrate > 1024);
+        return Math.round(hashrate) + byteUnits[i];
+    } else if(version == 'beta') {
+        if (hashrate > Math.pow(1000, 4)) {
+            return (hashrate / Math.pow(1000, 4)) + ' TH/s';
+        }
+        if (hashrate > Math.pow(1000, 3)) {
+            return (hashrate / Math.pow(1000, 3)) + ' GH/s';
+        }
+        if (hashrate > Math.pow(1000, 2)) {
+            return (hashrate / Math.pow(1000, 2)) + ' MH/s';
+        }
+        if (hashrate > Math.pow(1000, 1)) {
+            return (hashrate / Math.pow(1000, 1)) + ' KH/s';
+        }
+        return hashrate + ' H/s';
+    } else if(version == 'tooltip') {
+        if (hashrate > Math.pow(1000, 4)) {
+            return (hashrate / Math.pow(1000, 4)).toFixed(2) + ' TH/s';
+        } else if (hashrate > Math.pow(1000, 3)) {
+            return (hashrate / Math.pow(1000, 3)).toFixed(2) + ' GH/s';
+        } else if (hashrate > Math.pow(1000, 2)) {
+            return (hashrate / Math.pow(1000, 2)).toFixed(2) + ' MH/s';
+        } else if (hashrate > Math.pow(1000, 1)) {
+            return (hashrate / Math.pow(1000, 1)).toFixed(2) + ' KH/s';
+        } else {
+            return hashrate + ' H/s';
+        }
+    }
+}
+
+function capitaliseFirstLetter(string){
+    return string.charAt(0).toUpperCase() + string.substring(1);
+}
+
+function timeOfDayFormat(timestamp){
+    var tempTime = moment(timestamp).format('MMM Do - h:mm A');
+    if (tempTime.indexOf('0') === 0) tempTime = tempTime.slice(1);
+    return tempTime;
+}
+
+(function ($){
+    timeHolder = new Date().getTime();
     var ver = getInternetExplorerVersion();
     if (ver !== -1 && ver<=10.0) {
         $(window).load(function(){
-            timeHolder = new Date().getTime();
             createCharts();
             $.getJSON('/api/pool_stats', function (data) {
-                statData = data;
-                buildChartData(3600);
+                trimData(data, 3600);
+                buildChartData();
                 displayCharts();
+                savePoolColors();
                 console.log("time to load: " + (new Date().getTime() - timeHolder));
             });
         });
     } else {
         $(function() {
-            timeHolder = new Date().getTime();
             createCharts();
             $.getJSON('/api/pool_stats', function (data) {
-                statData = data;
-                buildChartData(3600);
+                trimData(data, 3600);
+                buildChartData();
                 displayCharts();
+                savePoolColors();
                 console.log("time to load: " + (new Date().getTime() - timeHolder));
             });
         });
@@ -458,7 +485,7 @@ statsSource.addEventListener('message', function(e){ //Stays active when hot-swa
                 if (poolWorkerData[i].key === pool) {
                     poolWorkerData[i].values.shift();
                     poolWorkerData[i].values.push([time, pool in stats.pools ? stats.pools[pool].workerCount : 0]);
-                    if(poolWorkerChart.series[f].name === pool) {
+                    if(poolWorkerChart.series[f].name === capitaliseFirstLetter(pool)) {
                         poolWorkerChart.series[f].addPoint([time, pool in stats.pools ? stats.pools[pool].workerCount : 0], true);
                     }
                     break;
@@ -468,7 +495,7 @@ statsSource.addEventListener('message', function(e){ //Stays active when hot-swa
                 if (poolHashrateData[i].key === pool) {
                     poolHashrateData[i].values.shift();
                     poolHashrateData[i].values.push([time, pool in stats.pools ? stats.pools[pool].hashrate : 0]);
-                    if(poolHashrateChart.series[f].name === pool) {
+                    if(poolHashrateChart.series[f].name === capitaliseFirstLetter(pool)) {
                         poolHashrateChart.series[f].setData(poolHashrateData[i].values, true);
                     }
                     break;
@@ -478,7 +505,7 @@ statsSource.addEventListener('message', function(e){ //Stays active when hot-swa
                 if (poolBlockPendingData[i].key === pool) {
                     poolBlockPendingData[i].values.shift();
                     poolBlockPendingData[i].values.push([time, pool in stats.pools ? stats.pools[pool].blocks.pending : 0]);
-                    if(poolBlockPendingChart.series[f].name === pool) {
+                    if(poolBlockPendingChart.series[f].name === capitaliseFirstLetter(pool)) {
                         poolBlockPendingChart.series[f].setData(poolBlockPendingData[i].values, false);
                         poolBlockPendingChart.series[f].update({pointWidth: ((poolBlockPendingChart.chartWidth / poolBlockPendingChart.series[f].data.length) - columnBuffer)}, true);
                     }
