@@ -141,7 +141,8 @@
     </div>
 </div>
 
-<div class="pure-g-r" id="bottomCharts">
+{{ var info = it.portalConfig.website.stats.graphColors; }}
+<div class="pure-g-r" id="bottomCharts" data-info="{{=info}}">
     <div class="pure-u-1-1" >
         <div class="chartWrapper">
             <div id="poolWorkerChart"></div>

@@ -15,12 +15,17 @@ var poolColors;
 
 function trimData(data, interval) {
     var retentionTime = Date.now() / 1000 - interval | 0;
-    for (var i = data.length - 1; i >= 0; i--){
-        if (retentionTime > data[i].time){
-            statData = data.slice(i);
-            break;
+    if(data.length > 60){
+        for (var i = data.length - 1; i >= 0; i--){
+            if (retentionTime > data[i].time){
+                statData = data.slice(i);
+                break;
+            }
         }
+    } else {
+        statData = data;
     }
+
 }
 
 function buildChartData(){
@@ -106,12 +111,23 @@ function changeGraphTimePeriod(timePeriod, sender) {
     $('#' + sender).addClass('pure-button-active');
 }
 
-function createCharts() {
+function setHighchartsOptions() {
     Highcharts.setOptions({
         global : {
             useUTC : false
         }
     });
+    var graphColors = $('#bottomCharts').data('info');
+    if(graphColors !== 'undefined') {
+        Highcharts.theme = {
+            colors: graphColors.split(",")
+        };
+        Highcharts.setOptions(Highcharts.theme);
+    }
+}
+
+function createCharts() {
+    setHighchartsOptions();
     poolWorkerChart = new Highcharts.Chart({
         chart: {
             renderTo: 'poolWorkerChart',
