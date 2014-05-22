@@ -132,6 +132,12 @@ Usage
 ##### Seriously
 Those are legitimate requirements. If you use old versions of Node.js or Redis that may come with your system package manager then you will have problems. Follow the linked instructions to get the last stable versions.
 
+
+[**Redis security warning**](http://redis.io/topics/security): be sure firewall access to redis - an easy way is to
+include `bind 127.0.0.1` in your `redis.conf` file. Also it's a good idea to learn about and understand software that
+you are using - a good place to start with redis is [data persistence](http://redis.io/topics/persistence).
+
+
 #### 0) Setting up coin daemon
 Follow the build/install instructions for your coin daemon. Your coin.conf file should end up looking something like this:
 ```
@@ -151,8 +157,6 @@ a good pool operator. For starters be sure to read:
    * https://en.bitcoin.it/wiki/Difficulty
 
 #### 1) Downloading & Installing
-
-[**Redis security warning**](http://redis.io/topics/security): be sure firewall access to redis - an easy way is to include `bind 127.0.0.1` in your `redis.conf` file
 
 Clone the repository and run `npm update` for all the dependencies to be installed:
 
