@@ -2,4 +2,6 @@
     "name": "Tekcoin",
     "symbol": "TEK",
     "algorithm": "sha256"
+    "algorithm": "sha256",
+    "txMessages": "true"
 }
