@@ -218,6 +218,7 @@ module.exports = function(logger){
     var route = function(req, res, next){
         var pageId = req.params.page || '';
         if (pageId in indexesProcessed){
+            res.header('Content-Type', 'text/html');
             res.end(indexesProcessed[pageId]);
         }
         else
