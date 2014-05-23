@@ -7,9 +7,8 @@ module.exports = function() {
     // Module dependencies
 
     // Constants
-    var version         = '0.1.0',
-        PUBLIC_API_URL  = 'http://pubapi.cryptsy.com/api.php',
-        PRIVATE_API_URL = 'https://api.cryptsy.com/api',
+    var version         = '0.0.1',
+        PUBLIC_API_URL  = 'http://www.coinwarz.com/v1/api/profitability/?apikey=YOUR_API_KEY&algo=all',
         USER_AGENT      = 'nomp/node-open-mining-portal'
 
     // Constructor
@@ -20,7 +19,7 @@ module.exports = function() {
             var paramString, signature;
 
             if (!key || !secret){
-                throw 'Cryptsy: Error. API key and secret required';
+                throw 'CoinWarz: Error. API key and secret required';
             }
 
             // Sort parameters alphabetically and convert to `arg1=foo&arg2=bar`
@@ -46,8 +45,8 @@ module.exports = function() {
     }
 
     // Prototype
-    Cryptsy.prototype = {
-        constructor: Cryptsy,
+    CoinWarz.prototype = {
+        constructor: CoinWarz,
 
         // Make an API request
         _request: function(options, callback){
@@ -57,7 +56,7 @@ module.exports = function() {
 
             options.headers['User-Agent'] = USER_AGENT;
             options.json = true;
-            options.strictSSL = Cryptsy.STRICT_SSL;
+            options.strictSSL = CoinWarz.STRICT_SSL;
 
             request(options, function(err, response, body) {
                 callback(err, body);
@@ -72,21 +71,6 @@ module.exports = function() {
                 method: 'GET',
                 url: PUBLIC_API_URL,
                 qs: parameters
-            };
-
-            return this._request(options, callback);
-        },
-
-        // Make a private API request
-        _private: function(parameters, callback){
-            var options;
-
-            parameters.nonce = nonce();
-            options = {
-                method: 'POST',
-                url: PRIVATE_API_URL,
-                form: parameters,
-                headers: this._getPrivateHeaders(parameters)
             };
 
             return this._request(options, callback);
@@ -125,80 +109,7 @@ module.exports = function() {
         },
 
 
-        /////
-
-
-        // PRIVATE METHODS
-
-        myBalances: function(callback){
-            var parameters = {
-                    command: 'returnBalances'
-                };
-
-            return this._private(parameters, callback);
-        },
-
-        myOpenOrders: function(currencyA, currencyB, callback){
-            var parameters = {
-                    command: 'returnOpenOrders',
-                    currencyPair: joinCurrencies(currencyA, currencyB)
-                };
-
-            return this._private(parameters, callback);
-        },
-
-        myTradeHistory: function(currencyA, currencyB, callback){
-            var parameters = {
-                    command: 'returnTradeHistory',
-                    currencyPair: joinCurrencies(currencyA, currencyB)
-                };
-
-            return this._private(parameters, callback);
-        },
-
-        buy: function(currencyA, currencyB, rate, amount, callback){
-            var parameters = {
-                    command: 'buy',
-                    currencyPair: joinCurrencies(currencyA, currencyB),
-                    rate: rate,
-                    amount: amount
-                };
-
-            return this._private(parameters, callback);
-        },
-
-        sell: function(currencyA, currencyB, rate, amount, callback){
-            var parameters = {
-                    command: 'sell',
-                    currencyPair: joinCurrencies(currencyA, currencyB),
-                    rate: rate,
-                    amount: amount
-                };
-
-            return this._private(parameters, callback);
-        },
-
-        cancelOrder: function(currencyA, currencyB, orderNumber, callback){
-            var parameters = {
-                    command: 'cancelOrder',
-                    currencyPair: joinCurrencies(currencyA, currencyB),
-                    orderNumber: orderNumber
-                };
-
-            return this._private(parameters, callback);
-        },
-
-        withdraw: function(currency, amount, address, callback){
-            var parameters = {
-                    command: 'withdraw',
-                    currency: currency,
-                    amount: amount,
-                    address: address
-                };
-
-            return this._private(parameters, callback);
-        }
-    };
-
-    return Cryptsy;
+        ////
+        
+    return CoinWarz;
 }();
