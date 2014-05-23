@@ -1,0 +1,6 @@
+{
+    "name": "Arkhash",
+    "symbol": "ARK",
+    "algorithm": "sha256",
+    "txMessages" : true
+}
