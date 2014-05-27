@@ -1,8 +1,5 @@
 {
     "name": "Einsteinium",
     "symbol": "EMC2",
-    "algorithm": "scrypt",
-    "peerMagic": "e8f1c4ac",
-    "peerMagicTestnet": "faa2f0c1",
-    "txMessages": true
+    "algorithm": "scrypt"
 }
