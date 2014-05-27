@@ -1,0 +1,7 @@
+{
+    "name": "Octocoin",
+    "symbol": "888",
+    "algorithm": "scrypt",
+    "peerMagic": "fbc0b6db",
+    "peerMagicTestnet": "fcc1b7dc"
+}
