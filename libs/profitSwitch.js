@@ -7,6 +7,7 @@ var util   = require('stratum-pool/lib/util.js');
 var Cryptsy  = require('./apiCryptsy.js');
 var Poloniex = require('./apiPoloniex.js');
 var Mintpal  = require('./apiMintpal.js');
+var Bittrex  = require('./apiBittrex.js');
 var Stratum  = require('stratum-pool');
 
 module.exports = function(logger){
@@ -74,6 +75,11 @@ module.exports = function(logger){
     );
     var mintpalApi =  new Mintpal(
         // 'API_KEY',
+        // 'API_SECRET'
+    );
+
+    var bittrexApi =  new Bittrex(
+        // 'API_KEY'
         // 'API_SECRET'
     );
 
@@ -393,6 +399,118 @@ module.exports = function(logger){
     };
 
 
+    this.getProfitDataBittrex = function(callback){
+        async.series([
+            function(taskCallback){
+                bittrexApi.getTicker(function(err, response){
+                    if (err || !response.result){
+                        taskCallback(err);
+                        return;
+                    }
+
+                    Object.keys(symbolToAlgorithmMap).forEach(function(symbol){
+                        response.result.forEach(function(market){
+                            var exchangeInfo = profitStatus[symbolToAlgorithmMap[symbol]][symbol].exchangeInfo;
+                            if (!exchangeInfo.hasOwnProperty('Bittrex'))
+                                exchangeInfo['Bittrex'] = {};
+
+                            var marketData = exchangeInfo['Bittrex'];
+                            var marketPair = market.MarketName.match(/([\w]+)-([\w-_]+)/)
+                            market.exchange = marketPair[1]
+                            market.code = marketPair[2]
+                            if (market.exchange == 'BTC' && market.code == symbol) {
+                                if (!marketData.hasOwnProperty('BTC'))
+                                    marketData['BTC'] = {};
+
+                                marketData['BTC'].last = new Number(market.Last);
+                                marketData['BTC'].baseVolume = new Number(market.BaseVolume);
+                                marketData['BTC'].quoteVolume = new Number(market.BaseVolume / market.Last);
+                                marketData['BTC'].ask = new Number(market.Ask);
+                                marketData['BTC'].bid = new Number(market.Bid);
+                            }
+
+                            if (market.exchange == 'LTC' && market.code == symbol) {
+                                if (!marketData.hasOwnProperty('LTC'))
+                                    marketData['LTC'] = {};
+
+                                marketData['LTC'].last = new Number(market.Last);
+                                marketData['LTC'].baseVolume = new Number(market.BaseVolume);
+                                marketData['LTC'].quoteVolume = new Number(market.BaseVolume / market.Last);
+                                marketData['LTC'].ask = new Number(market.Ask);
+                                marketData['LTC'].bid = new Number(market.Bid);
+                            }
+
+                        });
+                    });
+                    taskCallback();
+                });
+            },
+            function(taskCallback){
+                var depthTasks = [];
+                Object.keys(symbolToAlgorithmMap).forEach(function(symbol){
+                    var marketData = profitStatus[symbolToAlgorithmMap[symbol]][symbol].exchangeInfo['Bittrex'];
+                    if (marketData.hasOwnProperty('BTC') && marketData['BTC'].bid > 0){
+                        depthTasks.push(function(callback){
+                            _this.getMarketDepthFromBittrex('BTC', symbol, marketData['BTC'].bid, callback) 
+                        });
+                    }
+                    if (marketData.hasOwnProperty('LTC') && marketData['LTC'].bid > 0){
+                        depthTasks.push(function(callback){
+                            _this.getMarketDepthFromBittrex('LTC', symbol, marketData['LTC'].bid, callback) 
+                        });
+                    }
+                });
+
+                if (!depthTasks.length){
+                    taskCallback();
+                    return;
+                }
+                async.series(depthTasks, function(err){
+                    if (err){
+                        taskCallback(err);
+                        return;
+                    }
+                    taskCallback();
+                });
+            }
+        ], function(err){
+            if (err){
+                callback(err);
+                return;
+            }
+            callback(null);
+        });
+    };
+    this.getMarketDepthFromBittrex = function(symbolA, symbolB, coinPrice, callback){
+        bittrexApi.getOrderBook(symbolA, symbolB, function(err, response){
+            if (err){
+                callback(err);
+                return;
+            }
+            var depth = new Number(0);
+            if (response.hasOwnProperty('result')){
+                var totalQty = new Number(0);
+                response['result'].forEach(function(order){
+                    var price = new Number(order.Rate);
+                    var limit = new Number(coinPrice * portalConfig.profitSwitch.depth);
+                    var qty = new Number(order.Quantity);
+                    // only measure the depth down to configured depth
+                    if (price >= limit){
+                       depth += (qty * price);
+                       totalQty += qty;
+                    }
+                });
+            }
+
+            var marketData = profitStatus[symbolToAlgorithmMap[symbolB]][symbolB].exchangeInfo['Bittrex'];
+            marketData[symbolA].depth = depth;
+            if (totalQty > 0)
+                marketData[symbolA].weightedBid = new Number(depth / totalQty);
+            callback();
+        });
+    };
+
+
     this.getCoindDaemonInfo = function(callback){
         var daemonTasks = [];
         Object.keys(profitStatus).forEach(function(algo){
@@ -524,6 +642,9 @@ module.exports = function(logger){
 
         if (portalConfig.profitSwitch.useMintpal)
             profitabilityTasks.push(_this.getProfitDataMintpal);
+
+        if (portalConfig.profitSwitch.useBittrex)
+            profitabilityTasks.push(_this.getProfitDataBittrex);
 
         profitabilityTasks.push(_this.getCoindDaemonInfo);
         profitabilityTasks.push(_this.getMiningRate);
