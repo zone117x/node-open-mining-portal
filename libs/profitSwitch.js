@@ -79,7 +79,7 @@ module.exports = function(logger){
     );
 
     var bittrexApi =  new Bittrex(
-        // 'API_KEY'
+        // 'API_KEY',
         // 'API_SECRET'
     );
 
