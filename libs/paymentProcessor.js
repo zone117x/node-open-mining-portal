@@ -169,7 +169,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                     var workers = {};
                     for (var w in results[0]){
-                        workers[w] = {balance: coinsToSatoshies(parseInt(results[0][w]))};
+                        workers[w] = {balance: coinsToSatoshies(parseFloat(results[0][w]))};
                     }
 
                     var rounds = results[1].map(function(r){
