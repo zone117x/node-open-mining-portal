@@ -4,6 +4,7 @@ var net     = require('net');
 
 var MposCompatibility = require('./mposCompatibility.js');
 var ShareProcessor = require('./shareProcessor.js');
+var Stratum = require('stratum-pool');
 
 module.exports = function(logger){
 
@@ -17,6 +18,33 @@ module.exports = function(logger){
     var pools = {};
 
     var proxySwitch = {};
+
+    var switchingDaemons = (function(){
+        var daemons = {};
+
+        for (var switchName in portalConfig.switching){
+            if (!portalConfig.switching[switchName].singleCoinPayout) continue;
+            var daemonConfig = portalConfig.switching[switchName].singleCoinPayout.daemon;
+            var daemon = new Stratum.daemon.interface([daemonConfig], function(severity, message){
+                logger[severity](logSystem, logComponent, message);
+            });
+            daemons[switchName] = daemon;
+        }
+
+        return daemons;
+    })();
+
+    var singleCoinPayoutPorts = (function(){
+        var ports = {};
+        for (var switchName in portalConfig.switching){
+            if (!portalConfig.switching[switchName].singleCoinPayout) continue;
+            for (var port in portalConfig.switching[switchName].ports){
+                ports[parseInt(port)] = switchName;
+            }
+        }
+        return ports;
+    })();
+
 
     var redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host);
 
@@ -128,10 +156,13 @@ module.exports = function(logger){
         //Functions required for internal payment processing
         else{
 
-            var shareProcessor = new ShareProcessor(logger, poolOptions);
+            var shareProcessor = new ShareProcessor(logger, portalConfig, poolOptions, singleCoinPayoutPorts);
 
             handlers.auth = function(port, workerName, password, authCallback){
-                if (poolOptions.validateWorkerUsername !== true)
+
+                var switchDaemon = switchingDaemons[singleCoinPayoutPorts[port]];
+
+                if (!switchDaemon && poolOptions.validateWorkerUsername !== true)
                     authCallback(true);
                 else {
                     if (workerName.length === 40) {
@@ -144,7 +175,9 @@ module.exports = function(logger){
                         }
                     }
                     else {
-                        pool.daemon.cmd('validateaddress', [workerName], function (results) {
+                        var daemon = switchDaemon || pool.daemon;
+
+                        daemon.cmd('validateaddress', [workerName], function (results) {
                             var isValid = results.filter(function (r) {
                                 return r.response.isvalid
                             }).length > 0;

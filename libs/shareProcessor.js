@@ -15,7 +15,7 @@ value: a hash with..
 
 
 
-module.exports = function(logger, poolConfig){
+module.exports = function(logger, portalConfig, poolConfig, singleCoinPayoutPorts){
 
     var redisConfig = poolConfig.redis;
     var coin = poolConfig.coin.name;
@@ -68,10 +68,25 @@ module.exports = function(logger, poolConfig){
 
     this.handleShare = function(isValidShare, isValidBlock, shareData){
 
+
+        /*var shareKey = (function(){
+            var port = shareData.port.toString();
+            for (var switchName in portalConfig.switching){
+                if (!portalConfig.switching[switchName]['singleCoinPayout']) continue;
+                var ports = Object.keys(portalConfig.switching[switchName].ports);
+                if (ports.indexOf(port) !== -1) return switchName;
+            }
+            return coin;
+        })();*/
+
+        var shareKey = singleCoinPayoutPorts[shareData.port] || coin;
+
+        console.log('share key ' + shareKey);
+
         var redisCommands = [];
 
         if (isValidShare){
-            redisCommands.push(['hincrbyfloat', coin + ':shares:roundCurrent', shareData.worker, shareData.difficulty]);
+            redisCommands.push(['hincrbyfloat', shareKey + ':shares:roundCurrent', shareData.worker, shareData.difficulty]);
             redisCommands.push(['hincrby', coin + ':stats', 'validShares', 1]);
         }
         else{
