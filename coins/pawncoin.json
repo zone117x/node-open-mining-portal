@@ -1,0 +1,7 @@
+{
+    "name": "pawncoin",
+    "symbol": "pawn",
+    "algorithm": "scrypt",
+    "peerMagic": "fcc1b7dc",
+    "peerMagicTestnet": "c0c0c0c0"
+}

@@ -1,0 +1,7 @@
+{
+  "name": "bitstar",
+  "symbol": "bits",
+  "algorithm": "scrypt",
+  "peerMagic": "cef1dbfa",
+  "peerMagicTestnet": "cdf1c0ef"
+}
