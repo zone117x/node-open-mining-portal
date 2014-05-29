@@ -107,6 +107,7 @@
         "depth": 0.90,
         "usePoloniex": true,
         "useCryptsy": true,
-        "useMintpal": true
+        "useMintpal": true,
+        "useBittrex": true
     }
 }
