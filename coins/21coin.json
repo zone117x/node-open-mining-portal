@@ -1,0 +1,5 @@
+{
+    "name": "21coin",
+    "symbol": "21",
+    "algorithm": "sha256"
+}
