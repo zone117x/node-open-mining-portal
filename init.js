@@ -361,7 +361,7 @@ var processCoinSwitchCommand = function(params, options, reply){
 };
 
 var startSwitchingPaymentProcessor = function(){
-    if (!fs.exists('libs/switchingPaymentProcessor.js')) return;
+    if (!fs.existsSync('libs/switchingPaymentProcessor.js')) return;
 
     var worker = cluster.fork({
         workerType: 'switchingPaymentProcessor',
