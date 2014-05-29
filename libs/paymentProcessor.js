@@ -1,3 +1,5 @@
+var fs = require('fs');
+
 var redis = require('redis');
 var async = require('async');
 
