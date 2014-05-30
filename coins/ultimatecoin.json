@@ -1,0 +1,6 @@
+{
+    "name": "Ultimatecoin",
+    "symbol": "ULT",
+    "algorithm": "scrypt",
+    "peerMagic": "f9f7c0e8"
+}

@@ -24,6 +24,9 @@
     #boxesLower {
         margin: 0 9px;
     }
+    #boxesLower > div {
+        display: flex;
+    }
     #boxesLower > div > div {
         flex: 1 1 auto;
         margin: 0 9px 18px 9px;
@@ -52,6 +55,8 @@
         justify-content: space-around;
         opacity: 0.77;
         margin-bottom: 5px;
+        flex: 1 1 auto;
+        align-content: center;
     }
     .boxStatsList i.fa{
         height: 15px;
@@ -108,7 +113,7 @@
                 {{ for(var pool in it.stats.pools) { }}
                 <div>
                     <div><i class="fa fa-dot-circle-o"></i>{{=pool}}</div>
-                    <div><i class="fa fa-users"></i><span id="statsMiners{{=pool}}">{{=Object.keys(it.stats.pools[pool].workers).length}}</span> Miners</div>
+                    <div><i class="fa fa-users"></i><span id="statsMiners{{=pool}}">{{=it.stats.pools[pool].workerCount}}</span> Miners</div>
                     <div><i class="fa fa-tachometer"></i><span id="statsHashrate{{=pool}}">{{=it.stats.pools[pool].hashrateString}}</span></div>
                 </div>
                 {{ } }}
@@ -117,3 +122,19 @@
     </div>
 
 </div>
+
+<script>
+    $(function() {
+        statsSource.addEventListener('message', function (e) {
+            var stats = JSON.parse(e.data);
+            for (algo in stats.algos) {
+                $('#statsMiners' + algo).text(stats.algos[algo].workers);
+                $('#statsHashrate' + algo).text(stats.algos[algo].hashrateString);
+            }
+            for (var pool in stats.pools) {
+                $('#statsMiners' + pool).text(stats.pools[pool].workerCount);
+                $('#statsHashrate' + pool).text(stats.pools[pool].hashrateString);
+            }
+        });
+    });
+</script>

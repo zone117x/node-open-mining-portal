@@ -1,0 +1,7 @@
+{
+    "name": "Suncoin",
+    "symbol": "SUN",
+    "algorithm": "scrypt",
+    "peerMagic":"fcd9b7dd",
+    "peerMagicTestnet":"fbc0b8db"
+}

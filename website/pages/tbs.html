@@ -1,0 +1,64 @@
+<style>
+
+    #topCharts {
+        padding: 18px;
+    }
+
+    #topCharts > div > div > svg {
+        display: block;
+        height: 280px;
+    }
+
+    .chartWrapper {
+        border: solid 1px #c7c7c7;
+        border-radius: 5px;
+        padding: 5px;
+        margin-bottom: 18px;
+    }
+
+    .chartLabel {
+        font-size: 1.2em;
+        text-align: center;
+        padding: 4px;
+    }
+
+    .chartHolder {
+
+    }
+
+    table {
+        width: 100%;
+    }
+
+</style>
+
+<table class="pure-table">
+    <thead>
+    <tr>
+        <th>Pool</th>
+        <th>Algo</th>
+        <th>Workers</th>
+        <th>Valid Shares</th>
+        <th>Invalid Shares</th>
+        <th>Total Blocks</th>
+        <th>Pending</th>
+        <th>Confirmed</th>
+        <th>Orphaned</th>
+        <th>Hashrate</th>
+    </tr>
+    </thead>
+    {{ for(var pool in it.stats.pools) { }}
+    <tr class="pure-table-odd">
+        <td>{{=it.stats.pools[pool].name}}</td>
+        <td>{{=it.stats.pools[pool].algorithm}}</td>
+        <td>{{=Object.keys(it.stats.pools[pool].workers).length}}</td>
+        <td>{{=it.stats.pools[pool].poolStats.validShares}}</td>
+        <td>{{=it.stats.pools[pool].poolStats.invalidShares}}</td>
+        <td>{{=it.stats.pools[pool].poolStats.validBlocks}}</td>
+        <td>{{=it.stats.pools[pool].blocks.pending}}</td>
+        <td>{{=it.stats.pools[pool].blocks.confirmed}}</td>
+        <td>{{=it.stats.pools[pool].blocks.orphaned}}</td>
+        <td>{{=it.stats.pools[pool].hashrateString}}</td>
+    </tr>
+    {{ } }}
+</table>

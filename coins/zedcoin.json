@@ -1,0 +1,7 @@
+{
+    "name": "zedcoin",
+    "symbol": "zed",
+    "algorithm": "scrypt",
+    "peerMagic": "c0dbf1fd",
+    "peerMagicTestnet": "fdc2b6f1"
+}

@@ -1,5 +1,8 @@
 {
     "name": "Maxcoin",
     "symbol": "MAX",
-    "algorithm": "keccak"
+    "algorithm": "keccak",
+    
+    "peerMagic": "f9bebbd2",
+    "peerMagicTestNet": "0b11bb07"
 }

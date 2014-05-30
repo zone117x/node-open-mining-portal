@@ -1,0 +1,8 @@
+{
+    "name": "Cryptometh",
+    "symbol": "METH",
+    "algorithm": "keccak",
+    
+    "peerMagic": "2bf2ed4f" ,
+    "peerMagicTestNet": "b28cfda7"
+}
