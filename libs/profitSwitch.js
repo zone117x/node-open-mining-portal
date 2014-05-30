@@ -4,7 +4,6 @@ var bignum = require('bignum');
 var algos  = require('stratum-pool/lib/algoProperties.js');
 var util   = require('stratum-pool/lib/util.js');
 
-var CoinWarz = require('./apiCoinWarz.js');
 var Cryptsy  = require('./apiCryptsy.js');
 var Poloniex = require('./apiPoloniex.js');
 var Mintpal  = require('./apiMintpal.js');
@@ -37,7 +36,7 @@ module.exports = function(logger){
             name: poolConfig.coin.name,
             symbol: poolConfig.coin.symbol,
             difficulty: 0,
-            reward: (poolConfig.coin.reward || null),
+            reward: (parseInt(poolConfig.coin.reward) || 0),
             exchangeInfo: {}
         };
         profitStatus[algo][poolConfig.coin.symbol] = coinStatus;
@@ -557,8 +556,7 @@ module.exports = function(logger){
             coinStatus.difficulty = parseFloat((diff1 / target.toNumber()).toFixed(9));
             logger.debug(logSystem, symbol, 'difficulty is ' + coinStatus.difficulty);
 
-            coinStatus.reward = response.coinbasevalue / 100000000;
-            if (coinStatus.reward == null) {
+            if (coinStatus.reward == 0) {
                 coinStatus.reward = response.coinbasevalue / 100000000;
             };
             callback(null);

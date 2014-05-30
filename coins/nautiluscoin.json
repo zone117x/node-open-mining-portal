@@ -1,0 +1,7 @@
+{
+    "name": "NautilusCoin",
+    "symbol": "NAUT",
+    "algorithm": "scrypt",
+    "peerMagic": "aa5c2dba",
+    "peerMagicTestnet": "fcc1b7dc"
+}
