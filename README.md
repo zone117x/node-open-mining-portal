@@ -119,6 +119,7 @@ If your pool uses NOMP let us know and we will list your website here.
 * http://mining.theminingpools.com
 * http://www.omargpools.ca/pools.html
 * http://pool.trademybit.com/
+* http://bemining.net
 
 Usage
 =====
