@@ -13,10 +13,9 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.4.2/pure-min.css">
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.6.0/moment.min.js"></script>
+    <script src="/static/highcharts.js"></script>
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.5/d3.min.js"></script>
-    <script src="/static/nvd3.js"></script>
-    <link rel="stylesheet" href="/static/nvd3.css">
 
     <script src="/static/main.js"></script>
     <link rel="stylesheet" href="/static/style.css">
@@ -42,13 +41,7 @@
             <li class="{{? it.selected === 'stats' }}pure-menu-selected{{?}}">
                 <a class="hot-swapper" href="/stats">
                     <i class="fa fa-bar-chart-o"></i>&nbsp;
-                    Graph Stats
-                </a>
-            </li>
-            <li class="{{? it.selected === 'tbs' }}pure-menu-selected{{?}}">
-                <a class="hot-swapper" href="/tbs">
-                    <i class="fa fa-table"></i>&nbsp;
-                    Tab Stats
+                    Stats
                 </a>
             </li>
             <li class="{{? it.selected === 'workers' }}pure-menu-selected{{?}}">
