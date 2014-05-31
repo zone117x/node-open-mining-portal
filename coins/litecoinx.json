@@ -1,6 +1,0 @@
-{
-    "name": "Litecoinx",
-    "symbol": "LTCX",
-    "algorithm": "x11",
-    "mposDiffMultiplier": 256
-}
