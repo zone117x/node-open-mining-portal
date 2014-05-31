@@ -120,6 +120,7 @@ If your pool uses NOMP let us know and we will list your website here.
 * http://www.omargpools.ca/pools.html
 * http://pool.trademybit.com/
 * http://fixminer.com
+* http://dutchpool.org:8000
 
 Usage
 =====
