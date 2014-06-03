@@ -1,6 +1,7 @@
 { 
     "name": "CryptogenicBullion",
     "symbol": "CGB", 
-    "algorithm": "scrypt"   
-
+    "algorithm": "scrypt",
+    "peerMagic": "e4e8e9e5",
+    "peerMagicTestnet": "cdf2c0ef"
 }
