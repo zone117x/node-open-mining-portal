@@ -1,0 +1,6 @@
+{ 
+    "name": "CryptogenicBullion",
+    "symbol": "CGB", 
+    "algorithm": "scrypt"   
+
+}
