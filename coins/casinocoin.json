@@ -1,5 +1,7 @@
 {
     "name": "Casinocoin",
     "symbol": "CSC",
-    "algorithm": "scrypt"
+    "algorithm": "scrypt",
+    "peerMagic": "fac3b6da",
+    "peerMagicTestnet": "fcc1b7dc"
 }
