@@ -144,6 +144,8 @@ module.exports = function(logger){
                         }
                     }
                     else {
+                        workerName = workerName.replace(/([\-_.!~*'()].*)/g, ''); // strip any extra strings from worker name.
+                        
                         pool.daemon.cmd('validateaddress', [workerName], function (results) {
                             var isValid = results.filter(function (r) {
                                 return r.response.isvalid
