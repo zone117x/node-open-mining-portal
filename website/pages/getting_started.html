@@ -185,9 +185,9 @@
     <div id="menu">
 
         {{? (function(){
-                if (!it.portalConfig.proxy) return false;
-                for (var p in it.portalConfig.proxy){
-                    if (it.portalConfig.proxy[p].enabled)
+                if (!it.portalConfig.switching) return false;
+                for (var p in it.portalConfig.switching){
+                    if (it.portalConfig.switching[p].enabled)
                         return true;
                 }
                 return false;
@@ -197,14 +197,14 @@
         {{?}}
 
         <div class="menuList">
-        {{ for (var p in it.portalConfig.proxy){
-            if (!it.portalConfig.proxy[p].enabled) continue;
+        {{ for (var p in it.portalConfig.switching){
+            if (!it.portalConfig.switching[p].enabled) continue;
             var info = {
                 algo: p,
                 ports: {},
                 host: it.portalConfig.website.stratumHost
             };
-            info.ports[it.portalConfig.proxy[p].port] = {diff: it.portalConfig.proxy[p].diff};
+            info.ports[it.portalConfig.switching[p].port] = {diff: it.portalConfig.switching[p].diff};
             info = JSON.stringify(info).replace(/"/g, '&quot;');
         }}
             <a href="#" class="poolOption" data-info="{{=info}}">{{=p}}</a>
