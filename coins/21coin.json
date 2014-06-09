@@ -1,5 +1,7 @@
 {
     "name": "21coin",
     "symbol": "21",
-    "algorithm": "sha256"
+    "algorithm": "sha256",                                                                                                                                                         │·····································
+    "peerMagic": "21212121",                                                                                                                                             │·····································
+    "peerMagicTestnet": "01fefe05"
 }
