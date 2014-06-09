@@ -1,0 +1,7 @@
+{
+    "name": "CryptographicAnomaly",
+    "symbol": "CGA",
+    "algorithm": "scrypt",
+    "peerMagic": "fbc0b6db",
+    "peerMagicTestnet": "fcc1b7dc"
+}

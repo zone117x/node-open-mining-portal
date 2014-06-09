@@ -1,0 +1,7 @@
+{
+    "name": "BunnyCoin",
+    "symbol": "BUN",
+    "algorithm": "scrypt",
+    "peerMagic": "c0c0c0c0",
+    "peerMagicTestnet": "fcc1b7dc"
+    }
