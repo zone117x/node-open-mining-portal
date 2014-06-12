@@ -526,7 +526,7 @@ output from NOMP.
 
 #### Upgrading NOMP
 When updating NOMP to the latest code its important to not only `git pull` the latest from this repo, but to also update
-the `node-statum-pool` and `node-multi-hashing` modules, and any config files that may have been changed.
+the `node-stratum-pool` and `node-multi-hashing` modules, and any config files that may have been changed.
 * Inside your NOMP directory (where the init.js script is) do `git pull` to get the latest NOMP code.
 * Remove the dependenices by deleting the `node_modules` directory with `rm -r node_modules`.
 * Run `npm update` to force updating/reinstalling of the dependencies.
