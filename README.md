@@ -12,7 +12,7 @@ This is beta software. All of the following are things that can change and break
 Usage of this software requires abilities with sysadmin, database admin, coin daemons, and sometimes a bit of programming. Running a production pool can literally be more work than a full-time job. [LiveChains UK](http://www.livechains.net/) offers full hosting, setup and management of NOMP pools with several different configurations.
 
 
-**Coin switching & auto-exchanging for payouts in BTC/LTC** to miners is a feature that very likely will not be included in this project. [LiveChains UK](http://www.livechains.net/) however does offer this feature as one of their NOMP pool plans. 
+**Coin switching & auto-exchanging for payouts in BTC/LTC** to miners is a feature that very likely will not be included in this project. [LiveChains UK](http://www.livechains.net/) however does offer this feature as part of there own customised NOMP called [LivePool](http://www.livechains.net/LivePool.html).
 
 
 #### Table of Contents
