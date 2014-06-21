@@ -21,6 +21,7 @@ module.exports = function(logger){
     var redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host);
 	// redis auth if enabled 
          redisClient.auth(portalConfig.redis.password);
+         redisClient.select(portalConfig.redis.db);
 
     //Handle messages from master process sent via IPC
     process.on('message', function(message) {

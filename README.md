@@ -244,6 +244,7 @@ Explanation for each field:
         "redis": {
             "host": "127.0.0.1",
             "port": 6379,
+            "db": 0, /* redis db select, usefull for multi-node cluster replicas */
 	    "password": ""  /* "" - no password, or any non blank "redispassword" to enable it */
         }
     },
@@ -278,6 +279,7 @@ Explanation for each field:
     "redis": {
         "host": "127.0.0.1",
         "port": 6379,
+        "db": 0, /* redis db select, usefull for multi-node cluster replicas */
         "password": ""  /* similar "" - no password, or any non blank  "redispassword" to enable it */
     },
 
