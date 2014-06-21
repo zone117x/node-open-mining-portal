@@ -2,6 +2,7 @@
 
     #topCharts {
         padding: 18px;
+        margin-top:50px;
     }
 
     #topCharts > div > div > svg {
@@ -29,9 +30,17 @@
     table {
         width: 100%;
     }
+    
+    #filterInput {
+		margin-top:20px;
+		margin-right:20px;
+		float:right;
+		width:200px;
+	}
 
 </style>
 
+<div><input id="filterInput" placeholder="Filter..." /></div>
 
 <div id="topCharts">
 
@@ -50,6 +59,7 @@
                     <th>Hashrate</th>
                 </tr>
                 </thead>
+                <tbody class="filteredRows">
                 {{ for(var worker in it.stats.pools[pool].workers) { }}
                    {{var workerstat = it.stats.pools[pool].workers[worker];}}
                     <tr class="pure-table-odd">
@@ -60,7 +70,23 @@
                         <td>{{=workerstat.hashrateString}}</td>
                     </tr>
                 {{ } }}
+                </tbody>
             </table>
         </div>
     </div>
 {{ } }}
+
+<script type="text/javascript">
+$('#filterInput').keyup(function() {
+	var data = this.value;
+	var rows = $('.filteredRows').find('tr');
+	if(this.value == '') {
+		rows.show();
+		return;
+	}
+	rows.hide();
+	rows.filter(function(i, v) {
+		return $(this).is(':contains(\'' + data + '\')');
+	}).show();
+});
+</script>

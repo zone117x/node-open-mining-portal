@@ -5,7 +5,7 @@
     }
 
     .glow{
-        box-shadow: inset 0 0 12px 4px #ff6c00;
+        box-shadow: inset 0 0 12px 4px #4c5cf8;
     }
 
     .hidden{
@@ -42,7 +42,7 @@
     }
 
     .menuList > a:hover{
-        color: #f69b3a;
+        color: #43b2f8;
     }
 
     #main{
@@ -63,15 +63,17 @@
         text-decoration: none;
     }
 
-    a.miningOption:hover{
-        color: #f69b3a;
+    .miningOption:first-child:hover {
+        background-color: #812eb7;
     }
-
+    .miningOption:last-child:hover {
+        background-color: #29a529;
+    }
     .miningOption:first-child{
-        background-color: #0eafc7;
+        background-color: #a139e5;
     }
     .miningOption:last-child{
-        background-color: #b064e1;
+        background-color: #33ce33;
     }
     .miningOptionNum{
         font-size: 6em;
@@ -128,7 +130,7 @@
         left: 50%;
         margin-left: -375px;
         position: absolute;
-        background-color: #f06350;
+        background-color: #43b2f8;
     }
     #coinInfo .coinInfoName{
         text-transform: capitalize;
@@ -227,21 +229,18 @@
     </div>
 
     <div id="main">
-        <a href="#" class="miningOption" id="nompAppDownload">
+        <a href="http://www.sgminerwindows.com/" target="_blank" class="miningOption" id="nompAppDownload">
             <div class="miningOptionNum">1.</div>
             <div class="miningOptionInstructions">
-                <div>Download NOMP App</div>
-                <div>Our preconfigured app makes mining that easy</div>
+                <div>Download Your Miner</div>
+                <div>(if you dont already have one)</div>
             </div>
         </a>
-        <div id="orHolder">
-            <div id="orLine"></div>
-            <div id="orText">or</div>
-        </div>
+        <div style="height:20px;"></div>
         <a href="#" class="miningOption" id="coinGlowTrigger">
             <div class="miningOptionNum">2.</div>
             <div class="miningOptionInstructions">
-                <div>Select a coin for connection details</div>
+                <div>Select a Coin for Connection Details</div>
                 <div>Configurations for each coin are available for advanced miners</div>
             </div>
         </a>
@@ -273,7 +272,7 @@
         var htmlValues = '<div class="coinInfoData">' + info.algo + '</div>';
 
         for (var port in info.ports){
-            htmlKeys += '<div class="coinInfoData">URL <span class="coinInfoSubtle">(difficulty ' + info.ports[port].diff + ')</span>:</div>';
+            htmlKeys += '<div class="coinInfoData">URL <span class="coinInfoSubtle">(difficulty ' + (info.ports[port].varDiff ? 'VARDIFF' : info.ports[port].diff) + ')</span>:</div>';
             htmlValues += '<div class="coinInfoData">stratum+tcp://' + info.host + ':' + port + '</div>';
         }
 
@@ -311,8 +310,9 @@
     });
 
     $('#nompAppDownload').click(function(event){
-        event.preventDefault();
-        alert('NOMP App development still in progress...');
-        return false;
+        //event.preventDefault();
+        //alert('NOMP App development still in progress...');
+        //window.location = 'http://www.sgminerwindows.com/';
+        //return false;
     });
 </script>
