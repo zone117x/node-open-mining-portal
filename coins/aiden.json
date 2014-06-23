@@ -1,0 +1,6 @@
+{
+    "name": "Aiden",
+    "symbol": "ADN",
+    "algorithm": "scrypt-og",
+    "peerMagic": "defaceed",
+}
