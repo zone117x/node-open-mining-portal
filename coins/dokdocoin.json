@@ -1,0 +1,7 @@
+{
+    "name": "DokdoCoin",
+    "symbol": "DOKDO",
+    "algorithm": "groestl",
+    "peerMagic": "bef9b4d5"
+}
+
