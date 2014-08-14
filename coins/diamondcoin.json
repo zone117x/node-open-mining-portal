@@ -1,6 +1,9 @@
 {
-    "name": "Diamondcoin",
-    "symbol": "DMD",
-    "algorithm": "scrypt",
-    "txMessages": true
+"name": "Diamond",
+"symbol": "DMD",
+"algorithm": "groestl",
+"txMessages": false,
+"normalHashing" : true,
+"peerMagic" : "e4e8dbfd",
+"peerMagicTestnet" : "edf2c0ef"
 }
