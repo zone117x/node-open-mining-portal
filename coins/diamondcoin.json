@@ -4,6 +4,7 @@
 "algorithm": "groestl",
 "txMessages": false,
 "normalHashing" : true,
+"mposDiffMultiplier": 256,
 "peerMagic" : "e4e8dbfd",
 "peerMagicTestnet" : "edf2c0ef"
 }
