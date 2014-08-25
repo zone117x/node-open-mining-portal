@@ -78,8 +78,43 @@
         text-transform: capitalize;
     }
 </style>
+<div class="pure-g-r" id="bottomTableStats">
+    <div class="pure-u-1-1">
+        <table class="pure-table" id="statTable">
+            <thead>
+            <tr>
+                <th>Pool</th>
+                <th>Algo</th>
+                <th>Workers</th>
+                <th>Valid Shares</th>
+                <th>Invalid Shares</th>
+                <th>Total Blocks</th>
+                <th>Pending</th>
+                <th>Confirmed</th>
+                <th>Orphaned</th>
+                <th>Hashrate</th>
+            </tr>
+            </tr>
+            </thead>
+            {{ for(var pool in it.stats.pools) { }}
+            <tr class="pure-table-odd">
+                <td>{{=it.stats.pools[pool].name}}</td>
+                <td>{{=it.stats.pools[pool].algorithm}}</td>
+                <td>{{=Object.keys(it.stats.pools[pool].workers).length}}</td>
+                <td>{{=it.stats.pools[pool].poolStats.validShares}}</td>
+                <td>{{=it.stats.pools[pool].poolStats.invalidShares}}</td>
+                <td>{{=it.stats.pools[pool].poolStats.validBlocks}}</td>
+                <td>{{=it.stats.pools[pool].blocks.pending}}</td>
+                <td>{{=it.stats.pools[pool].blocks.confirmed}}</td>
+                <td>{{=it.stats.pools[pool].blocks.orphaned}}</td>
+                <td>{{=it.stats.pools[pool].hashrateString}}</td>
+            </tr>
+            {{ } }}
+        </table>
+    </div>
+</div>
 
-<div class="pure-g-r" id="topStats">
+<!--<div class="pure-g-r" id="topStats">
     <div class="pure-u-1-2" >
         <div class="boxStats" id="boxStatsLeft">
             <div class="boxStatsHeader">Pools/Stats</div>
@@ -111,7 +146,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- <div class="pure-form pure-g-r" id="topStats">
 	<div class="pure-u-1-4">
@@ -159,42 +194,6 @@
         <div class="chartWrapper">
             <div id="poolBlockChart"></div>
         </div>
-    </div>
-</div>
-
-<div class="pure-g-r" id="bottomTableStats">
-    <div class="pure-u-1-1">
-        <table class="pure-table" id="statTable">
-            <thead>
-            <tr>
-                <th>Pool</th>
-                <th>Algo</th>
-                <th>Workers</th>
-                <th>Valid Shares</th>
-                <th>Invalid Shares</th>
-                <th>Total Blocks</th>
-                <th>Pending</th>
-                <th>Confirmed</th>
-                <th>Orphaned</th>
-                <th>Hashrate</th>
-            </tr>
-            </tr>
-            </thead>
-            {{ for(var pool in it.stats.pools) { }}
-            <tr class="pure-table-odd">
-                <td>{{=it.stats.pools[pool].name}}</td>
-                <td>{{=it.stats.pools[pool].algorithm}}</td>
-                <td>{{=Object.keys(it.stats.pools[pool].workers).length}}</td>
-                <td>{{=it.stats.pools[pool].poolStats.validShares}}</td>
-                <td>{{=it.stats.pools[pool].poolStats.invalidShares}}</td>
-                <td>{{=it.stats.pools[pool].poolStats.validBlocks}}</td>
-                <td>{{=it.stats.pools[pool].blocks.pending}}</td>
-                <td>{{=it.stats.pools[pool].blocks.confirmed}}</td>
-                <td>{{=it.stats.pools[pool].blocks.orphaned}}</td>
-                <td>{{=it.stats.pools[pool].hashrateString}}</td>
-            </tr>
-            {{ } }}
-        </table>
     </div>
 </div>
 
