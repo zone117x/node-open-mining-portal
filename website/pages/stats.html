@@ -1,53 +1,202 @@
 <style>
-
-    #topCharts{
-        padding: 18px;
+    #topStats {
+        margin: 0 9px;
+    }
+    #topStats > div {
+        display: flex;
+    }
+    #topStats > div > div {
+        flex: 1 1 auto;
+        margin: 18px 9px 0px 9px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+    .boxStatsHeader{
+        font-size: 1.3em;
+        margin: 0 0 5px 10px;
     }
 
-    #topCharts > div > div > svg{
+
+    #boxStatsLeft{
+        background-color: #b064e1;
+    }
+    #boxStatsRight{
+        background-color: #10bb9c;
+    }
+    .boxStats{
+        border: solid 0px #c7c7c7;
+        color: white;
+    }
+    .boxStatsList{
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-around;
+        opacity: 0.77;
+        margin-bottom: 5px;
+        flex: 1 1 auto;
+        align-content: center;
+    }
+    .boxStatsList i.fa{
+        height: 15px;
+        width: 33px;
+        text-align: center;
+    }
+    .boxStatsList > div{
+        padding: 5px 20px;
+    }
+    .boxStatsList > div > div{
+        padding: 3px;
+        text-transform: capitalize;
+    }
+
+    #timeSelector {
+        padding-top: 25px;
+        padding-bottom: 15px;
+        text-align:center;
+    }
+    #bottomCharts{
+        padding: 18px;
+    }
+    #bottomCharts > div > div > svg{
         display: block;
         height: 280px;
     }
-
     .chartWrapper{
         border: solid 1px #c7c7c7;
-        border-radius: 5px;
         padding: 5px;
         margin-bottom: 18px;
+        display: block;
+        text-align: -webkit-center;
     }
-
-    .chartLabel{
-        font-size: 1.2em;
+    #bottomTableStats {
+        padding-bottom: 20px;
+    }
+    #statTable {
+        margin: 0 auto;
         text-align: center;
-        padding: 4px;
+        text-transform: capitalize;
     }
-
-    .chartHolder{
-
-    }
-
 </style>
 
-<div id="topCharts">
-
-    <div class="chartWrapper">
-        <div class="chartLabel">Workers Per Pool</div>
-        <div class="chartHolder"><svg id="poolWorkers"/></div>
+<div class="pure-g-r" id="topStats">
+    <div class="pure-u-1-2" >
+        <div class="boxStats" id="boxStatsLeft">
+            <div class="boxStatsHeader">Pools/Stats</div>
+            <div class="boxStatsList">
+                {{ for(var pool in it.stats.pools) { }}
+                <div>
+                    <div><i class="fa fa-dot-circle-o"></i>{{=pool}}</div>
+                    <div><i class="fa fa-smile-o"></i>Valid Shares: <span id="statsValidShares{{=pool}}">{{=it.stats.pools[pool].poolStats.validShares}}</span></div>
+                    <div><i class="fa fa-frown-o"></i>Invalid Shares: <span id="statsInvalidShares{{=pool}}">{{=it.stats.pools[pool].poolStats.invalidShares}}</span></div>
+                    <div><i class="fa fa-th-large"></i>Valid Blocks: <span id="statsValidBlocks{{=pool}}">{{=it.stats.pools[pool].poolStats.validBlocks}}</span></div>
+                </div>
+                {{ } }}
+            </div>
+        </div>
     </div>
 
-    <div class="chartWrapper">
-        <div class="chartLabel">Hashrate Per Pool</div>
-        <div class="chartHolder"><svg id="poolHashrate"/></div>
+    <div class="pure-u-1-2">
+        <div class="boxStats" id="boxStatsRight">
+            <div class="boxStatsHeader">Pools/Blocks</div>
+            <div class="boxStatsList">
+                {{ for(var pool in it.stats.pools) { }}
+                <div>
+                    <div><i class="fa fa-dot-circle-o"></i>{{=pool}}</div>
+                    <div><i class="fa fa-refresh fa-spin"></i>Pending: <span id="statsBlocksPending{{=pool}}">{{=it.stats.pools[pool].blocks.pending}}</span></div>
+                    <div><i class="fa fa-check"></i>Confirmed: <span id="statsBlocksConfirmed{{=pool}}">{{=it.stats.pools[pool].blocks.confirmed}}</span></div>
+                    <div><i class="fa fa-question"></i>Orphaned: <span id="statsBlocksOrphaned{{=pool}}">{{=it.stats.pools[pool].blocks.orphaned}}</span></div>
+                </div>
+                {{ } }}
+            </div>
+        </div>
     </div>
-
-    <div class="chartWrapper">
-        <div class="chartLabel">Blocks Pending Per Pool</div>
-        <div class="chartHolder"><svg id="poolBlocks"/></div>
-    </div>
-
 </div>
 
+<!-- <div class="pure-form pure-g-r" id="topStats">
+	<div class="pure-u-1-4">
+		<div>
+			<button type="submit" class="pure-button">Show stats</button>
+		</div>
+    </div>
+    <div class="pure-u-3-4">
+		<div>
+			<input class="pure-input-1" type="text" placeholder="Address (Doesn't work yet)">
+		</div>
+    </div>
+</div> -->
 
+<div class="pure-form pure-g-r" id="timeSelector">
+    <div class="pure-u-1-1" id="graphSelectorDropdown">
+        <div>
+            <ul class="pure-paginator" id="scale_menu">
+                <li class="pure-button">Scale</li>
+                <li><a id="scaleOneHour" class="pure-button pure-button-active" href="javascript:changeGraphTimePeriod('3600', 'scaleOneHour');">1</a></li>
+                <li><a id="scaleThreeHour" class="pure-button" href="javascript:changeGraphTimePeriod('10800', 'scaleThreeHour');">3</a></li>
+                <li><a id="scaleSixHour" class="pure-button" href="javascript:changeGraphTimePeriod('21600', 'scaleSixHour');">6</a></li>
+                <li><a id="scaleTwelveHour" class="pure-button" href="javascript:changeGraphTimePeriod('43200', 'scaleTwelveHour');">12</a></li>
+                <!-- <li><a id="scaleGraphSettings" class="pure-button" href="#"><i class="fa fa-cog"></i></a></li> -->
+            </ul>
+        </div>
+    </div>
+</div>
+
+{{ var info = it.portalConfig.website.stats.graphColors; }}
+<div class="pure-g-r" id="bottomCharts" data-info="{{=info}}">
+    <div class="pure-u-1-1" >
+        <div class="chartWrapper">
+            <div id="poolWorkerChart"></div>
+        </div>
+    </div>
+
+    <div class="pure-u-1-1">
+        <div class="chartWrapper">
+            <div id="poolHashRateChart"></div>
+        </div>
+    </div>
+
+    <div class="pure-u-1-1">
+        <div class="chartWrapper">
+            <div id="poolBlockChart"></div>
+        </div>
+    </div>
+</div>
+
+<div class="pure-g-r" id="bottomTableStats">
+    <div class="pure-u-1-1">
+        <table class="pure-table" id="statTable">
+            <thead>
+            <tr>
+                <th>Pool</th>
+                <th>Algo</th>
+                <th>Workers</th>
+                <th>Valid Shares</th>
+                <th>Invalid Shares</th>
+                <th>Total Blocks</th>
+                <th>Pending</th>
+                <th>Confirmed</th>
+                <th>Orphaned</th>
+                <th>Hashrate</th>
+            </tr>
+            </tr>
+            </thead>
+            {{ for(var pool in it.stats.pools) { }}
+            <tr class="pure-table-odd">
+                <td>{{=it.stats.pools[pool].name}}</td>
+                <td>{{=it.stats.pools[pool].algorithm}}</td>
+                <td>{{=Object.keys(it.stats.pools[pool].workers).length}}</td>
+                <td>{{=it.stats.pools[pool].poolStats.validShares}}</td>
+                <td>{{=it.stats.pools[pool].poolStats.invalidShares}}</td>
+                <td>{{=it.stats.pools[pool].poolStats.validBlocks}}</td>
+                <td>{{=it.stats.pools[pool].blocks.pending}}</td>
+                <td>{{=it.stats.pools[pool].blocks.confirmed}}</td>
+                <td>{{=it.stats.pools[pool].blocks.orphaned}}</td>
+                <td>{{=it.stats.pools[pool].hashrateString}}</td>
+            </tr>
+            {{ } }}
+        </table>
+    </div>
+</div>
 
 <script>
     document.querySelector('main').appendChild(document.createElement('script')).src = '/static/stats.js';
