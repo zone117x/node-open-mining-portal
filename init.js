@@ -1,3 +1,4 @@
+require('./newrelic.js');
 var fs = require('fs');
 var path = require('path');
 var os = require('os');
