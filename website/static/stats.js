@@ -411,9 +411,9 @@ function getReadableHashRateString(hashrate, version){
         var i = -1;
         var byteUnits = [ ' KH', ' MH', ' GH', ' TH', ' PH' ];
         do {
-            hashrate = hashrate / 1024;
+            hashrate = hashrate / 1000;
             i++;
-        } while (hashrate > 1024);
+        } while (hashrate > 1000);
         return Math.round(hashrate) + byteUnits[i];
     } else if(version == 'beta') {
         if (hashrate > Math.pow(1000, 4)) {
