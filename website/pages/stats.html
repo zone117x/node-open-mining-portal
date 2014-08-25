@@ -98,23 +98,21 @@
 
 {{ var info = it.portalConfig.website.stats.graphColors; }}
 <div class="pure-g-r" id="bottomCharts" data-info="{{=info}}">
+        <div class="pure-u-1-1">
+        <div class="chartWrapper">
+            <div id="poolHashRateChart"></div>
+        </div>
+    </div>
     <div class="pure-u-1-1" >
         <div class="chartWrapper">
             <div id="poolWorkerChart"></div>
         </div>
     </div>
-
-    <div class="pure-u-1-1">
-        <div class="chartWrapper">
-            <div id="poolHashRateChart"></div>
-        </div>
-    </div>
-
-    <div class="pure-u-1-1">
+    <!--<div class="pure-u-1-1">
         <div class="chartWrapper">
             <div id="poolBlockChart"></div>
         </div>
-    </div>
+    </div>-->
 </div>
 
 <script>
