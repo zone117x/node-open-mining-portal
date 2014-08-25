@@ -66,3 +66,81 @@ footer a{
 footer iframe{
     vertical-align: middle;
 }
+    #topStats {
+        margin: 0 9px;
+    }
+    #topStats > div {
+        display: flex;
+    }
+    #topStats > div > div {
+        flex: 1 1 auto;
+        margin: 18px 9px 0px 9px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+    .boxStatsHeader{
+        font-size: 1.3em;
+        margin: 0 0 5px 10px;
+    }
+
+
+    #boxStatsLeft{
+        background-color: #b064e1;
+    }
+    #boxStatsRight{
+        background-color: #10bb9c;
+    }
+    .boxStats{
+        border: solid 0px #c7c7c7;
+        color: white;
+    }
+    .boxStatsList{
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-around;
+        opacity: 0.77;
+        margin-bottom: 5px;
+        flex: 1 1 auto;
+        align-content: center;
+    }
+    .boxStatsList i.fa{
+        height: 15px;
+        width: 33px;
+        text-align: center;
+    }
+    .boxStatsList > div{
+        padding: 5px 20px;
+    }
+    .boxStatsList > div > div{
+        padding: 3px;
+        text-transform: capitalize;
+    }
+
+    #timeSelector {
+        padding-top: 25px;
+        padding-bottom: 15px;
+        text-align:center;
+    }
+    #bottomCharts{
+        padding: 18px;
+    }
+    #bottomCharts > div > div > svg{
+        display: block;
+        height: 280px;
+    }
+    .chartWrapper{
+        border: solid 1px #c7c7c7;
+        padding: 5px;
+        margin-bottom: 18px;
+        display: block;
+        text-align: -webkit-center;
+    }
+    #bottomTableStats {
+        padding-bottom: 20px;
+    }
+    #statTable {
+        margin: 0 auto;
+        text-align: center;
+        text-transform: capitalize;
+    }
