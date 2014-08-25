@@ -4,7 +4,7 @@ var poolBlockPendingData;
 
 var poolWorkerChart;
 var poolHashrateChart;
-var poolBlockPendingChart;
+//var poolBlockPendingChart;
 
 var statData = [];
 var poolKeys = [];
@@ -50,18 +50,18 @@ function buildChartData(){
             var a = pools[pName] = (pools[pName] || {
                 hashrate: [],
                 workers: [],
-                blocksPending: []
+                //blocksPending: []
             });
 
             if (pName in statData[i].pools){
                 a.hashrate.push([time, statData[i].pools[pName].hashrate]);
                 a.workers.push([time, statData[i].pools[pName].workerCount]);
-                a.blocksPending.push([time, statData[i].pools[pName].blocks.pending]);
+                //a.blocksPending.push([time, statData[i].pools[pName].blocks.pending]);
             }
             else{
                 a.hashrate.push([time, 0]);
                 a.workers.push([time, 0]);
-                a.blocksPending.push([time, 0]);
+                //a.blocksPending.push([time, 0]);
             }
 
         }
@@ -70,7 +70,7 @@ function buildChartData(){
 
     poolWorkerData = [];
     poolHashrateData = [];
-    poolBlockPendingData = [];
+    //poolBlockPendingData = [];
 
     for (var pool in pools){
         poolWorkerData.push({
@@ -81,10 +81,10 @@ function buildChartData(){
             key: pool,
             values: pools[pool].hashrate
         });
-        poolBlockPendingData.push({
-            key: pool,
-            values: pools[pool].blocksPending
-        });
+        //poolBlockPendingData.push({
+        //    key: pool,
+        //    values: pools[pool].blocksPending
+        //});
     }
 }
 
@@ -93,8 +93,8 @@ function removeAllSeries() {
         poolWorkerChart.series[0].remove();
     while(poolHashrateChart.series.length > 0)
         poolHashrateChart.series[0].remove();
-    while(poolBlockPendingChart.series.length > 0)
-        poolBlockPendingChart.series[0].remove();
+    //while(poolBlockPendingChart.series.length > 0)
+    //    poolBlockPendingChart.series[0].remove();
 }
 
 function changeGraphTimePeriod(timePeriod, sender) {
@@ -275,72 +275,72 @@ function createCharts() {
         },
         series: []
     });
-    poolBlockPendingChart = new Highcharts.Chart({
-        chart: {
-            renderTo: 'poolBlockChart',
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            animation: true,
-            shadow: false,
-            borderWidth: 0
-        },
-        credits: {
-            enabled: false
-        },
-        exporting: {
-            enabled: false
-        },
-        title: {
-            text: 'Blocks Pending Per Pool'
-        },
-        xAxis: {
-            type: 'datetime',
-            dateTimeLabelFormats: {
-                second: '%I:%M:%S %p',
-                minute: '%I:%M %p',
-                hour: '%I:%M %p',
-                day: '%I:%M %p'
-            },
-            title: {
-                text: null
-            }
-        },
-        yAxis: {
-            labels: {
+//    poolBlockPendingChart = new Highcharts.Chart({
+//        chart: {
+//            renderTo: 'poolBlockChart',
+//            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+//            animation: true,
+//            shadow: false,
+//            borderWidth: 0
+//        },
+//        credits: {
+//            enabled: false
+//        },
+//        exporting: {
+//            enabled: false
+//        },
+//        title: {
+//            text: 'Blocks Pending Per Pool'
+//        },
+//        xAxis: {
+//            type: 'datetime',
+//            dateTimeLabelFormats: {
+//                second: '%I:%M:%S %p',
+//                minute: '%I:%M %p',
+//                hour: '%I:%M %p',
+//                day: '%I:%M %p'
+//           },
+//            title: {
+//                text: null
+//            }
+//        },
+//        yAxis: {
+//            labels: {
 
-            },
-            title: {
-                text: null
-            },
-            min: 0
-        },
-        tooltip: {
-            shared: true,
-            crosshairs: false,
-            useHTML: true,
-            formatter: function () {
-                var s = '<b>' + timeOfDayFormat(this.x) + '</b>';
+//            },
+//            title: {
+//                text: null
+//            },
+//            min: 0
+//        },
+//        tooltip: {
+//            shared: true,
+//            crosshairs: false,
+//            useHTML: true,
+//            formatter: function () {
+//                var s = '<b>' + timeOfDayFormat(this.x) + '</b>';
 
-                $.each(this.points, function (i, point) {
-                    s += '<br/> <span style="color:' + point.series.color + '" x="8" dy="16">&#9679;</span> ' + point.series.name + ': ' + point.y;
-                });
-                return s;
-            }
-        },
-        legend: {
-            enabled: true,
-            borderWidth: 0
-        },
-        plotOptions: {
-            column: {
-                stacking: 'normal',
-                pointWidth: 15,
-                pointRange: 0,
-                pointPadding: 0,
-                borderWidth: 0
-            }
-        },
-        series: []
-    });
+//                $.each(this.points, function (i, point) {
+//                    s += '<br/> <span style="color:' + point.series.color + '" x="8" dy="16">&#9679;</span> ' + point.series.name + ': ' + point.y;
+//                });
+//                return s;
+//            }
+//        },
+//        legend: {
+//            enabled: true,
+//            borderWidth: 0
+//        },
+//        plotOptions: {
+//            column: {
+//                stacking: 'normal',
+//                pointWidth: 15,
+//                pointRange: 0,
+//                pointPadding: 0,
+//                borderWidth: 0
+//            }
+//        },
+//        series: []
+//    });
 }
 
 function displayCharts(){
@@ -361,25 +361,25 @@ function displayCharts(){
                 lineWidth: 2
             }, false);
         }
-        if(poolBlockPendingChart.series.length < poolKeys.length) {
-            poolBlockPendingChart.addSeries({
-                type: 'column',
-                name: capitaliseFirstLetter(poolBlockPendingData[i].key),
-                data: poolBlockPendingData[i].values,
-                pointWidth: ((poolBlockPendingChart.chartWidth / statData.length) - columnBuffer)
-            }, false);
-        }
+//        if(poolBlockPendingChart.series.length < poolKeys.length) {
+//            poolBlockPendingChart.addSeries({
+//                type: 'column',
+//                name: capitaliseFirstLetter(poolBlockPendingData[i].key),
+//                data: poolBlockPendingData[i].values,
+//                pointWidth: ((poolBlockPendingChart.chartWidth / statData.length) - columnBuffer)
+//            }, false);
+//        }
 
         if (typeof poolColors !== "undefined") {
             var pName = poolKeys[i].toLowerCase();
             poolWorkerChart.series[i].update({color: poolColors[pName].color}, false);
             poolHashrateChart.series[i].update({color: poolColors[pName].color}, false);
-            poolBlockPendingChart.series[i].update({color: poolColors[pName].color}, false);
+//            poolBlockPendingChart.series[i].update({color: poolColors[pName].color}, false);
         }
     }
     poolWorkerChart.redraw();
     poolHashrateChart.redraw();
-    poolBlockPendingChart.redraw();
+//    poolBlockPendingChart.redraw();
 }
 
 function savePoolColors() {
