@@ -1,0 +1,5 @@
+{
+    "name": "FlutterCoin",
+    "symbol": "FLT",
+    "algorithm": "scrypt"
+}
