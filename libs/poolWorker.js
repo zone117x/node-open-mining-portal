@@ -273,7 +273,7 @@ module.exports = function(logger){
                         if (pools[currentPool])
                             pools[currentPool].getStratumServer().handleNewClient(socket);
                         else
-                            pools[initialPool].getStratumServer().handleNewClient(socket);
+                            pools[initalPool].getStratumServer().handleNewClient(socket);
 
                     }).listen(parseInt(port), function() {
                         logger.debug(logSystem, logComponent, logSubCat, 'Switching "' + switchName
