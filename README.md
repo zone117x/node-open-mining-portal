@@ -127,6 +127,7 @@ If your pool uses NOMP let us know and we will list your website here.
 * http://pool.trademybit.com/
 * http://fixminer.com
 * http://poollo.com
+* http://mecmine.com
 
 Usage
 =====
