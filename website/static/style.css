@@ -12,10 +12,10 @@ body{
     flex-direction: column;
     max-width: 1160px;
     margin: 0 auto;
+    margin-top:35px;
 }
 
 header > .home-menu{
-    background: inherit !important;
     height: 54px;
     display: flex;
 }
@@ -41,7 +41,7 @@ header > .home-menu > ul > li > a:hover, header > .home-menu > ul > li > a:focus
 }
 
 header > .home-menu > ul > li > a:hover, header > .home-menu > ul > li.pure-menu-selected > a{
-    color: white;
+    color: #4ca5f8;
 }
 
 main{
