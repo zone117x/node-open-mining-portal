@@ -110,23 +110,13 @@ didn't follow the instructions in this README. Please __read the usage instructi
 If your pool uses NOMP let us know and we will list your website here.
 
 ##### Some pools using NOMP or node-stratum-module:
-* http://chunkypools.com
 * http://clevermining.com
-* http://rapidhash.net
 * http://suchpool.pw
 * http://hashfaster.com
 * http://miningpoolhub.com
-* http://teamdoge.com
-* http://miningwith.us
 * http://kryptochaos.com
-* http://uberpools.org
-* http://onebtcplace.com
-* http://minr.es
-* http://mining.theminingpools.com
-* http://www.omargpools.ca/pools.html
-* http://pool.trademybit.com/
-* http://fixminer.com
-* http://poollo.com
+* http://miningpools.tk
+* http://umine.co.uk
 
 Usage
 =====
