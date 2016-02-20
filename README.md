@@ -9,10 +9,10 @@ responsive user-friendly front-end website featuring mining instructions, in-dep
 This is beta software. All of the following are things that can change and break an existing NOMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data.
 
 #### Paid Solution
-Usage of this software requires abilities with sysadmin, database admin, coin daemons, and sometimes a bit of programming. Running a production pool can literally be more work than a full-time job. [LiveChains UK](http://www.livechains.net/) offers full hosting, setup and management of NOMP pools with several different configurations.
+Usage of this software requires abilities with sysadmin, database admin, coin daemons, and sometimes a bit of programming. Running a production pool can literally be more work than a full-time job. 
 
 
-**Coin switching & auto-exchanging for payouts in BTC/LTC** to miners is a feature that very likely will not be included in this project. [LiveChains UK](http://www.livechains.net/) however does offer this feature as part of there own customised NOMP called [LivePool](http://www.livechains.net/LivePool.html).
+**Coin switching & auto-exchanging for payouts in BTC/LTC** to miners is a feature that very likely will not be included in this project. 
 
 
 #### Table of Contents
@@ -110,23 +110,13 @@ didn't follow the instructions in this README. Please __read the usage instructi
 If your pool uses NOMP let us know and we will list your website here.
 
 ##### Some pools using NOMP or node-stratum-module:
-* http://chunkypools.com
 * http://clevermining.com
-* http://rapidhash.net
 * http://suchpool.pw
 * http://hashfaster.com
 * http://miningpoolhub.com
-* http://teamdoge.com
-* http://miningwith.us
 * http://kryptochaos.com
-* http://uberpools.org
-* http://onebtcplace.com
-* http://minr.es
-* http://mining.theminingpools.com
-* http://www.omargpools.ca/pools.html
-* http://pool.trademybit.com/
-* http://fixminer.com
-* http://poollo.com
+* http://miningpools.tk
+* http://umine.co.uk
 
 Usage
 =====
