@@ -36,7 +36,7 @@ module.exports = function(logger, poolConfig){
         logger.error(logSystem, logComponent, logSubCat, 'Redis client had an error: ' + JSON.stringify(err))
     });
     connection.on('end', function(){
-        logger.error(logSystem, logComponent, logSubCat, 'Connection to redis database as been ended');
+        logger.error(logSystem, logComponent, logSubCat, 'Connection to redis database has been ended');
     });
 
     connection.info(function(error, response){
