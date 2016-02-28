@@ -8,6 +8,12 @@ responsive user-friendly front-end website featuring mining instructions, in-dep
 #### Production Usage Notice
 This is beta software. All of the following are things that can change and break an existing NOMP setup: functionality of any feature, structure of configuration files and structure of redis data. If you use this software in production then *DO NOT* pull new code straight into production usage because it can and often will break your setup and require you to tweak things like config files or redis data.
 
+#### Paid Solution
+Usage of this software requires abilities with sysadmin, database admin, coin daemons, and sometimes a bit of programming. Running a production pool can literally be more work than a full-time job. 
+
+
+**Coin switching & auto-exchanging for payouts in BTC/LTC** to miners is a feature that very likely will not be included in this project. 
+
 
 #### Table of Contents
 * [Features](#features)
@@ -104,21 +110,13 @@ didn't follow the instructions in this README. Please __read the usage instructi
 If your pool uses NOMP let us know and we will list your website here.
 
 ##### Some pools using NOMP or node-stratum-module:
-* http://chunkypools.com
 * http://clevermining.com
-* http://rapidhash.net
 * http://suchpool.pw
 * http://hashfaster.com
 * http://miningpoolhub.com
-* http://teamdoge.com
-* http://miningwith.us
 * http://kryptochaos.com
-* http://uberpools.org
-* http://onebtcplace.com
-* http://minr.es
-* http://mining.theminingpools.com
-* http://www.omargpools.ca/pools.html
-* http://pool.trademybit.com/
+* http://miningpools.tk
+* http://umine.co.uk
 
 Usage
 =====
@@ -348,7 +346,7 @@ Here is an example of the required fields:
        source code as the pchMessageStart variable.
        For example, litecoin mainnet magic: http://git.io/Bi8YFw
        And for litecoin testnet magic: http://git.io/NXBYJA */
-    "peerMagic": "fbc0b6db" //optional
+    "peerMagic": "fbc0b6db", //optional
     "peerMagicTestnet": "fcc1b7dc" //optional
 
     //"txMessages": false, //options - defaults to false
@@ -524,7 +522,7 @@ output from NOMP.
 
 #### Upgrading NOMP
 When updating NOMP to the latest code its important to not only `git pull` the latest from this repo, but to also update
-the `node-statum-pool` and `node-multi-hashing` modules, and any config files that may have been changed.
+the `node-stratum-pool` and `node-multi-hashing` modules, and any config files that may have been changed.
 * Inside your NOMP directory (where the init.js script is) do `git pull` to get the latest NOMP code.
 * Remove the dependenices by deleting the `node_modules` directory with `rm -r node_modules`.
 * Run `npm update` to force updating/reinstalling of the dependencies.

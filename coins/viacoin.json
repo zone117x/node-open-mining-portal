@@ -1,0 +1,7 @@
+{
+    "name": "Viacoin",
+    "symbol": "VIA",
+    "algorithm": "scrypt",
+    "peerMagic": "0f68c6cb",
+    "peerMagicTestnet": "a9c5ef92"
+}

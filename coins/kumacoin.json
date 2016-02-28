@@ -1,0 +1,6 @@
+{
+    "name": "Kumacoin",
+    "symbol": "KUMA",
+    "algorithm": "quark",
+    "mposDiffMultiplier": 256
+}
