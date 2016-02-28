@@ -64,7 +64,9 @@
         "password": "mypass",
         "database": "ltc",
         "checkPassword": true,
-        "autoCreateWorker": false
+        "autoCreateWorker": false,
+        "autoCreateAnonymousAccount": false,
+        "salt": "SomeStrongRandomSaltFromMPOS",
     }
 
 }

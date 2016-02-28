@@ -58,7 +58,7 @@ module.exports = function(logger, portalConfig, poolConfig, singleCoinPayoutPort
             }
         }
         if (!version){
-            logger.error(logSystem, logComponent, logSubCat, 'Could not detect redis version - but be super old or broken');
+            logger.error(logSystem, logComponent, logSubCat, 'Could not detect redis version - could be super old or broken');
         }
         else if (version < 2.6){
             logger.error(logSystem, logComponent, logSubCat, "You're using redis version " + versionString + " the minimum required version is 2.6. Follow the damn usage instructions...");
