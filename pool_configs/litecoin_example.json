@@ -66,7 +66,7 @@
         "checkPassword": true,
         "autoCreateWorker": false,
         "autoCreateAnonymousAccount": false,
-        "salt": "SomeStrongRandomSaltFromMPOS",
+        "salt": "SomeStrongRandomSaltFromMPOS"
     }
 
 }
