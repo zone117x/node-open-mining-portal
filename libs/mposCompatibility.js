@@ -54,23 +54,23 @@ module.exports = function(logger, poolConfig){
                                     // Create an anonymous account with coin address as username
                                     if(mposConfig.autoCreateAnonymousAccount) {
                                         if(validateCoinAddress(account)) {
-                                        connection.query("INSERT INTO `accounts` (`is_anonymous`, `username`, `pass`, `signup_timestamp`, `pin`, `donate_percent`) 
-                                            VALUES (?, ?, ?, ?, ?, ?);",
+                                        connection.query('INSERT INTO `accounts` (`is_anonymous`, `username`, `pass`, `signup_timestamp`, `pin`, `donate_percent`) 
+                                            VALUES (?, ?, ?, ?, ?, ?);',
                                             [1, account.toLowerCase(), makePW(), Math.floor(Date.now() / 1000), randomPIN(), 1],
                                             function(err, result) {
                                                 if(err) {
                                                     logger.error(logIdentify, logComponent, 'Could not create new user: ' + JSON.stringify(err));
                                                     authCallback(false);
                                                 } else {
-                                                    connection.query("INSERT INTO `coin_addresses` (`account_id`, `currency`, `coin_address`, `ap_threshold`)
-                                                        VALUES (?, ?, ?, ?);",
+                                                    connection.query('INSERT INTO `coin_addresses` (`account_id`, `currency`, `coin_address`, `ap_threshold`)
+                                                        VALUES (?, ?, ?, ?);',
                                                         [result[0].id, symbol, account, 0.1],
                                                         function(err, result) {
                                                             if(err) {
                                                                 logger.error(logIdentify, logComponent, 'Could not create coin address for anon user: ' + JSON.stringify(err));
                                                                 authCallback(false);
                                                             } else {
-                                                                connection.query("INSERT INTO `pool_worker` (`account_id`, `username`, `password`) VALUES (?, ?, ?);",
+                                                                connection.query('INSERT INTO `pool_worker` (`account_id`, `username`, `password`) VALUES (?, ?, ?);',
                                                                 [result[0].account_id,workerName.toLowerCase(),password],
                                                                 function(err, result){
                                                                     if (err){
