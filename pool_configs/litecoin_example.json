@@ -65,8 +65,7 @@
         "database": "ltc",
         "checkPassword": true,
         "autoCreateWorker": false,
-        "autoCreateAnonymousAccount": false,
-        "salt": "SomeStrongRandomSaltFromMPOS"
+        "autoCreateAnonymousAccount": false
     }
 
 }
