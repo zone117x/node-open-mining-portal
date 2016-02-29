@@ -165,20 +165,20 @@ function validateCoinAddress(address, authCallback, connection, logger, logIdent
 }
 
 function createNewAnonymousAccount(account, authCallback, connection, logger, logIdentify, logComponent) {
-    connection.query("INSERT INTO 'accounts' ('is_anonymous', 'username', 'pass', 'signup_timestamp', 'pin', 'donate_percent') VALUES (?, ?, ?, ?, ?, ?);", [1, account.toLowerCase(), makePW(), Math.floor(Date.now() / 1000), randomPIN(), 1],
+    connection.query("INSERT INTO accounts (is_anonymous, username, pass, signup_timestamp, pin, donate_percent) VALUES (?, ?, ?, ?, ?, ?);", [1, account.toLowerCase(), makePW(), Math.floor(Date.now() / 1000), randomPIN(), 1],
         function(err, result) {
             if (err) {
                 logger.error(logIdentify, logComponent, 'Could not create new user: ' + JSON.stringify(err));
                 authCallback(false);
             } else {
                 logger.debug(logIdentify, logComponent, 'results of new account: ' + JSON.stringify(result[0]));
-                connection.query("INSERT INTO 'coin_addresses' ('account_id', 'currency', 'coin_address', 'ap_threshold') VALUES (?, ?, ?, ?);", [result[0].id, symbol, account, 0.1],
+                connection.query("INSERT INTO coin_addresses (account_id, currency, coin_address, ap_threshold) VALUES (?, ?, ?, ?);", [result[0].id, symbol, account, 0.1],
                     function(err, result) {
                         if (err) {
                             logger.error(logIdentify, logComponent, 'Could not create coin address for anon user: ' + JSON.stringify(err));
                             authCallback(false);
                         } else {
-                            connection.query("INSERT INTO 'pool_worker' ('account_id', 'username', 'password') VALUES (?, ?, ?);", [result[0].account_id, workerName.toLowerCase(), password],
+                            connection.query("INSERT INTO pool_worker (account_id, username, password) VALUES (?, ?, ?);", [result[0].account_id, workerName.toLowerCase(), password],
                                 function(err, result) {
                                     if (err) {
                                         logger.error(logIdentify, logComponent, 'Database error when insert worker: ' +
