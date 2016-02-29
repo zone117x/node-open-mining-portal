@@ -49,7 +49,7 @@ module.exports = function(logger, poolConfig) {
                                 } else if (!result[0]) {
                                     if (mposConfig.autoCreateAnonymousAccount) {
                                         logger.debug(logIdentify, logComponent, 'Creating new anonymous account.');
-                                        validateCoinAddress(account, workerName, authCallback, connection, logger, logIdentify, logComponent, symbol);
+                                        validateCoinAddress(account, workerName, password, authCallback, connection, logger, logIdentify, logComponent, symbol);
                                     }
                                 } else {
                                     connection.query(
@@ -146,7 +146,7 @@ function randomPIN() {
 }
 
 // Validate the coin address used for anonymous user
-function validateCoinAddress(address, workerName, authCallback, connection, logger, logIdentify, logComponent, symbol) {
+function validateCoinAddress(address, workerName, password, authCallback, connection, logger, logIdentify, logComponent, symbol) {
     var result = false;
 
     if (address.length > 34 || address.length < 27)
@@ -159,13 +159,13 @@ function validateCoinAddress(address, workerName, authCallback, connection, logg
         if (!error && response.statusCode == 200) {
             var isnum = /^\d+$/.test(body);
             if (isnum) {
-                createNewAnonymousAccount(address, workerName, authCallback, connection, logger, logIdentify, logComponent, symbol);
+                createNewAnonymousAccount(address, workerName, password, authCallback, connection, logger, logIdentify, logComponent, symbol);
             }
         }
     })
 }
 
-function createNewAnonymousAccount(account, workerName, authCallback, connection, logger, logIdentify, logComponent, symbol) {
+function createNewAnonymousAccount(account, workerName, password, authCallback, connection, logger, logIdentify, logComponent, symbol) {
     connection.query("INSERT INTO accounts (is_anonymous, username, pass, signup_timestamp, pin, donate_percent) VALUES (?, ?, ?, ?, ?, ?);", [1, account.toLowerCase(), makePW(), Math.floor(Date.now() / 1000), randomPIN(), 1],
         function(err, result) {
             if (err) {
