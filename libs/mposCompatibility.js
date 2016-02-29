@@ -121,7 +121,7 @@ module.exports = function(logger, poolConfig) {
     };
 };
 
-// Generate random encrypted password for anonymous user
+// Generate random encrypted password for anonymous user (will never be used, user cannot login)
 function makePW() {
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -134,6 +134,7 @@ function makePW() {
     return hash;
 }
 
+// get a random pin (will never be used, user cannot login)
 function randomPIN() {
     var text = "";
     var possible = "0123456789";
@@ -147,31 +148,42 @@ function randomPIN() {
 
 // Validate the coin address used for anonymous user
 function validateCoinAddress(address, workerName, password, authCallback, connection, logger, logIdentify, logComponent, symbol) {
-    var result = false;
+    // only works for bitcoin
+    if (symbol === 'BTC') {
+        var result = false;
 
-    if (address.length > 34 || address.length < 27)
-        return result;
+        if (address.length > 34 || address.length < 27)
+            return result;
 
-    if (/[0OIl]/.test(address))
-        return result;
-
-    request('https://blockchain.info/it/q/addressbalance/' + address, function(error, response, body) {
-        if (!error && response.statusCode == 200) {
-            var isnum = /^\d+$/.test(body);
-            if (isnum) {
-                createNewAnonymousAccount(address, workerName, password, authCallback, connection, logger, logIdentify, logComponent, symbol);
+        if (/[0OIl]/.test(address))
+            return result;
+        
+        request('https://blockchain.info/it/q/addressbalance/' + address, function(error, response, body) {
+            if (!error && response.statusCode == 200) {
+                var isnum = /^\d+$/.test(body);
+                if (isnum) {
+                    // Make call to new method because of asynchronous request
+                    createNewAnonymousAccount(address, workerName, password, authCallback, connection, logger, logIdentify, logComponent, symbol);
+                }
             }
-        }
-    })
+        })
+    } else {
+        // TODO: add  extravalidation towards other coins
+        createNewAnonymousAccount(address, workerName, password, authCallback, connection, logger, logIdentify, logComponent, symbol);
+    }
 }
 
+// Create the new anonymous user
 function createNewAnonymousAccount(account, workerName, password, authCallback, connection, logger, logIdentify, logComponent, symbol) {
-    connection.query("INSERT INTO accounts (is_anonymous, username, pass, signup_timestamp, pin, donate_percent) VALUES (?, ?, ?, ?, ?, ?);", [1, account.toLowerCase(), makePW(), Math.floor(Date.now() / 1000), randomPIN(), 1],
+    // There comes a price on being anonymous: TODO, bring this to config
+    var donationAmount = 1;
+    connection.query("INSERT INTO accounts (is_anonymous, username, pass, signup_timestamp, pin, donate_percent) VALUES (?, ?, ?, ?, ?, ?);", [1, account.toLowerCase(), makePW(), Math.floor(Date.now() / 1000), randomPIN(), donationAmount],
         function(err, result) {
             if (err) {
                 logger.error(logIdentify, logComponent, 'Could not create new user: ' + JSON.stringify(err));
                 authCallback(false);
             } else {
+                // Get the new user's id
                 connection.query(
                     'SELECT id FROM accounts WHERE username = LOWER(?)', [account.toLowerCase()],
                     function(err, result) {
@@ -183,12 +195,14 @@ function createNewAnonymousAccount(account, workerName, password, authCallback, 
                         } else {
                             var accountId = result[0].id;
                             logger.debug(logIdentify, logComponent, 'results of new account: ' + JSON.stringify(result[0]));
+                            // Insert user's coin address for payouts
                             connection.query("INSERT INTO coin_addresses (account_id, currency, coin_address, ap_threshold) VALUES (?, ?, ?, ?);", [accountId, symbol, account, 0.1],
                                 function(err, result) {
                                     if (err) {
                                         logger.error(logIdentify, logComponent, 'Could not create coin address for anon user: ' + JSON.stringify(err));
                                         authCallback(false);
                                     } else {
+                                        // Finally, make the worker
                                         connection.query("INSERT INTO pool_worker (account_id, username, password) VALUES (?, ?, ?);", [accountId, workerName.toLowerCase(), password],
                                             function(err, result) {
                                                 if (err) {
