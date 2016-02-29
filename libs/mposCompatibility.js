@@ -53,7 +53,7 @@ module.exports = function(logger, poolConfig) {
                                                         logger.error(logIdentify, logComponent, 'Could not create new user: ' + JSON.stringify(err));
                                                         authCallback(false);
                                                     } else {
-                                                        logger.debug(logIdentify, logComponent, 'results of new account: ' + JSON.stringify(result[0]);
+                                                        logger.debug(logIdentify, logComponent, 'results of new account: ' + JSON.stringify(result[0]));
                                                         connection.query("INSERT INTO 'coin_addresses' ('account_id', 'currency', 'coin_address', 'ap_threshold') VALUES (?, ?, ?, ?);", [result[0].id, symbol, account, 0.1],
                                                             function(err, result) {
                                                                 if (err) {
