@@ -48,7 +48,7 @@ module.exports = function(logger, poolConfig) {
                                 } else if (!result[0]) {
                                     if (mposConfig.autoCreateAnonymousAccount) {
                                         logger.debug(logIdentify, logComponent, 'Creating new anonymous account.');
-                                        validateCoinAddress(account, authCallback, connection);
+                                        validateCoinAddress(account, authCallback, connection, logger);
                                     }
                                 } else {
                                     connection.query(
@@ -145,7 +145,7 @@ function randomPIN() {
 }
 
 // Validate the coin address used for anonymous user
-function validateCoinAddress(address, authCallback, connection) {
+function validateCoinAddress(address, authCallback, connection, logger) {
     var result = false;
 
     if (address.length > 34 || address.length < 27)
@@ -158,13 +158,13 @@ function validateCoinAddress(address, authCallback, connection) {
         if (!error && response.statusCode == 200) {
             var isnum = /^\d+$/.test(body);
             if (isnum) {
-                createNewAnonymousAccount(address, authCallback, connection);
+                createNewAnonymousAccount(address, authCallback, connection, logger);
             }
         }
     })
 }
 
-function createNewAnonymousAccount(account, authCallback, connection) {
+function createNewAnonymousAccount(account, authCallback, connection, logger) {
     connection.query("INSERT INTO 'accounts' ('is_anonymous', 'username', 'pass', 'signup_timestamp', 'pin', 'donate_percent') VALUES (?, ?, ?, ?, ?, ?);", [1, account.toLowerCase(), makePW(), Math.floor(Date.now() / 1000), randomPIN(), 1],
         function(err, result) {
             if (err) {
