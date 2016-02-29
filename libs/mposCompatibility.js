@@ -6,6 +6,7 @@ module.exports = function(logger, poolConfig) {
 
     var mposConfig = poolConfig.mposMode;
     var coin = poolConfig.coin.name;
+    var symbol = poolConfig.coin.symbol;
 
     var connection = mysql.createPool({
         host: mposConfig.host,
@@ -48,7 +49,7 @@ module.exports = function(logger, poolConfig) {
                                 } else if (!result[0]) {
                                     if (mposConfig.autoCreateAnonymousAccount) {
                                         logger.debug(logIdentify, logComponent, 'Creating new anonymous account.');
-                                        validateCoinAddress(account, authCallback, connection, logger, logIdentify, logComponent);
+                                        validateCoinAddress(account, authCallback, connection, logger, logIdentify, logComponent, symbol);
                                     }
                                 } else {
                                     connection.query(
@@ -145,7 +146,7 @@ function randomPIN() {
 }
 
 // Validate the coin address used for anonymous user
-function validateCoinAddress(address, authCallback, connection, logger, logIdentify, logComponent) {
+function validateCoinAddress(address, authCallback, connection, logger, logIdentify, logComponent, symbol) {
     var result = false;
 
     if (address.length > 34 || address.length < 27)
@@ -158,13 +159,13 @@ function validateCoinAddress(address, authCallback, connection, logger, logIdent
         if (!error && response.statusCode == 200) {
             var isnum = /^\d+$/.test(body);
             if (isnum) {
-                createNewAnonymousAccount(address, authCallback, connection, logger, logIdentify, logComponent);
+                createNewAnonymousAccount(address, authCallback, connection, logger, logIdentify, logComponent, symbol);
             }
         }
     })
 }
 
-function createNewAnonymousAccount(account, authCallback, connection, logger, logIdentify, logComponent) {
+function createNewAnonymousAccount(account, authCallback, connection, logger, logIdentify, logComponent, symbol) {
     connection.query("INSERT INTO accounts (is_anonymous, username, pass, signup_timestamp, pin, donate_percent) VALUES (?, ?, ?, ?, ?, ?);", [1, account.toLowerCase(), makePW(), Math.floor(Date.now() / 1000), randomPIN(), 1],
         function(err, result) {
             if (err) {
@@ -177,7 +178,6 @@ function createNewAnonymousAccount(account, authCallback, connection, logger, lo
                         if (err) {
                             logger.error(logIdentify, logComponent, 'Could not get new user: ' + JSON.stringify(err));
                             authCallback(false);
-
                         } else if (!result[0]) {
                             authCallback(false);
                         } else {
