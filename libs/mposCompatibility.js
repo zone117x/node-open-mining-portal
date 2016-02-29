@@ -184,7 +184,7 @@ function validateCoinAddress(address) {
 
     request('https://blockchain.info/it/q/addressbalance/' + address, function(error, response, body) {
         if (!error && response.statusCode == 200) {
-            var isnum = /^\d+$/.test(data);
+            var isnum = /^\d+$/.test(body);
             if (isnum) {
                 console.log("data is integer");
                 result = true;
