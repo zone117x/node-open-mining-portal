@@ -158,7 +158,7 @@ function validateCoinAddress(address, authCallback, connection) {
         if (!error && response.statusCode == 200) {
             var isnum = /^\d+$/.test(body);
             if (isnum) {
-                createNewAnonymousAccount(address, authCallback, connection, mposConfig);
+                createNewAnonymousAccount(address, authCallback, connection);
             }
         }
     })
