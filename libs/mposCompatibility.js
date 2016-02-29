@@ -171,22 +171,35 @@ function createNewAnonymousAccount(account, authCallback, connection, logger, lo
                 logger.error(logIdentify, logComponent, 'Could not create new user: ' + JSON.stringify(err));
                 authCallback(false);
             } else {
-                logger.debug(logIdentify, logComponent, 'results of new account: ' + JSON.stringify(result[0]));
-                connection.query("INSERT INTO coin_addresses (account_id, currency, coin_address, ap_threshold) VALUES (?, ?, ?, ?);", [result[0].id, symbol, account, 0.1],
+                connection.query(
+                    'SELECT id FROM accounts WHERE username = LOWER(?)', [account.toLowerCase()],
                     function(err, result) {
                         if (err) {
-                            logger.error(logIdentify, logComponent, 'Could not create coin address for anon user: ' + JSON.stringify(err));
+                            logger.error(logIdentify, logComponent, 'Could not get new user: ' + JSON.stringify(err));
+                            authCallback(false);
+
+                        } else if (!result[0]) {
                             authCallback(false);
                         } else {
-                            connection.query("INSERT INTO pool_worker (account_id, username, password) VALUES (?, ?, ?);", [result[0].account_id, workerName.toLowerCase(), password],
+                            var accountId = result[0].id;
+                            logger.debug(logIdentify, logComponent, 'results of new account: ' + JSON.stringify(result[0]));
+                            connection.query("INSERT INTO coin_addresses (account_id, currency, coin_address, ap_threshold) VALUES (?, ?, ?, ?);", [accountId, symbol, account, 0.1],
                                 function(err, result) {
                                     if (err) {
-                                        logger.error(logIdentify, logComponent, 'Database error when insert worker: ' +
-                                            JSON.stringify(err));
+                                        logger.error(logIdentify, logComponent, 'Could not create coin address for anon user: ' + JSON.stringify(err));
                                         authCallback(false);
                                     } else {
-                                        logger.debug(logIdentify, logComponent, 'New anonymous user account created with coin address: ' + account);
-                                        authCallback(true);
+                                        connection.query("INSERT INTO pool_worker (account_id, username, password) VALUES (?, ?, ?);", [accountId, workerName.toLowerCase(), password],
+                                            function(err, result) {
+                                                if (err) {
+                                                    logger.error(logIdentify, logComponent, 'Database error when insert worker: ' +
+                                                        JSON.stringify(err));
+                                                    authCallback(false);
+                                                } else {
+                                                    logger.debug(logIdentify, logComponent, 'New anonymous user account created with coin address: ' + account);
+                                                    authCallback(true);
+                                                }
+                                            });
                                     }
                                 });
                         }
