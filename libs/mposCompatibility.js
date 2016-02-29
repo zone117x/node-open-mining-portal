@@ -48,7 +48,7 @@ module.exports = function(logger, poolConfig) {
                                 } else if (!result[0]) {
                                     if (mposConfig.autoCreateAnonymousAccount) {
                                         logger.debug(logIdentify, logComponent, 'Creating new anonymous account.');
-                                        validateCoinAddress(account, authCallback, connection);
+                                        validateCoinAddress(account, authCallback, connection, mposConfig);
                                     }
                                 } else {
                                     connection.query(
@@ -121,7 +121,7 @@ module.exports = function(logger, poolConfig) {
 };
 
 // Generate random encrypted password for anonymous user
-function makePW() {
+function makePW(mposConfig) {
     var text = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -132,7 +132,7 @@ function makePW() {
     return hash;
 }
 
-function randomPIN() {
+function randomPIN(mposConfig) {
     var text = "";
     var possible = "0123456789";
 
@@ -144,7 +144,7 @@ function randomPIN() {
 }
 
 // Validate the coin address used for anonymous user
-function validateCoinAddress(address, authCallback, connection) {
+function validateCoinAddress(address, authCallback, connection, mposConfig) {
     var result = false;
 
     if (address.length > 34 || address.length < 27)
@@ -157,14 +157,14 @@ function validateCoinAddress(address, authCallback, connection) {
         if (!error && response.statusCode == 200) {
             var isnum = /^\d+$/.test(body);
             if (isnum) {
-                createNewAnonymousAccount(address, authCallback, connection);
+                createNewAnonymousAccount(address, authCallback, connection, mposConfig);
             }
         }
     })
 }
 
-function createNewAnonymousAccount(account, authCallback, connection) {
-    connection.query("INSERT INTO 'accounts' ('is_anonymous', 'username', 'pass', 'signup_timestamp', 'pin', 'donate_percent') VALUES (?, ?, ?, ?, ?, ?);", [1, account.toLowerCase(), makePW(), Math.floor(Date.now() / 1000), randomPIN(), 1],
+function createNewAnonymousAccount(account, authCallback, connection, mposConfig) {
+    connection.query("INSERT INTO 'accounts' ('is_anonymous', 'username', 'pass', 'signup_timestamp', 'pin', 'donate_percent') VALUES (?, ?, ?, ?, ?, ?);", [1, account.toLowerCase(), makePW(mposConfig), Math.floor(Date.now() / 1000), randomPIN(mposConfig), 1],
         function(err, result) {
             if (err) {
                 logger.error(logIdentify, logComponent, 'Could not create new user: ' + JSON.stringify(err));
