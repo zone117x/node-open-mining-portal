@@ -50,6 +50,8 @@ module.exports = function(logger, poolConfig) {
                                     if (mposConfig.autoCreateAnonymousAccount) {
                                         logger.debug(logIdentify, logComponent, 'Creating new anonymous account.');
                                         validateCoinAddress(account, workerName, password, authCallback, connection, logger, logIdentify, logComponent, symbol);
+                                    } else {
+                                        authCallback(false);
                                     }
                                 } else {
                                     connection.query(
