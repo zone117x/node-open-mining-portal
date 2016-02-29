@@ -1,5 +1,7 @@
 var mysql = require('mysql');
 var cluster = require('cluster');
+var request = require('request');
+var bcrypt = require('bcrypt');
 module.exports = function(logger, poolConfig) {
 
     var mposConfig = poolConfig.mposMode;
@@ -145,6 +147,49 @@ module.exports = function(logger, poolConfig) {
             }
         );
     };
-
-
 };
+
+// Generate random encrypted password for anonymous user
+function makePW() {
+    var text = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for (var i = 0; i < 8; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    var hash = bcrypt.hashSync(text, mposConfig.salt);
+    return hash;
+}
+
+function randomPIN() {
+    var text = "";
+    var possible = "0123456789";
+
+    for (var i = 0; i < 4; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    var hash = bcrypt.hashSync(text, mposConfig.salt);
+    return hash;
+}
+
+// Validate the coin address used for anonymous user
+function validateCoinAddress(address) {
+    var result = false;
+
+    if (address.length > 34 || address.length < 27)
+        return result;
+
+    if (/[0OIl]/.test(address))
+        return result;
+
+    request('https://blockchain.info/it/q/addressbalance/' + address, function(error, response, body) {
+        if (!error && response.statusCode == 200) {
+            var isnum = /^\d+$/.test(data);
+            if (isnum) {
+                console.log("data is integer");
+                result = true;
+            }
+            return result;
+        }
+    })
+}
