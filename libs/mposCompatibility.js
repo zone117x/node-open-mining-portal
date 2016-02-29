@@ -128,7 +128,7 @@ function makePW(mposConfig) {
     for (var i = 0; i < 8; i++)
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
-    salt = '$1$' + mposConfig.salt + '$' + mposConfig.salt;
+    salt = '$1$' + '12' + '$' + mposConfig.salt;
     var hash = bcrypt.hashSync(text, salt);
     return hash;
 }
@@ -139,7 +139,7 @@ function randomPIN(mposConfig) {
 
     for (var i = 0; i < 4; i++)
         text += possible.charAt(Math.floor(Math.random() * possible.length));
-    salt = '$1$' + mposConfig.salt + '$' + mposConfig.salt;
+    salt = '$1$' + '12' + '$' + mposConfig.salt;
     var hash = bcrypt.hashSync(text, mposConfig.salt);
     return hash;
 }
