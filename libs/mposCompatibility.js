@@ -129,6 +129,7 @@ function makePW(mposConfig) {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
 
     var hash = bcrypt.hashSync(text, mposConfig.salt);
+    hash = '$1$' + hash;
     return hash;
 }
 
