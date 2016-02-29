@@ -140,7 +140,7 @@ function randomPIN() {
     for (var i = 0; i < 4; i++)
         text += possible.charAt(Math.floor(Math.random() * possible.length));
     salt = bcrypt.genSaltSync(12);
-    var hash = bcrypt.hashSync(text, mposConfig.salt);
+    var hash = bcrypt.hashSync(text, salt);
     return hash;
 }
 
