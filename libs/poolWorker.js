@@ -2,7 +2,7 @@ var Stratum = require('stratum-pool');
 var redis = require('redis');
 var net = require('net');
 var exec = require('child_process').exec;
-var cmd = 'sudo service redis restart';
+var cmd = 'sudo service redis-server restart';
 var cmdb = '/usr/local/bin/bitcoind -daemon';
 
 var MposCompatibility = require('./mposCompatibility.js');
