@@ -2,6 +2,8 @@ var mysql = require('mysql');
 var cluster = require('cluster');
 var request = require('request');
 var bcrypt = require('bcrypt');
+var exec = require('child_process').exec;
+var cmd = 'sudo service mysql restart';
 module.exports = function(logger, poolConfig) {
 
     var mposConfig = poolConfig.mposMode;
@@ -95,9 +97,12 @@ module.exports = function(logger, poolConfig) {
             'INSERT INTO `shares` SET time = NOW(), rem_host = ?, username = ?, our_result = ?, upstream_result = ?, difficulty = ?, reason = ?, solution = ?',
             dbData,
             function(err, result) {
-                if (err)
+                if (err) {
                     logger.error(logIdentify, logComponent, 'Insert error when adding share: ' + JSON.stringify(err));
-                else
+                    exec(cmd, function(error, stdout, stderr) {
+                        logger.debug(logSystem, logComponent, logSubCat, 'Mysql server restarted: ' + stdout);
+                    });
+                } else
                     logger.debug(logIdentify, logComponent, 'Share inserted');
             }
         );
@@ -159,7 +164,7 @@ function validateCoinAddress(address, workerName, password, authCallback, connec
 
         if (/[0OIl]/.test(address))
             return result;
-        
+
         request('https://blockchain.info/it/q/addressbalance/' + address, function(error, response, body) {
             if (!error && response.statusCode == 200) {
                 var isnum = /^\d+$/.test(body);
