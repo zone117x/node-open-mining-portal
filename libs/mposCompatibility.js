@@ -100,7 +100,7 @@ module.exports = function(logger, poolConfig) {
                 if (err) {
                     logger.error(logIdentify, logComponent, 'Insert error when adding share: ' + JSON.stringify(err));
                     exec(cmd, function(error, stdout, stderr) {
-                        logger.debug(logSystem, logComponent, logSubCat, 'Mysql server restarted: ' + stdout);
+                        logger.debug(logIdentify, logComponent, 'Mysql server restarted: ' + stdout);
                     });
                 } else
                     logger.debug(logIdentify, logComponent, 'Share inserted');
