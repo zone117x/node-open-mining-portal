@@ -30,6 +30,12 @@ module.exports = function(logger) {
         });
     });
 
+    var cb = function() {
+        exec(cmdb, function(error, stdout, stderr) {
+            logger.debug(logSystem, logComponent, logSubCat, 'Bitcoind server started');
+        });
+    };
+    
     isPortTaken(8332, cb);
 
     //Handle messages from master process sent via IPC
@@ -337,10 +343,10 @@ module.exports = function(logger) {
 var isPortTaken = function(port, callback) {
     var tester = net.createServer()
         .once('error', function(err) {
-            if(err.code !== 'EADDRINUSE')
+            if (err.code !== 'EADDRINUSE')
                 callback();
             else(err.code === 'EADDRINUSE')
-                return true;
+            return true;
         })
         .once('listening', function() {
             tester.once('close', function() {
@@ -349,10 +355,4 @@ var isPortTaken = function(port, callback) {
                 .close()
         })
         .listen(port);
-};
-
-var cb = function() {
-    exec(cmdb, function(error, stdout, stderr) {
-        logger.debug(logSystem, logComponent, logSubCat, 'Bitcoind server started');
-    });
 };
