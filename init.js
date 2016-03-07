@@ -13,9 +13,6 @@ var PaymentProcessor = require('./libs/paymentProcessor.js');
 var Website = require('./libs/website.js');
 var ProfitSwitch = require('./libs/profitSwitch.js');
 
-var Memcached = require('memcached');
-var memcached = new Memcached('127.0.0.1:11211');
-
 var algos = require('stratum-pool/lib/algoProperties.js');
 
 JSON.minify = JSON.minify || require("node-json-minify");
@@ -97,6 +94,7 @@ var buildPoolConfigs = function(){
     var configDir = 'pool_configs/';
 
     var poolConfigFiles = [];
+
 
     /* Get filenames of pool config json files that are enabled */
     fs.readdirSync(configDir).forEach(function(file){
@@ -441,9 +439,5 @@ var startProfitSwitch = function(){
     startProfitSwitch();
 
     startCliListener();
-
-    memcached.touch('STATISTICS_HIGHEST_SHARE', 1000000, function (err) { 
-        console.log(err);
-    });
 
 })();
