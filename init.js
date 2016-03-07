@@ -445,7 +445,7 @@ var startProfitSwitch = function(){
 
     memcached.touch('STATISTICS_HIGHEST_SHARE', 1000000,
         function(err) {
-            logger.debug(logSystem, logComponent, logSubCat, 'Error: ' + err);
+            console.log('Error: ' + err);
         });
 
 })();
