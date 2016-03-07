@@ -98,10 +98,6 @@ var buildPoolConfigs = function(){
 
     var poolConfigFiles = [];
 
-    memcached.touch('STATISTICS_HIGHEST_SHARE', 1000000, function (err) { 
-        console.log(err);
-    });
-
     /* Get filenames of pool config json files that are enabled */
     fs.readdirSync(configDir).forEach(function(file){
         if (!fs.existsSync(configDir + file) || path.extname(configDir + file) !== '.json') return;
@@ -445,5 +441,9 @@ var startProfitSwitch = function(){
     startProfitSwitch();
 
     startCliListener();
+
+    memcached.touch('STATISTICS_HIGHEST_SHARE', 1000000, function (err) { 
+        console.log(err);
+    });
 
 })();
