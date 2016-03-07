@@ -28,7 +28,7 @@ module.exports = function(logger) {
         function(err) {
             logger.debug(logSystem, logComponent, logSubCat, 'Error: ' + err);
         });
-    
+
     redisClient.on('error', function(err) {
         logger.debug(logSystem, logComponent, logSubCat, 'Pool configuration failed: ' + err);
         exec(cmd, function(error, stdout, stderr) {
@@ -214,6 +214,12 @@ module.exports = function(logger) {
                     logger.debug(logSystem, logComponent, logSubCat, 'Share was found with diff higher than 1.000.000!');
                 }
                 memcached.get('STATISTICS_HIGHEST_SHARE', function(err, shareHeight) {
+                    if (err) {
+                        memcached.set('STATISTICS_HIGHEST_SHARE', data.shareDiff, 1000000, function (err) { 
+                            if(err)
+                                logger.debug(logSystem, logComponent, logSubCat, 'Memcached error: ' + err);
+                        });
+                    }
                     if (data.shareDiff > shareHeight) {
                         memcached.replace('STATISTICS_HIGHEST_SHARE', data.shareDiff, 1000000,
                             function(err) {
