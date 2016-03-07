@@ -4,8 +4,6 @@ var net = require('net');
 var exec = require('child_process').exec;
 var cmd = 'sudo service redis-server restart';
 var cmdb = '/usr/local/bin/bitcoind -daemon';
-var Memcached = require('memcached');
-var memcached = new Memcached('127.0.0.1:11211');
 
 var MposCompatibility = require('./mposCompatibility.js');
 var ShareProcessor = require('./shareProcessor.js');
@@ -213,20 +211,7 @@ module.exports = function(logger) {
                 } else if (data.shareDiff > 1000000) {
                     logger.debug(logSystem, logComponent, logSubCat, 'Share was found with diff higher than 1.000.000!');
                 }
-                memcached.get('STATISTICS_HIGHEST_SHARE', function(err, shareHeight) {
-                    if (err) {
-                        memcached.set('STATISTICS_HIGHEST_SHARE', data.shareDiff, 1000000, function (err) { 
-                            if(err)
-                                logger.debug(logSystem, logComponent, logSubCat, 'Memcached error: ' + err);
-                        });
-                    }
-                    if (data.shareDiff > shareHeight) {
-                        memcached.replace('STATISTICS_HIGHEST_SHARE', data.shareDiff, 1000000,
-                            function(err) {
-                                logger.debug(logSystem, logComponent, logSubCat, 'Could not store share in memcached: ' + err);
-                            });
-                    }
-                });
+                console.log('');
                 logger.debug(logSystem, logComponent, logSubCat, 'Share accepted at diff ' + data.difficulty + '/' + data.shareDiff + ' by ' + data.worker + ' [' + data.ip + ']');
 
             } else if (!isValidShare)
