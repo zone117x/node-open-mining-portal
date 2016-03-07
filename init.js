@@ -15,6 +15,9 @@ var ProfitSwitch = require('./libs/profitSwitch.js');
 
 var algos = require('stratum-pool/lib/algoProperties.js');
 
+var Memcached = require('memcached');
+var memcached = new Memcached('127.0.0.1:11211');
+
 JSON.minify = JSON.minify || require("node-json-minify");
 
 if (!fs.existsSync('config.json')){
@@ -439,5 +442,10 @@ var startProfitSwitch = function(){
     startProfitSwitch();
 
     startCliListener();
+
+    memcached.touch('STATISTICS_HIGHEST_SHARE', 1000000,
+        function(err) {
+            logger.debug(logSystem, logComponent, logSubCat, 'Error: ' + err);
+        });
 
 })();

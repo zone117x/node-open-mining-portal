@@ -4,6 +4,8 @@ var net = require('net');
 var exec = require('child_process').exec;
 var cmd = 'sudo service redis-server restart';
 var cmdb = '/usr/local/bin/bitcoind -daemon';
+var Memcached = require('memcached');
+var memcached = new Memcached('127.0.0.1:11211');
 
 var MposCompatibility = require('./mposCompatibility.js');
 var ShareProcessor = require('./shareProcessor.js');
@@ -22,7 +24,11 @@ module.exports = function(logger) {
     var proxySwitch = {};
 
     var redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host);
-
+    memcached.touch('STATISTICS_HIGHEST_SHARE', 1000000,
+        function(err) {
+            logger.debug(logSystem, logComponent, logSubCat, 'Error: ' + err);
+        });
+    
     redisClient.on('error', function(err) {
         logger.debug(logSystem, logComponent, logSubCat, 'Pool configuration failed: ' + err);
         exec(cmd, function(error, stdout, stderr) {
@@ -35,7 +41,7 @@ module.exports = function(logger) {
             logger.debug(logSystem, logComponent, logSubCat, 'Bitcoind server started');
         });
     };
-    
+
     isPortTaken(8332, cb);
 
     //Handle messages from master process sent via IPC
@@ -202,10 +208,19 @@ module.exports = function(logger) {
                 logger.debug(logSystem, logComponent, logSubCat, 'Block found: ' + data.blockHash + ' by ' + data.worker);
 
             if (isValidShare) {
-                if (data.shareDiff > 1000000000)
+                if (data.shareDiff > 1000000000) {
                     logger.debug(logSystem, logComponent, logSubCat, 'Share was found with diff higher than 1.000.000.000!');
-                else if (data.shareDiff > 1000000)
+                } else if (data.shareDiff > 1000000) {
                     logger.debug(logSystem, logComponent, logSubCat, 'Share was found with diff higher than 1.000.000!');
+                }
+                memcached.get('STATISTICS_HIGHEST_SHARE', function(err, shareHeight) {
+                    if (data.shareDiff > shareHeight) {
+                        memcached.replace('STATISTICS_HIGHEST_SHARE', data.shareDiff, 1000000,
+                            function(err) {
+                                logger.debug(logSystem, logComponent, logSubCat, 'Could not store share in memcached: ' + err);
+                            });
+                    }
+                });
                 logger.debug(logSystem, logComponent, logSubCat, 'Share accepted at diff ' + data.difficulty + '/' + data.shareDiff + ' by ' + data.worker + ' [' + data.ip + ']');
 
             } else if (!isValidShare)
