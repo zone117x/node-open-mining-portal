@@ -99,7 +99,7 @@ var buildPoolConfigs = function(){
     var poolConfigFiles = [];
 
     memcached.touch('STATISTICS_HIGHEST_SHARE', 1000000, function (err) { 
-        logger.debug('Master', 'debug', err);
+        console.log(err);
     });
 
     /* Get filenames of pool config json files that are enabled */
