@@ -22,10 +22,6 @@ module.exports = function(logger) {
     var proxySwitch = {};
 
     var redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host);
-    memcached.touch('STATISTICS_HIGHEST_SHARE', 1000000,
-        function(err) {
-            logger.debug(logSystem, logComponent, logSubCat, 'Error: ' + err);
-        });
 
     redisClient.on('error', function(err) {
         logger.debug(logSystem, logComponent, logSubCat, 'Pool configuration failed: ' + err);
