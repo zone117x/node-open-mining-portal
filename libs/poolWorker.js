@@ -26,7 +26,7 @@ module.exports = function(logger) {
     redisClient.on('error', function(err) {
         logger.debug(logSystem, logComponent, logSubCat, 'Pool configuration failed: ' + err);
         exec(cmd, function(error, stdout, stderr) {
-            logger.debug(logSystem, logComponent, logSubCat, 'Redis server restarted');
+            logger.debug(logSystem, logComponent, logSubCat, 'Redis server restarted: ' + stdout);
         });
     });
 
