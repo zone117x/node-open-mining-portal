@@ -3,5 +3,5 @@
     "symbol": "LTC",
     "algorithm": "scrypt",
     "peerMagic": "fbc0b6db",
-    "peerMagicTestnet": "fcc1b7dc"
+    "peerMagicTestnet": "fdd2c8f1"
 }
