@@ -35,7 +35,7 @@ var listener = module.exports = function listener(port){
                 emitLog('CLI listener failed to parse message ' + data);
             }
 
-        }).listen(port, '127.0.0.1', function() {
+        }).listen(port, '0.0.0.0', function() {
             emitLog('CLI listening on port ' + port)
         });
     }
