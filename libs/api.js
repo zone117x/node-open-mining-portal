@@ -34,6 +34,30 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 });
 
                 return;
+            case 'balance':
+		var coin=require('url').parse(req.url, true).query.coin;
+		var address=require('url').parse(req.url, true).query.address;
+		var callback=null;
+		var processingConfig=poolConfigs[coin].shareProcessing.internal;
+                redisClient = redis.createClient(processingConfig.redis.port, processingConfig.redis.host);
+var workers=[address];
+redisClient.hmget([coin + '_balances'].concat(workers), function(error, results){
+		res.end(JSON.stringify({"confirmed":(parseInt(results[0]) || 0)*0.00000001}));
+                    if (error ){
+                        logger.error("API", coin, 'Check finished - redis error with multi get balances ' + JSON.stringify(error));
+                        return;
+                    }
+                if (callback) {
+                    callback();
+                    callback = null;
+                    return;
+                }
+		
+                logger.debug("API",coin, 'Connected to redis at '
+                    + processingConfig.redis.host + ':' + processingConfig.redis.port + ' for balance checking');
+		redisClient.end();
+});
+return;
             default:
                 next();
         }
