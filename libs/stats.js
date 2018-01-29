@@ -114,7 +114,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 ['hgetall', ':stats'],
                 ['scard', ':blocksPending'],
                 ['scard', ':blocksConfirmed'],
-                ['scard', ':blocksOrphaned']
+                ['scard', ':blocksKicked']
             ];
 
             var commandsPerCoin = redisCommandTemplates.length;
