@@ -70,21 +70,24 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     callback(true);
                 }
                 else if (!result.response || !result.response.ismine) {
-                        daemon.cmd('getaddressinfo', [poolOptions.address], function(result) {
-                    if (result.error){
-                        logger.error(logSystem, logComponent, 'Error with payment processing daemon ' + JSON.stringify(result.error));
-                        callback(true);
-                    }
-                    else if (!result.response || !result.response.ismine) {
-                        logger.error(logSystem, logComponent,
-                                'Daemon does not own pool address - payment processing can not be done with this daemon, '
-                                + JSON.stringify(result.response));
-                        callback(true);
-                    }
                     logger.error(logSystem, logComponent,
-                            'Daemon does not own pool address - payment processing can not be done with this daemon, '
+                            'Validateaddress failed, trying for newer getaddressinfo Command ..., '
                             + JSON.stringify(result.response));
-                    callback(true);
+                            daemon.cmd('getaddressinfo', [poolOptions.address], function(result) {
+                        if (result.error){
+                            logger.error(logSystem, logComponent, 'Error with payment processing daemon, getaddressinfo failed ... ' + JSON.stringify(result.error));
+                            callback(true);
+                        }
+                        else if (!result.response || !result.response.ismine) {
+                            logger.error(logSystem, logComponent,
+                                    'Daemon does not own pool address - payment processing can not be done with this daemon, '
+                                    + JSON.stringify(result.response));
+                            callback(true);
+                        }
+                        else{
+                            callback()
+                        }
+                    }, true);
                 }
                 else{
                     callback()
