@@ -1,0 +1,7 @@
+{
+    "name": "Coino",
+    "symbol": "COINO",
+    "algorithm": "scrypt",
+    "peerMagic": "f1d1a7d8",
+    "peerMagicTestnet": "fcc1b7dc"
+} 

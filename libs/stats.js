@@ -114,7 +114,7 @@ module.exports = function(logger, portalConfig, poolConfigs){
                 ['hgetall', ':stats'],
                 ['scard', ':blocksPending'],
                 ['scard', ':blocksConfirmed'],
-                ['scard', ':blocksOrphaned']
+                ['scard', ':blocksKicked']
             ];
 
             var commandsPerCoin = redisCommandTemplates.length;
@@ -274,9 +274,9 @@ module.exports = function(logger, portalConfig, poolConfigs){
         var i = -1;
         var byteUnits = [ ' KH', ' MH', ' GH', ' TH', ' PH' ];
         do {
-            hashrate = hashrate / 1024;
+            hashrate = hashrate / 1000;
 			i++;
-        } while (hashrate > 1024);
+        } while (hashrate > 1000);
         return hashrate.toFixed(2) + byteUnits[i];
     };
 

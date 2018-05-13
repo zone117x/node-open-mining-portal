@@ -15,9 +15,11 @@ module.exports = function(logger, portalConfig, poolConfigs){
     this.handleApiRequest = function(req, res, next){
         switch(req.params.method){
             case 'stats':
+                res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(portalStats.statsString);
                 return;
             case 'pool_stats':
+                res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify(portalStats.statPoolHistory));
                 return;
             case 'live_stats':
