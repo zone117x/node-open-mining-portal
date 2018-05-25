@@ -1,0 +1,7 @@
+{
+    "name": "Chaincoin",
+    "symbol": "CHC",
+    "algorithm": "c11",
+    "peerMagic": "a3d27a03",
+    "peerMagicTestnet": "fbc21102"
+}
