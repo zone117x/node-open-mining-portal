@@ -4,7 +4,6 @@ var net     = require('net');
 
 var MposCompatibility = require('./mposCompatibility.js');
 var ShareProcessor = require('./shareProcessor.js');
-var Stratum = require('stratum-pool');
 
 module.exports = function(logger){
 
