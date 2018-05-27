@@ -1,0 +1,25 @@
+{
+    "name": "Example",
+    "symbol": "EXM",
+    "algorithm": "x99",
+    "peerMagic": "0f0f0f0f",
+    "peerMagicTestnet": "f0f0f0f0",
+
+    "mainnet": {
+      "bech32": "ex",
+      "bip32": {
+        "public": "0f0f0f0f"
+      },
+      "pubKeyHash": "00",
+      "scriptHash": "ff"
+    },
+
+    "testnet": {
+      "bech32": "tex",
+      "bip32": {
+        "public": "f0f0f0f0"
+      },
+      "pubKeyHash": "0f",
+      "scriptHash": "f0"
+    }
+}

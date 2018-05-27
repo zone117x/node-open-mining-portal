@@ -3,5 +3,23 @@
     "symbol": "CHC",
     "algorithm": "c11",
     "peerMagic": "a3d27a03",
-    "peerMagicTestnet": "fbc21102"
+    "peerMagicTestnet": "fbc21102",
+
+    "mainnet": {
+      "bech32": "chc",
+      "bip32": {
+        "public": "0488b21e"
+      },
+      "pubKeyHash": "1c",
+      "scriptHash": "04"
+    },
+
+    "testnet": {
+      "bech32": "tchc",
+      "bip32": {
+        "public": "043587cf"
+      },
+      "pubKeyHash": "50",
+      "scriptHash": "2c"
+    }
 }
