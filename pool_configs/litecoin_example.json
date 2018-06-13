@@ -65,6 +65,14 @@
         "database": "ltc",
         "checkPassword": true,
         "autoCreateWorker": false
-    }
+    },
+
+    "validateWorkerUsername": true,
+    "validateWorkerSettings": {
+        "apiRoot": "https://kala-tools.pools.zone",
+        "poolId": "abcdefg",
+        "email": "myuser@somewhere.com",
+        "password": "mypassword",
+    },
 
 }
