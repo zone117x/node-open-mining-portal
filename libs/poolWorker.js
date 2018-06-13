@@ -1,6 +1,7 @@
 var Stratum = require('stratum-pool');
 var redis   = require('redis');
 var net     = require('net');
+var request = require('request');
 
 var MposCompatibility = require('./mposCompatibility.js');
 var ShareProcessor = require('./shareProcessor.js');
@@ -13,10 +14,12 @@ module.exports = function(logger){
     var portalConfig = JSON.parse(process.env.portalConfig);
 
     var forkId = process.env.forkId;
-    
+
     var pools = {};
 
     var proxySwitch = {};
+
+    var mnemonics = {};
 
     var redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host);
 
@@ -69,10 +72,10 @@ module.exports = function(logger){
 
                 if (newPool) {
                     oldPool.relinquishMiners(
-                        function (miner, cback) { 
+                        function (miner, cback) {
                             // relinquish miners that are attached to one of the "Auto-switch" ports and leave the others there.
                             cback(proxyPorts.indexOf(miner.client.socket.localPort.toString()) !== -1)
-                        }, 
+                        },
                         function (clients) {
                             newPool.attachMiners(clients);
                         }
@@ -134,23 +137,84 @@ module.exports = function(logger){
                 if (poolOptions.validateWorkerUsername !== true)
                     authCallback(true);
                 else {
-                    if (workerName.length === 40) {
-                        try {
-                            new Buffer(workerName, 'hex');
-                            authCallback(true);
-                        }
-                        catch (e) {
-                            authCallback(false);
-                        }
+                    // phone home to kala-tools to make sure the miner is registered
+                    if (!poolOptions.validateWorkerSettings) {
+                        // settings are required
+                        authCallback(false);
+                        logger.error(logSystem, logComponent, logSubCat, 'worker validation settings are not set');
+
+                        return;
                     }
-                    else {
-                        pool.daemon.cmd('validateaddress', [workerName], function (results) {
-                            var isValid = results.filter(function (r) {
-                                return r.response.isvalid
-                            }).length > 0;
+                    const authSettings = poolOptions.validateWorkerSettings;
+                    if (!authSettings.apiRoot || !authSettings.poolId || !authSettings.email || !authSettings.password) {
+                        // required settings are missing
+                        authCallback(false);
+                        logger.error(logSystem, logComponent, logSubCat, 'worker validation settings are missing required values');
+
+                        return;
+                    }
+
+                    // login... this could be cached
+                    request.post(`${authSettings.apiRoot}/users/login`, {
+                        form: {
+                            email: authSettings.email,
+                            password: authSettings.password,
+                        },
+                        json: true,
+                    }, (err, response, body) => {
+                        if (err) {
+                            logger.error(logSystem, logComponent, logSubCat, 'error while attempting to login to authorization api: ' + err.message);
+                            authCallback(false);
+                            return;
+                        }
+
+                        if ((response.statusCode !== 200 && response.statusCode !== 201) || !body.data || !body.data.result || !body.data.result.token) {
+                            logger.error(logSystem, logComponent, logSubCat, 'attempting to authenticate with the authorization api failed: ' + response.statusCode + ' ' + JSON.stringify(body, null, '  '));
+                            authCallback(false);
+                            return;
+                        }
+
+                        const token = body.data.result.token;
+
+
+                        // check to see if the address exists
+                        request.get(`${authSettings.apiRoot}/miners/list/0?address[eq]=${workerName}&token=${token}`, {
+                            json: true,
+                        }, (err, response, body) => {
+                            if (err) {
+                                logger.error(logSystem, logComponent, logSubCat, 'error while attempting to validate miner address: ' + err.message);
+                                authCallback(false);
+                                return;
+                            }
+
+                            if (response.statusCode !== 200 || !body.data || !body.data.result || !Array.isArray(body.data.result.list)) {
+                                logger.error(logSystem, logComponent, logSubCat, 'Unable to determine if miner address is valid: ' + response.statusCode + ' ' + JSON.stringify(body, null, '  '));
+                                authCallback(false);
+                                return;
+                            }
+
+                            const isValid = body.data.result.list.length > 0;
                             authCallback(isValid);
                         });
-                    }
+                    });
+
+                    // if (workerName.length === 40) {
+                    //     try {
+                    //         new Buffer(workerName, 'hex');
+                    //         authCallback(true);
+                    //     }
+                    //     catch (e) {
+                    //         authCallback(false);
+                    //     }
+                    // }
+                    // else {
+                    //     pool.daemon.cmd('validateaddress', [workerName], function (results) {
+                    //         var isValid = results.filter(function (r) {
+                    //             return r.response.isvalid
+                    //         }).length > 0;
+                    //         authCallback(isValid);
+                    //     });
+                    // }
 
                 }
             };
@@ -273,7 +337,7 @@ module.exports = function(logger){
                             + switchName + ' from '
                             + socket.remoteAddress + ' on '
                             + port + ' routing to ' + currentPool);
-                        
+
                         if (pools[currentPool])
                             pools[currentPool].getStratumServer().handleNewClient(socket);
                         else
@@ -304,7 +368,7 @@ module.exports = function(logger){
     };
 
     //
-    // Called when stratum pool emits its 'started' event to copy the initial diff and vardiff 
+    // Called when stratum pool emits its 'started' event to copy the initial diff and vardiff
     // configuation for any proxy switching ports configured into the stratum pool object.
     //
     this.setDifficultyForProxyPort = function(pool, coin, algo) {
@@ -317,7 +381,7 @@ module.exports = function(logger){
             var switchAlgo = portalConfig.switching[switchName].algorithm;
             if (pool.options.coin.algorithm !== switchAlgo) return;
 
-            // we know the switch configuration matches the pool's algo, so setup the diff and 
+            // we know the switch configuration matches the pool's algo, so setup the diff and
             // vardiff for each of the switch's ports
             for (var port in portalConfig.switching[switchName].ports) {
 
@@ -325,11 +389,16 @@ module.exports = function(logger){
                     pool.setVarDiff(port, portalConfig.switching[switchName].ports[port].varDiff);
 
                 if (portalConfig.switching[switchName].ports[port].diff){
-                    if (!pool.options.ports.hasOwnProperty(port)) 
+                    if (!pool.options.ports.hasOwnProperty(port))
                         pool.options.ports[port] = {};
                     pool.options.ports[port].diff = portalConfig.switching[switchName].ports[port].diff;
                 }
             }
         });
     };
+
+    this._getPoolMnemonic(poolId)
+    {
+
+    }
 };
