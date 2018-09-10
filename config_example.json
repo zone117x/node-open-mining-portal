@@ -40,7 +40,7 @@
             "hashrateWindow": 300
         },
         "adminCenter": {
-            "enabled": true,
+            "enabled": false,
             "password": "password"
         }
     },
