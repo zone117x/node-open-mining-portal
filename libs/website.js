@@ -41,7 +41,9 @@ module.exports = function(logger){
         'workers.html': 'workers',
         'api.html': 'api',
         'admin.html': 'admin',
-        'mining_key.html': 'mining_key'
+        'mining_key.html': 'mining_key',
+        'miner_stats.html': 'miner_stats',
+        'payments.html': 'payments'
     };
 
     var pageTemplates = {};
@@ -74,6 +76,19 @@ module.exports = function(logger){
         //logger.debug(logSystem, 'Stats', 'Website updated to latest stats');
     };
 
+    var minerpage = function(req, res, next){
+        var address = req.params.address || null;
+        if (address != null) {
+            address = address.split(".")[0];
+            portalStats.getBalanceByAddress(address, function(){
+                processTemplates();
+                res.header('Content-Type', 'text/html');
+                res.end(indexesProcessed['miner_stats']);
+            });
+        }
+        else
+            next();
+    };
 
 
     var readPageFiles = function(files){
@@ -270,6 +285,8 @@ module.exports = function(logger){
 
     app.use(compress());
     app.use('/static', express.static('website/static'));
+
+    app.get('/workers/:address', minerpage);
 
     app.use(function(err, req, res, next){
         console.error(err.stack);

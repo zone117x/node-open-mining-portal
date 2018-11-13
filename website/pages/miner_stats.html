@@ -1,0 +1,104 @@
+<style>
+    #topCharts{
+        padding-left: 18px;
+		padding-right: 18px;
+		padding-top: 18px;
+		padding-bottom: 0px;
+    }
+    #topCharts > div > div > svg{
+        display: block;
+        height: 280px;
+    }
+    .chartWrapper{
+        border: solid 1px #c7c7c7;
+        border-radius: 5px;
+        padding: 5px;
+        margin-bottom: 18px;
+    }
+    .chartLabel{
+        font-size: 1.2em;
+        text-align: center;
+        padding: 4px;
+    }
+    .chartHolder{
+
+    }
+
+	#boxesWorkers {
+        margin: 0 9px;
+    }
+    #boxesWorkers > div {
+        display: flex;
+    }
+    #boxesWorkers > div > div {
+        flex: 1 1 auto;
+        margin: 0 9px 18px 9px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+    .boxLowerHeader{
+        font-size: 1.3em;
+        margin: 0 0 5px 10px;
+    }
+
+    #boxStatsLeft{
+        color: black;
+        background-color: #cccccc;
+    }
+    #boxStatsRight{
+		color: black;
+        background-color: #cccccc;
+    }
+    .boxStats{
+        color: white;
+    }
+    .boxStatsList{
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-around;
+        opacity: 0.77;
+        margin-bottom: 5px;
+        flex: 1 1 auto;
+        align-content: center;
+    }
+    .boxStatsList i.fa{
+        height: 15px;
+        width: 33px;
+        text-align: center;
+    }
+    .boxStatsList > div{
+        padding: 5px 20px;
+    }
+    .boxStatsList > div > div{
+        padding: 3px;
+    }
+
+</style>
+
+<div id="topCharts">
+    <div class="chartWrapper">
+        <div class="chartLabel">
+			<!--<div style="float:left; padding-right: 18px;"><i class="fa fa-users"></i><span id="statsWorkers">...</span></div>-->
+			<div style="float:left; margin-right: 9px;">{{=String(it.stats.address).split(".")[0]}}</div>
+			<div style="float:right; padding-left: 18px;"><small><i class="fa fa-tachometer"></i> <span id="statsHashrateAvg">...</span> (Avg)</small></div>
+			<div style="float:right; padding-left: 18px;"><small><i class="fa fa-tachometer"></i> <span id="statsHashrate">...</span> (Now)</small></div>
+		</div>
+		<div class="chartHolder"><svg id="workerHashrate" /></div>
+		<div>
+			<div style="float:right; padding-top: 9px; padding-right: 18px;"><i class="fa fa-cog"></i> Shares: <span id="statsTotalShares">...</span></div>
+			<div style="float:left; padding-top: 9px; padding-left: 18px; padding-right: 18px;"><i class="fa fa-money"></i> Immature: <span id="statsTotalImmature">...</span> </div>
+			<div style="float:left; padding-top: 9px; padding-left: 18px; padding-right: 18px;"><i class="fa fa-money"></i> Bal: <span id="statsTotalBal">...</span>  </div>
+			<div style="padding-top: 9px; padding-left: 18px;"><i class="fa fa-money"></i> Paid: <span id="statsTotalPaid">...</span>  </div>
+		</div>
+    </div>
+</div>
+
+<div id="boxesWorkers"> </div>
+
+<script>
+	var _miner = "{{=String(it.stats.address).split(".")[0]}}";
+	var _workerCount = 0;
+	window.statsSource = new EventSource("/api/live_stats");
+    document.querySelector('main').appendChild(document.createElement('script')).src = '/static/miner_stats.js';
+</script>

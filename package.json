@@ -31,22 +31,22 @@
         "url": "https://github.com/napoly/node-open-mining-portal.git"
     },
     "dependencies": {
-        "stratum-pool": "git://github.com/napoly/node-stratum-pool.git",
-        "dateformat": "*",
-        "node-json-minify": "*",
-        "redis": "0.12.1",
-        "mysql": "*",
         "async": "1.5.2",
-        "express": "*",
-        "body-parser": "*",
-        "compression": "*",
-        "dot": "*",
-        "colors": "*",
-        "node-watch": "*",
-        "request": "2.69.0",
-        "nonce": "*",
         "bignum": "*",
-        "extend": "*"
+        "body-parser": "*",
+        "colors": "*",
+        "compression": "*",
+        "dateformat": "*",
+        "dot": "*",
+        "express": "*",
+        "extend": "*",
+        "mysql": "*",
+        "node-json-minify": "*",
+        "node-watch": "*",
+        "nonce": "*",
+        "redis": "0.12.1",
+        "request": "^2.88.0",
+        "stratum-pool": "git://github.com/napoly/node-stratum-pool.git"
     },
     "engines": {
         "node": ">=0.10"
