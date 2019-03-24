@@ -64,6 +64,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
     async.parallel([
         function(callback){
+          if (poolOptions.address != false) {
             daemon.cmd('validateaddress', [poolOptions.address], function(result) {
                 if (result.error){
                     logger.error(logSystem, logComponent, 'Error with payment processing daemon ' + JSON.stringify(result.error));
@@ -90,6 +91,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     callback()
                 }
             }, true);
+          }
+          else callback();
         },
         function(callback){
             daemon.cmd('getbalance', [], function(result){
@@ -529,12 +532,37 @@ function SetupForPool(logger, poolOptions, setupFinished){
         });
     };
 
+    function handleAddress(address) {
+      if (address.length === 40){
+          return util.addressFromEx(poolOptions.address, address);
+      }
+      else return address;
+    }
 
     var getProperAddress = function(address){
-        if (address.length === 40){
-            return util.addressFromEx(poolOptions.address, address);
-        }
-        else return address;
+      if (address != false) {
+        return handleAddress(address);
+      } else {
+        var addressToPay = '';
+
+        daemon.cmd('getnewaddress', [], function(result){
+            if (result.error){
+                callback(true);
+                return;
+            }
+            try {
+                addressToPay = result.data;
+            }
+            catch(e){
+                logger.error(logSystem, logComponent, 'Error getting a new address. Got: ' + result.data);
+                callback(true);
+            }
+
+        }, true, true);
+
+        return handleAddress(addressToPay);
+
+      }
     };
 
 
