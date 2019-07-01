@@ -82,6 +82,10 @@ if (cluster.isWorker){
         case 'profitSwitch':
             new ProfitSwitch(logger);
             break;
+        case 'switchingPaymentProcessor':
+            var SwitchingPaymentProcessor = require('./libs/switchingPaymentProcessor.js');
+            new SwitchingPaymentProcessor(logger);
+            break;
     }
 
     return;
@@ -143,6 +147,17 @@ var buildPoolConfigs = function(){
         var coinProfile = JSON.parse(JSON.minify(fs.readFileSync(coinFilePath, {encoding: 'utf8'})));
         poolOptions.coin = coinProfile;
         poolOptions.coin.name = poolOptions.coin.name.toLowerCase();
+        if (coinProfile.mainnet) {
+            poolOptions.coin.mainnet.bip32.public = Buffer.from(coinProfile.mainnet.bip32.public, 'hex').readUInt32LE(0);
+            poolOptions.coin.mainnet.pubKeyHash = Buffer.from(coinProfile.mainnet.pubKeyHash, 'hex').readUInt8(0);
+            poolOptions.coin.mainnet.scriptHash = Buffer.from(coinProfile.mainnet.scriptHash, 'hex').readUInt8(0);
+        }
+        if (coinProfile.testnet) {
+            poolOptions.coin.testnet.bip32.public = Buffer.from(coinProfile.testnet.bip32.public, 'hex').readUInt32LE(0);
+            poolOptions.coin.testnet.pubKeyHash = Buffer.from(coinProfile.testnet.pubKeyHash, 'hex').readUInt8(0);
+            poolOptions.coin.testnet.scriptHash = Buffer.from(coinProfile.testnet.scriptHash, 'hex').readUInt8(0);
+        }
+
 
         if (poolOptions.coin.name in configs){
 
@@ -356,7 +371,21 @@ var processCoinSwitchCommand = function(params, options, reply){
 
 };
 
+var startSwitchingPaymentProcessor = function(){
+    if (!fs.existsSync('libs/switchingPaymentProcessor.js')) return;
 
+    var worker = cluster.fork({
+        workerType: 'switchingPaymentProcessor',
+        pools: JSON.stringify(poolConfigs),
+        portalConfig: JSON.stringify(portalConfig)
+    });
+    worker.on('exit', function(code, signal){
+        logger.error('Master', 'Switching Payment Processor', 'Died, spawning replacement...');
+        setTimeout(function(){
+            startSwitchingPaymentProcessor();
+        }, 2000);
+    });
+};
 
 var startPaymentProcessor = function(){
 
@@ -433,6 +462,8 @@ var startProfitSwitch = function(){
     spawnPoolWorkers();
 
     startPaymentProcessor();
+
+    startSwitchingPaymentProcessor();
 
     startWebsite();
 
