@@ -4,7 +4,7 @@
   "algorithm": "scrypt",
   "peerMagic": "fbc0b6db",
   "peerMagicTestnet": "fdd2c8f1",
-  
+
   "mainnet": {
     "bech32": "ltc",
     "bip32": {
@@ -13,7 +13,7 @@
     "pubKeyHash": "30",
     "scriptHash": "05"
   },
-  
+
   "testnet": {
     "bech32": "tltc",
     "bip32": {
