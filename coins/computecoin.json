@@ -1,0 +1,6 @@
+{
+    "name": "ComputeCoin",
+    "symbol": "PTZ",
+    "algorithm": "x11",
+    "peerMagic": "5055545a"
+}
