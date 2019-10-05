@@ -8,7 +8,7 @@ module.exports = function() {
 
     // Constants
     var version         = '0.0.1',
-        PUBLIC_API_URL  = 'http://www.coinwarz.com/v1/api/profitability/?apikey=YOUR_API_KEY&algo=all',
+        PUBLIC_API_URL  = 'https://www.coinwarz.com/v1/api/profitability/?apikey=YOUR_API_KEY&algo=all',
         USER_AGENT      = 'nomp/node-open-mining-portal'
 
     // Constructor
