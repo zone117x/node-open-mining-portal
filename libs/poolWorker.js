@@ -5,6 +5,19 @@ var net     = require('net');
 var MposCompatibility = require('./mposCompatibility.js');
 var ShareProcessor = require('./shareProcessor.js');
 
+loadWhitelist = function() {
+  var fs = require('fs');
+  JSON.minify = JSON.minify || require("node-json-minify");
+
+  if (!fs.existsSync('./whitelist.json')) {
+      console.log('whitelist.json file does not exist.');
+      return [];
+  }
+
+  var whitelistConfig = JSON.parse(JSON.minify(fs.readFileSync("./whitelist.json", {encoding: 'utf8'})));
+  return whitelistConfig.whitelist;
+}
+
 module.exports = function(logger){
 
     var _this = this;
@@ -127,11 +140,14 @@ module.exports = function(logger){
 
         //Functions required for internal payment processing
         else{
-
+            
+            var whitelist = loadWhitelist();
             var shareProcessor = new ShareProcessor(logger, poolOptions);
 
             handlers.auth = function(port, workerName, password, authCallback){
-                if (poolOptions.validateWorkerUsername !== true)
+                if (!whitelist.includes(workerName))
+                    authCallback(false);
+                else if (poolOptions.validateWorkerUsername !== true)
                     authCallback(true);
                 else {
                     if (workerName.length === 40) {
