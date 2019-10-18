@@ -1,7 +1,6 @@
 {
     "whitelist" : [
-        "adr1",
-        "adr2",
-        "adr3"
+        "address1",
+        "address2"
     ]
 }

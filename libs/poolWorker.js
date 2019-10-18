@@ -149,8 +149,10 @@ module.exports = function(logger){
             var shareProcessor = new ShareProcessor(logger, poolOptions);
 
             handlers.auth = function(port, workerName, password, authCallback){
-                if (tryPassWhitelist(whitelist, workerName))
+                if (tryPassWhitelist(whitelist, workerName)) {
+                    logger.debug(logSystem, logComponent, logSubCat, "Connection refused by whitelist: ", workerName);
                     authCallback(false);
+                }
                 else if (poolOptions.validateWorkerUsername !== true)
                     authCallback(true);
                 else {
