@@ -1,0 +1,7 @@
+{
+    "name": "CPUchain",
+    "symbol": "CPU",
+    "algorithm": "cpupower",
+    "peerMagic": "deadbeef",
+    "peerMagicTestnet": "faceb00c"
+}
