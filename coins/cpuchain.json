@@ -3,5 +3,14 @@
     "symbol": "CPU",
     "algorithm": "cpupower",
     "peerMagic": "deadbeef",
-    "peerMagicTestnet": "faceb00c"
+    "peerMagicTestnet": "faceb00c",
+
+    "mainnet": {
+      "bech32": "cpu",
+      "bip32": {
+        "public": "0488B21E"
+      },
+      "pubKeyHash": "1C",
+      "scriptHash": "1E"
+    }
 }
