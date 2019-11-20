@@ -81,7 +81,7 @@ module.exports = function(logger, portalConfig, poolConfig, singleCoinPayoutPort
 
         var shareKey = singleCoinPayoutPorts[shareData.port] || coin;
 
-        console.log('share key ' + shareKey);
+        // console.log('share key ' + shareKey);
 
         var redisCommands = [];
 

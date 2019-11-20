@@ -206,7 +206,7 @@ module.exports = function(logger){
         });
 
     };
-    buildKeyScriptPage();
+    // buildKeyScriptPage();
 
     var getPage = function(pageId){
         if (pageId in pageProcessed){
@@ -242,9 +242,9 @@ module.exports = function(logger){
         next();
     });
 
-    app.get('/key.html', function(req, res, next){
-        res.end(keyScriptProcessed);
-    });
+    // app.get('/key.html', function(req, res, next){
+    //     res.end(keyScriptProcessed);
+    // });
 
     app.get('/:page', route);
     app.get('/', route);

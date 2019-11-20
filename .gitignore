@@ -3,3 +3,4 @@ node_modules/
 config.json
 pool_configs/*.json
 !pool_configs/litecoin_example.json
+!pool_configs/cpuchain_example.json

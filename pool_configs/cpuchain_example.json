@@ -1,0 +1,63 @@
+{
+    "enabled": false,
+    "coin": "cpuchain.json",
+
+    "address": "",
+
+    "rewardRecipients": {
+        "CPUchainWKQfyNBHz5gYPX6J4a5ea9rjWG": 1.0
+    },
+
+    "paymentProcessing": {
+        "enabled": true,
+        "paymentInterval": 86400,
+        "minimumPayment": 0.5,
+        "daemon": {
+            "host": "127.0.0.1",
+            "port": 19707,
+            "user": "testuser",
+            "password": "testpass"
+        }
+    },
+
+    "ports": {
+        "3032": {
+            "diff": 0.5,
+            "varDiff": {
+                "minDiff": 0.00,
+                "maxDiff": 16,
+                "targetTime": 15,
+                "retargetTime": 60,
+                "variancePercent": 30
+            }
+        }
+    },
+
+    "daemons": [
+        {
+            "host": "127.0.0.1",
+            "port": 19707,
+            "user": "testuser",
+            "password": "testpass"
+        }
+    ],
+
+    "p2p": {
+        "enabled": true,
+        "host": "127.0.0.1",
+        "port": 19706,
+        "disableTransactions": true
+    },
+
+    "mposMode": {
+        "enabled": false,
+        "host": "127.0.0.1",
+        "port": 3306,
+        "user": "me",
+        "password": "mypass",
+        "database": "cpu",
+        "checkPassword": true,
+        "autoCreateWorker": false
+    }
+
+}
