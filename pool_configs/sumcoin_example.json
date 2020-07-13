@@ -1,0 +1,71 @@
+  
+{
+    "enabled": false,
+    "coin": "sumcoin.json",
+
+    "address": "SejSe18kZMCdGcZqaYprShXW6EH1wivUK1",
+
+    "rewardRecipients": {
+        "Se7vuNFkXfk15uFnGoVyHZ6PYQxppD3QqK": 1.5,
+        "Sj851477d63a085dbc2398c8430af1c09e7343f6": 0.1
+    },
+
+    "paymentProcessing": {
+        "enabled": true,
+        "paymentInterval": 21600,
+        "minimumPayment": 0.01,
+        "daemon": {
+            "host": "127.0.0.1",
+            "port": 3332,
+            "user": "YOUR_rpc_user",
+            "password": "YOUR_rpc_password"
+        }
+    },
+
+    "ports": {
+        "3008": {
+            "diff": 8
+        },
+        "3032": {
+            "diff": 32,
+            "varDiff": {
+                "minDiff": 8,
+                "maxDiff": 512,
+                "targetTime": 15,
+                "retargetTime": 90,
+                "variancePercent": 30
+            }
+        },
+        "3256": {
+            "diff": 256
+        }
+    },
+
+    "daemons": [
+        {
+            "host": "127.0.0.1",
+            "port": 3332,
+            "user": "RPCuser",
+            "password": "RPCpass"
+        }
+    ],
+
+    "p2p": {
+        "enabled": true,
+        "host": "127.0.0.1",
+        "port": 3333,
+        "disableTransactions": true
+    },
+
+    "mposMode": {
+        "enabled": false,
+        "host": "127.0.0.1",
+        "port": 3306,
+        "user": "SET_USER_NAME",
+        "password": "SET_USER_PASS",
+        "database": "sum",
+        "checkPassword": true,
+        "autoCreateWorker": false
+    }
+
+}
