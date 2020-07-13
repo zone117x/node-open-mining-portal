@@ -1,0 +1,7 @@
+{
+    "name": "Sumcoin",
+    "symbol": "SUM",
+    "algorithm": "scrypt",
+    "peerMagic": "fac0b5d0",
+    "peerMagicTestnet": "f6c7b4d1"
+}
