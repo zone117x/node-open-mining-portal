@@ -2,5 +2,5 @@
     "name": "Fastcoin",
     "symbol": "FST",
     "algorithm": "scrypt",
-    "peerMagic": "fbc0b6db"
+    "peerMagic": "fdc2b5dc"
 }
