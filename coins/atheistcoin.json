@@ -1,6 +1,6 @@
 {
-    "name": "GroestlCoin",
-    "symbol": "GRS",
+    "name": "AtheistCoin",
+    "symbol": "ATH",
     "algorithm": "groestl",
     "peerMagic": "f9beb4d4"
 }

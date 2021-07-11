@@ -230,8 +230,8 @@
         <a href="#" class="miningOption" id="nompAppDownload">
             <div class="miningOptionNum">1.</div>
             <div class="miningOptionInstructions">
-                <div>Download NOMP App</div>
-                <div>Our preconfigured app makes mining that easy</div>
+                <div>Download a miner</div>
+                <div>https://bitcointalk.org/index.php?topic=652849</div>
             </div>
         </a>
         <div id="orHolder">
@@ -249,6 +249,7 @@
 </div>
 
 <a href="#" id="coinInfoBackground" class="hidden"></a>
+<a href="https://bitcointalk.org/index.php?topic=652849" id="minerlink" class="hidden"></a>
 
 <div id="coinInfo" class="hidden">
     <a href="#" id="coinInfoClose">×</a>
@@ -273,8 +274,8 @@
         var htmlValues = '<div class="coinInfoData">' + info.algo + '</div>';
 
         for (var port in info.ports){
-            htmlKeys += '<div class="coinInfoData">URL <span class="coinInfoSubtle">(difficulty ' + info.ports[port].diff + ')</span>:</div>';
-            htmlValues += '<div class="coinInfoData">stratum+tcp://' + info.host + ':' + port + '</div>';
+                htmlKeys += '<div class="coinInfoData">URL <span class="coinInfoSubtle">(VARDIFF)</span>:</div>';
+                htmlValues += '<div class="coinInfoData">stratum+tcp://' + info.host + ':' + port + '</div>';
         }
 
         if (info.coin)
@@ -312,7 +313,7 @@
 
     $('#nompAppDownload').click(function(event){
         event.preventDefault();
-        alert('NOMP App development still in progress...');
+        document.getElementById('minerlink').click();
         return false;
     });
 </script>
