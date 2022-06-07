@@ -1,7 +1,7 @@
 {
     "name": "bluecoin",
-    "symbol": "blu",
+    "symbol": "BLU",
     "algorithm": "scrypt",
     "peerMagic": "fef5abaa",
-    "peerMagicTestnet": "eaceedcd"
+    "reward": 10000
 }

@@ -1,5 +1,6 @@
 {
     "name": "Kittehcoin",
     "symbol": "MEOW",
-    "algorithm": "scrypt"
+    "algorithm": "scrypt",
+    "peerMagic": "c0c0c0c0"
 }
