@@ -114,14 +114,23 @@ didn't follow the instructions in this README. Please __read the usage instructi
 
 If your pool uses NOMP let us know and we will list your website here.
 
-##### Some pools using NOMP or node-stratum-module:
-* http://clevermining.com
-* http://suchpool.pw
-* http://hashfaster.com
-* http://miningpoolhub.com
-* http://kryptochaos.com
-* http://miningpools.tk
-* http://umine.co.uk
+##### Aprox 500 pools using NOMP or node-stratum-module as their core:
+* http://pool.ovato.com
+* http://kronepool.org/
+* https://pool.tavecchiacoin.com/
+* https://pool.isotopec.org/
+* https://pool.bitcoindeluxe.org
+* https://pool.jolofcoin.io/
+* AnonyPoW pool
+* ~ 500 other pools around world wide web.
+* http://clevermining.com _(now down)_
+* http://suchpool.pw _(now down)_
+* http://hashfaster.com _(now down)_
+* http://miningpoolhub.com _(now down)_
+* http://kryptochaos.com _(now down)_
+* http://miningpools.tk _(now down)_
+* http://umine.co.uk _(now down)_
+
 
 Usage
 =====
@@ -544,7 +553,7 @@ To support development of this project feel free to donate :)
 * QRK: `QehPDAhzVQWPwDPQvmn7iT3PoFUGT7o8bC`
 * DRK: `XcQmhp8ANR7okWAuArcNFZ2bHSB81jpapQ`
 * DOGE: `DBGGVtwAAit1NPZpRm5Nz9VUFErcvVvHYW`
-* Cryptsy Trade Key: `254ca13444be14937b36c44ba29160bd8f02ff76`
+* Cryptsy Trade Key: `254ca13444be14937b36c44ba29160bd8f02ff76` / exchange - scammed and down. 
 
 Credits
 -------
