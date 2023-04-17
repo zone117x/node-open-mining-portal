@@ -132,7 +132,14 @@ module.exports = function(logger){
 
             handlers.auth = function(port, workerName, password, authCallback){
                 if (poolOptions.validateWorkerUsername !== true)
-                    authCallback(true);
+                        addresstester = new RegExp("^[0-9a-zA-Z]+$", "g");
+                        isAddressSafe = addresstester.test(workerName);
+                        if (isAddressSafe) {
+                                authCallback(true);
+                        } else {
+                                authCallback(false);
+                        }
+
                 else {
                     if (workerName.length === 40) {
                         try {
