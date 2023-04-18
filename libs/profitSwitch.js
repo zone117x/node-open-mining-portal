@@ -555,8 +555,11 @@ module.exports = function(logger){
             var target = response.target ? bignum(response.target, 16) : util.bignumFromBitsHex(response.bits);
             coinStatus.difficulty = parseFloat((diff1 / target.toNumber()).toFixed(9));
             logger.debug(logSystem, symbol, 'difficulty is ' + coinStatus.difficulty);
-
-            coinStatus.reward = response.coinbasevalue / 100000000;
+            if (coinStatus.name == 'dogecoindark'){coinStatus.reward = response.coinbasevalue / 1000000;}
+            else if (coinStatus.name == 'cryptobullion'){coinStatus.reward = response.coinbasevalue / 1000000;}
+            else if (coinStatus.name == 'tekcoin'){coinStatus.reward = response.coinbasevalue / 1000000;}
+            else if (coinStatus.name == 'battlecoin'){coinStatus.reward = response.coinbasevalue / 1000000;}
+            else {coinStatus.reward = response.coinbasevalue / 100000000;}
             callback(null);
         });
     };
