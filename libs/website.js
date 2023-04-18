@@ -26,11 +26,16 @@ module.exports = function(logger){
 
     var websiteConfig = portalConfig.website;
 
-    var portalApi = new api(logger, portalConfig, poolConfigs);
-    var portalStats = portalApi.stats;
+    var portalApi;
+    var portalStats;
+
+    var startPortalApi = function() {
+        portalApi = new api(logger, portalConfig, poolConfigs);
+        portalStats = portalApi.stats;
+    }
+    startPortalApi();
 
     var logSystem = 'Website';
-
 
     var pageFiles = {
         'index.html': 'index',
@@ -52,6 +57,20 @@ module.exports = function(logger){
     var keyScriptTemplate = '';
     var keyScriptProcessed = '';
 
+    process.on('message', function(message) {
+        switch(message.type){
+            case 'reloadpool':
+                if (message.coin) {
+                    var messageCoin = message.coin.toLowerCase();
+                    var poolTarget = Object.keys(poolConfigs).filter(function(p){
+                        return p.toLowerCase() === messageCoin;
+                    })[0];
+                    poolConfigs  = JSON.parse(message.pools);
+                    startPortalApi();
+                }
+                break;
+        }
+    });
 
     var processTemplates = function(){
 

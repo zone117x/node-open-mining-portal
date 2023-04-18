@@ -12,35 +12,62 @@ module.exports = function(logger){
     var poolConfigs = JSON.parse(process.env.pools);
 
     var enabledPools = [];
+    
+    process.on('message', function(message) {
+        switch(message.type){
+            case 'reloadpool':
+                if (message.coin) {
+                    var messageCoin = message.coin.toLowerCase();
+                    var poolTarget = Object.keys(poolConfigs).filter(function(p){
+                        return p.toLowerCase() === messageCoin;
+                    })[0];
+                    poolConfigs  = JSON.parse(message.pools);
+                    if (addPoolIfEnabled(messageCoin))
+                        setupPools([messageCoin]);
+                }
+                break;
+        }
+    });
+
+    var addPoolIfEnabled = function(c) {
+        var poolOptions = poolConfigs[c];
+        if (poolOptions.paymentProcessing && poolOptions.paymentProcessing.enabled) {
+            enabledPools.push(c);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    var setupPools = function(enPools) {
+        async.filter(enPools, function(coin, callback){
+            SetupForPool(logger, poolConfigs[coin], function(setupResults){
+                callback(setupResults);
+            });
+        }, function(coins){
+            coins.forEach(function(coin){
+
+                var poolOptions = poolConfigs[coin];
+                var processingConfig = poolOptions.paymentProcessing;
+                var logSystem = 'Payments';
+                var logComponent = coin;
+
+                logger.debug(logSystem, logComponent, 'Payment processing setup to run every '
+                    + processingConfig.paymentInterval + ' second(s) with daemon ('
+                    + processingConfig.daemon.user + '@' + processingConfig.daemon.host + ':' + processingConfig.daemon.port
+                    + ') and redis (' + poolOptions.redis.host + ':' + poolOptions.redis.port + ')');
+
+            });
+        });
+    }
 
     Object.keys(poolConfigs).forEach(function(coin) {
-        var poolOptions = poolConfigs[coin];
-        if (poolOptions.paymentProcessing &&
-            poolOptions.paymentProcessing.enabled)
-            enabledPools.push(coin);
+        addPoolIfEnabled(coin);
     });
 
-    async.filter(enabledPools, function(coin, callback){
-        SetupForPool(logger, poolConfigs[coin], function(setupResults){
-            callback(setupResults);
-        });
-    }, function(coins){
-        coins.forEach(function(coin){
+    setupPools(enabledPools);
 
-            var poolOptions = poolConfigs[coin];
-            var processingConfig = poolOptions.paymentProcessing;
-            var logSystem = 'Payments';
-            var logComponent = coin;
-
-            logger.debug(logSystem, logComponent, 'Payment processing setup to run every '
-                + processingConfig.paymentInterval + ' second(s) with daemon ('
-                + processingConfig.daemon.user + '@' + processingConfig.daemon.host + ':' + processingConfig.daemon.port
-                + ') and redis (' + poolOptions.redis.host + ':' + poolOptions.redis.port + ')');
-
-        });
-    });
 };
-
 
 function SetupForPool(logger, poolOptions, setupFinished){
 

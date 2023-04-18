@@ -24,44 +24,70 @@ module.exports = function(logger){
     //
     var profitStatus = {};
     var symbolToAlgorithmMap = {};
-    Object.keys(poolConfigs).forEach(function(coin){
-
-        var poolConfig = poolConfigs[coin];
-        var algo       = poolConfig.coin.algorithm;
-
-        if (!profitStatus.hasOwnProperty(algo)) {
-            profitStatus[algo] = {};
-        }
-        var coinStatus = {
-            name: poolConfig.coin.name,
-            symbol: poolConfig.coin.symbol,
-            difficulty: 0,
-            reward: 0,
-            exchangeInfo: {}
-        };
-        profitStatus[algo][poolConfig.coin.symbol] = coinStatus;
-        symbolToAlgorithmMap[poolConfig.coin.symbol] = algo;
-    });
-
-
-    // 
-    // ensure we have something to switch
-    //
-    Object.keys(profitStatus).forEach(function(algo){
-        if (Object.keys(profitStatus[algo]).length <= 1) {
-            delete profitStatus[algo];
-            Object.keys(symbolToAlgorithmMap).forEach(function(symbol){
-                if (symbolToAlgorithmMap[symbol] === algo)
-                    delete symbolToAlgorithmMap[symbol];
-            });
+    
+    process.on('message', function(message) {
+        switch(message.type){
+            case 'reloadpool':
+                if (message.coin) {
+                    var messageCoin = message.coin.toLowerCase();
+                    var poolTarget = Object.keys(poolConfigs).filter(function(p){
+                        return p.toLowerCase() === messageCoin;
+                    })[0];
+                    poolConfigs  = JSON.parse(message.pools);
+                    populateProfitStatus(poolConfigs);
+                    checkProfitStatus();
+                }
+                break;
         }
     });
-    if (Object.keys(profitStatus).length == 0){
-        logger.debug(logSystem, 'Config', 'No alternative coins to switch to in current config, switching disabled.');
-        return;
+    
+    var populateProfitStatus = function() {
+
+        Object.keys(poolConfigs).forEach(function(coin){
+
+            var poolConfig = poolConfigs[coin];
+            var algo       = poolConfig.coin.algorithm;
+
+            if (!profitStatus.hasOwnProperty(algo)) {
+                profitStatus[algo] = {};
+            }
+            var coinStatus = {
+                name: poolConfig.coin.name,
+                symbol: poolConfig.coin.symbol,
+                difficulty: 0,
+                reward: 0,
+                exchangeInfo: {}
+            };
+            profitStatus[algo][poolConfig.coin.symbol] = coinStatus;
+            symbolToAlgorithmMap[poolConfig.coin.symbol] = algo;
+        });
     }
 
+    var checkProfitStatus = function() {
 
+        // 
+        // ensure we have something to switch
+        //
+        Object.keys(profitStatus).forEach(function(algo){
+            if (Object.keys(profitStatus[algo]).length <= 1) {
+                delete profitStatus[algo];
+                Object.keys(symbolToAlgorithmMap).forEach(function(symbol){
+                    if (symbolToAlgorithmMap[symbol] === algo)
+                        delete symbolToAlgorithmMap[symbol];
+                });
+            }
+        });
+        if (Object.keys(profitStatus).length == 0){
+            logger.debug(logSystem, 'Config', 'No alternative coins to switch to in current config, switching disabled.');
+            return true;
+        }
+        return false
+    }
+
+    populateProfitStatus();
+    if (checkProfitStatus())
+        return;
+    
     // 
     // setup APIs
     //

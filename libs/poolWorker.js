@@ -31,16 +31,28 @@ module.exports = function(logger){
                 }
                 break;
 
+            case 'reloadpool':
+                if (message.coin) {
+                    var messageCoin = message.coin.toLowerCase();
+                    var poolTarget = Object.keys(pools).filter(function(p){
+                        return p.toLowerCase() === messageCoin;
+                    })[0];
+                    poolConfigs  = JSON.parse(message.pools);
+                    createAndStartPool(messageCoin);
+                }
+                break;
+
             case 'blocknotify':
 
-                var messageCoin = message.coin.toLowerCase();
-                var poolTarget = Object.keys(pools).filter(function(p){
-                    return p.toLowerCase() === messageCoin;
-                })[0];
+                if (message.coin) {
+                    var messageCoin = message.coin.toLowerCase();
+                    var poolTarget = Object.keys(pools).filter(function(p){
+                        return p.toLowerCase() === messageCoin;
+                    })[0];
 
-                if (poolTarget)
-                    pools[poolTarget].processBlockNotify(message.hash, 'blocknotify script');
-
+                    if (poolTarget)
+                        pools[poolTarget].processBlockNotify(message.hash, 'blocknotify script');
+                }
                 break;
 
             // IPC message for pool switching
@@ -94,8 +106,8 @@ module.exports = function(logger){
     });
 
 
-    Object.keys(poolConfigs).forEach(function(coin) {
 
+    var createAndStartPool = function(coin){
         var poolOptions = poolConfigs[coin];
 
         var logSystem = 'Pool';
@@ -212,6 +224,10 @@ module.exports = function(logger){
 
         pool.start();
         pools[poolOptions.coin.name] = pool;
+    }
+
+    Object.keys(poolConfigs).forEach(function(coin) {
+        createAndStartPool(coin);
     });
 
 
@@ -255,8 +271,22 @@ module.exports = function(logger){
 
                 if (!portalConfig.switching[switchName].enabled) return;
 
-
-                var initalPool = proxyState.hasOwnProperty(algorithm) ? proxyState[algorithm] : _this.getFirstPoolForAlgorithm(algorithm);
+                var initalPool;
+                
+                if (proxyState.hasOwnProperty(algorithm) && poolConfigs.hasOwnProperty(proxyState[algorithm])) {
+                    initalPool = proxyState[algorithm];
+                } else {
+                    initalPool = _this.getFirstPoolForAlgorithm(algorithm);
+                    redisClient.hset('proxyState', algorithm, initalPool, function(error, obj) {
+                        if (error) {
+                            logger.error(logSystem, logComponent, logSubCat, 'Redis error writing proxy config: ' + JSON.stringify(err))
+                        }
+                        else {
+                            logger.debug(logSystem, logComponent, logSubCat, 'Proxy state saved to redis for ' + algorithm);
+                        }
+                    });
+                }
+                
                 proxySwitch[switchName] = {
                     algorithm: algorithm,
                     ports: portalConfig.switching[switchName].ports,
