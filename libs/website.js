@@ -51,8 +51,6 @@ module.exports = function(logger){
 
     var keyScriptTemplate = '';
     var keyScriptProcessed = '';
-
-
     var processTemplates = function(){
 
         for (var pageName in pageTemplates){
@@ -73,8 +71,6 @@ module.exports = function(logger){
 
         //logger.debug(logSystem, 'Stats', 'Website updated to latest stats');
     };
-
-
 
     var readPageFiles = function(files){
         async.each(files, function(fileName, callback){
@@ -127,7 +123,10 @@ module.exports = function(logger){
     var buildKeyScriptPage = function(){
         async.waterfall([
             function(callback){
-                var client = redis.createClient(portalConfig.redis.port, portalConfig.redis.host);
+                 var client = redis.createClient(portalConfig.redis.port, portalConfig.redis.host);
+                 client.auth(portalConfig.redis.password);
+                 client.select(portalConfig.redis.db);
+
                 client.hgetall('coinVersionBytes', function(err, coinBytes){
                     if (err){
                         client.quit();

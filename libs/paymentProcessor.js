@@ -55,6 +55,8 @@ function SetupForPool(logger, poolOptions, setupFinished){
         logger[severity](logSystem, logComponent, message);
     });
     var redisClient = redis.createClient(poolOptions.redis.port, poolOptions.redis.host);
+	redisClient.auth(poolOptions.redis.password);
+	redisClient.select(poolOptions.redis.db);
 
     var magnitude;
     var minPaymentSatoshis;

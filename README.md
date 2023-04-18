@@ -140,6 +140,8 @@ Those are legitimate requirements. If you use old versions of Node.js or Redis t
 include `bind 127.0.0.1` in your `redis.conf` file. Also it's a good idea to learn about and understand software that
 you are using - a good place to start with redis is [data persistence](http://redis.io/topics/persistence).
 
+Redis server may require a password, this is done using the requirepass directive in the redis configuration file.
+By default config.json contains blank "" - means disabled redis auth, to set any password just put "redispass" in quotes.
 
 #### 0) Setting up coin daemon
 Follow the build/install instructions for your coin daemon. Your coin.conf file should end up looking something like this:
@@ -236,7 +238,9 @@ Explanation for each field:
         /* Used for storing share and block submission data and payment processing. */
         "redis": {
             "host": "127.0.0.1",
-            "port": 6379
+            "port": 6379,
+            "db": 0, /* redis db select, usefull for multi-node cluster replicas */
+	    "password": ""  /* "" - no password, or any non blank "redispassword" to enable it */
         }
     },
 
@@ -269,7 +273,9 @@ Explanation for each field:
        ect.. */
     "redis": {
         "host": "127.0.0.1",
-        "port": 6379
+        "port": 6379,
+        "db": 0, /* redis db select, usefull for multi-node cluster replicas */
+        "password": ""  /* similar "" - no password, or any non blank  "redispassword" to enable it */
     },
 
 
