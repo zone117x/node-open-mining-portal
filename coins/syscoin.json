@@ -1,0 +1,8 @@
+{
+    "name": "Syscoin",
+    "symbol": "SYS",
+    "algorithm": "scrypt",
+    "txMessages": true,
+    "peerMagic": "dcececdc",
+    "peerMagicTestnet": "acdcdcac"
+}
