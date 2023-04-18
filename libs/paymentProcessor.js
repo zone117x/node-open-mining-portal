@@ -371,6 +371,31 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     var addressAmounts = {};
                     var totalSent = 0;
                     for (var w in workers) {
+                        
+                        // LeshaCat: If the address is not valid, skip calculation 
+                        // for all workers and callback() to resume
+                        // https://github.com/foxer666/node-open-mining-portal/issues/145
+                        // *!*UNTESTED *!* due to different code base, this was modified (again)
+                        var isValid = function() {
+                            daemon.cmd('validateaddress', [address], function(results) {
+                                if (result.error || !result.response){
+                                    logger.error('Skipping validation, error with payment processing daemon ' + JSON.stringify(result.error));
+                                    return true;
+                                }
+                                else if (!result.response.isvalid) {
+                                    logger.error('Address is not valid: '	+ JSON.stringify(result.response));
+                                    return false;
+                                }
+                                else{
+                                    return false;
+                                }
+	                        }, true);
+                        }
+                        if (!isValid) {
+                            callback(null, workers, rounds);
+                            return;
+                        }
+                        
                         var worker = workers[w];
                         worker.balance = worker.balance || 0;
                         worker.reward = worker.reward || 0;
@@ -385,6 +410,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                             worker.balanceChange = Math.max(toSend - worker.balance, 0);
                             worker.sent = 0;
                         }
+                        
                     }
 
                     if (Object.keys(addressAmounts).length === 0){
