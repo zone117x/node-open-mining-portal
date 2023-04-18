@@ -1,0 +1,6 @@
+{
+    "name": "Twincoin",
+    "symbol": "TWC",
+    "algorithm": "scrypt",
+    "hasGetInfo":"1"
+}
