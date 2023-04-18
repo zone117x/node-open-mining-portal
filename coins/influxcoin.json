@@ -1,0 +1,6 @@
+{
+    "name": "Influxcoin",
+    "symbol": "INFX",
+    "algorithm": "x11",
+    "mposDiffMultiplier": 256
+}
