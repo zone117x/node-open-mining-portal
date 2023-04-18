@@ -1,8 +1,8 @@
 {
-    "enabled": false,
+    "enabled": true,
     "coin": "litecoin.json",
 
-    "address": "n4jSe18kZMCdGcZqaYprShXW6EH1wivUK1",
+    "address": "LKeLBxWkfuTFC75FjKgSNYa6VKs5NQ9w56",
 
     "rewardRecipients": {
         "n37vuNFkXfk15uFnGoVyHZ6PYQxppD3QqK": 1.5,
