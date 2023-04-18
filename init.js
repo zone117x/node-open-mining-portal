@@ -380,7 +380,7 @@ var startPaymentProcessor = function(){
     worker.on('exit', function(code, signal){
         logger.error('Master', 'Payment Processor', 'Payment processor died, spawning replacement...');
         setTimeout(function(){
-            startPaymentProcessor(poolConfigs);
+            startPaymentProcessor();
         }, 2000);
     });
 };
@@ -398,7 +398,7 @@ var startWebsite = function(){
     worker.on('exit', function(code, signal){
         logger.error('Master', 'Website', 'Website process died, spawning replacement...');
         setTimeout(function(){
-            startWebsite(portalConfig, poolConfigs);
+            startWebsite();
         }, 2000);
     });
 };
@@ -419,7 +419,7 @@ var startProfitSwitch = function(){
     worker.on('exit', function(code, signal){
         logger.error('Master', 'Profit', 'Profit switching process died, spawning replacement...');
         setTimeout(function(){
-            startWebsite(portalConfig, poolConfigs);
+            startProfitSwitch();
         }, 2000);
     });
 };
