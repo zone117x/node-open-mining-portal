@@ -1,0 +1,7 @@
+{
+    "name": "Ferrite",
+    "symbol": "FEC",
+    "algorithm": "scrypt",
+    "peerMagic": "4a8210d9",
+    "peerMagicTestnet": "ba76ab8a"
+}
