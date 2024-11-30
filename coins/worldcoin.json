@@ -1,0 +1,6 @@
+{
+    "name": "Worldcoin",
+    "symbol": "WDC",
+    "algorithm": "scrypt",
+    "peerMagic": "fbc0b6db"
+}

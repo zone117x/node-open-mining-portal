@@ -1,0 +1,6 @@
+{
+    "name": "NobleCoin",
+    "symbol": "NOBL",
+    "algorithm": "scrypt",
+    "peerMagic": "c0dbf1fd"
+}

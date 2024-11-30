@@ -1,0 +1,6 @@
+{
+    "name": "GoalCoin",
+    "symbol": "GOAL",
+    "algorithm": "scrypt",
+    "peerMagic": "fac3b6da"
+}

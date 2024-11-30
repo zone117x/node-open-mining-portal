@@ -1,0 +1,6 @@
+{
+    "name": "LegendaryCoin",
+    "symbol": "LGD",
+    "algorithm": "scrypt",
+    "peerMagic": "e4efdbfd"
+}

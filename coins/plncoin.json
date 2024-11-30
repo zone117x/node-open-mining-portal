@@ -1,7 +1,6 @@
 {
     "name": "plncoin",
-    "symbol": "plnc",
+    "symbol": "PLNC",
     "algorithm": "scrypt",
-    "peerMagic": "fbc0b6db",
-    "peerMagicTestnet": "fcc1b7dc"
+    "peerMagic": "fbc0b6db"
 }
