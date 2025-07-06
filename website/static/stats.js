@@ -69,12 +69,12 @@ function buildChartData(){
 }
 
 function getReadableHashRateString(hashrate){
-    var i = -1;
-    var byteUnits = [ ' KH', ' MH', ' GH', ' TH', ' PH' ];
-    do {
-        hashrate = hashrate / 1024;
-        i++;
-    } while (hashrate > 1024);
+    if (hashrate < 1000000)
+        return '0 Sol';
+    var byteUnits = [ ' Sol/s', ' KSol/s', ' MSol/s', ' GSol/s', ' TSol/s', ' PSol/s' ];
+    hashrate = (hashrate * 2);
+    var i = Math.floor((Math.log(hashrate/1000) / Math.log(1000)) - 1);
+    hashrate = (hashrate/1000) / Math.pow(1000, i + 1);
     return Math.round(hashrate) + byteUnits[i];
 }
 
