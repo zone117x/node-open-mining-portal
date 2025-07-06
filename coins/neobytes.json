@@ -1,0 +1,7 @@
+{
+    "name": "Neobytes",
+    "symbol": "NBY",
+    "algorithm": "scrypt",
+    "peerMagic": "456c6c61",
+    "peerMagicTestnet": "536e6f77"
+}
