@@ -1,8 +1,3 @@
-## This repo is looking for maintainers! Please reach out if interested.
-
---------
-
-
 # NOMP ![NOMP Logo](http://zone117x.github.io/node-open-mining-portal/logo.svg "NOMP Logo")
 #### Node Open Mining Portal
 
@@ -103,11 +98,6 @@ redistribute the work to our own connected miners.
 
 
 ### Community / Support
-IRC
-* Support / general discussion join #nomp: https://webchat.freenode.net/?channels=#nomp
-* Development discussion join #nomp-dev: https://webchat.freenode.net/?channels=#nomp-dev
-
-Join our subreddit [/r/nomp](http://reddit.com/r/nomp)!
 
 *Having problems getting the portal running due to some module dependency error?* It's probably because you
 didn't follow the instructions in this README. Please __read the usage instructions__ including [requirements](#requirements) and [downloading/installing](#1-downloading--installing). If you've followed the instructions completely and are still having problems then open an issue here on github or join our #nomp IRC channel and explain your problem :).
@@ -164,7 +154,7 @@ a good pool operator. For starters be sure to read:
 Clone the repository and run `npm update` for all the dependencies to be installed:
 
 ```bash
-git clone https://github.com/zone117x/node-open-mining-portal.git nomp
+git clone https://github.com/sikkienl/nomp.git nomp
 cd nomp
 npm update
 ```
@@ -539,12 +529,7 @@ To support development of this project feel free to donate :)
 
 * BTC: `1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR`
 * LTC: `LKfavSDJmwiFdcgaP1bbu46hhyiWw5oFhE`
-* VTC: `VgW4uFTZcimMSvcnE4cwS3bjJ6P8bcTykN`
-* MAX: `mWexUXRCX5PWBmfh34p11wzS5WX2VWvTRT`
-* QRK: `QehPDAhzVQWPwDPQvmn7iT3PoFUGT7o8bC`
-* DRK: `XcQmhp8ANR7okWAuArcNFZ2bHSB81jpapQ`
 * DOGE: `DBGGVtwAAit1NPZpRm5Nz9VUFErcvVvHYW`
-* Cryptsy Trade Key: `254ca13444be14937b36c44ba29160bd8f02ff76`
 
 Credits
 -------

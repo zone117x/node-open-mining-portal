@@ -20,7 +20,8 @@
     "author": "Matthew Little",
     "contributors": [
         "vekexasia",
-        "TheSeven"
+        "TheSeven",
+        "sikkienl"
     ],
     "main": "init.js",
     "bin": {
