@@ -41,13 +41,13 @@ Usage of this software requires abilities with sysadmin, database admin, coin da
 
 ### Features
 
-* For the pool server it uses the highly efficient [node-stratum-pool](//github.com/zone117x/node-stratum-pool) module which
-supports vardiff, POW & POS, transaction messages, anti-DDoS, IP banning, [several hashing algorithms](//github.com/zone117x/node-stratum-pool#hashing-algorithms-supported).
+* For the pool server it uses the highly efficient [node-stratum-pool](//github.com/sikkienl/nomp) module which
+supports vardiff, POW & POS, transaction messages, anti-DDoS, IP banning, [several hashing algorithms](//github.com/sikkienl/nomp#hashing-algorithms-supported).
 
 * The portal has an [MPOS](//github.com/MPOS/php-mpos) compatibility mode so that the it can
 function as a drop-in-replacement for [python-stratum-mining](//github.com/Crypto-Expert/stratum-mining). This
 mode can be enabled in the configuration and will insert shares into a MySQL database in the format which MPOS expects.
-For a direct tutorial see the wiki page [Setting up NOMP for MPOS usage](//github.com/zone117x/node-open-mining-portal/wiki/Setting-up-NOMP-for-MPOS-usage).
+For a direct tutorial see the wiki page [Setting up NOMP for MPOS usage](//github.com/sikkienl/nomp/wiki/Setting-up-NOMP-for-MPOS-usage).
 
 * Multi-pool ability - this software was built from the ground up to run with multiple coins simultaneously (which can
 have different properties and hashing algorithms). It can be used to create a pool for a single coin or for multiple
@@ -104,14 +104,8 @@ didn't follow the instructions in this README. Please __read the usage instructi
 
 If your pool uses NOMP let us know and we will list your website here.
 
-##### Some pools using NOMP or node-stratum-module:
-* http://clevermining.com
-* http://suchpool.pw
-* http://hashfaster.com
-* http://miningpoolhub.com
-* http://kryptochaos.com
-* http://miningpools.tk
-* http://umine.co.uk
+### Some pools using NOMP or node-stratum-module:
+* 
 
 Usage
 =====
@@ -135,7 +129,7 @@ you are using - a good place to start with redis is [data persistence](http://re
 Follow the build/install instructions for your coin daemon. Your coin.conf file should end up looking something like this:
 ```
 daemon=1
-rpcuser=litecoinrpc
+rpcuser=neobytesrpc
 rpcpassword=securepassword
 rpcport=19332
 ```
@@ -149,14 +143,19 @@ a good pool operator. For starters be sure to read:
    * https://en.bitcoin.it/wiki/Original_Bitcoin_client/API_Calls_list
    * https://en.bitcoin.it/wiki/Difficulty
 
+
 #### 1) Downloading & Installing
 
 Clone the repository and run `npm update` for all the dependencies to be installed:
 
 ```bash
+sudo apt-get install build-essential libsodium-dev npm
+sudo npm install n -g
+sudo n stable
 git clone https://github.com/sikkienl/nomp.git nomp
 cd nomp
 npm update
+npm install
 ```
 
 #### 2) Configuration
@@ -333,16 +332,16 @@ Inside the `coins` directory, ensure a json file exists for your coin. If it doe
 Here is an example of the required fields:
 ````javascript
 {
-    "name": "Litecoin",
-    "symbol": "ltc",
+    "name": "Neobytes",
+    "symbol": "NBY",
     "algorithm": "scrypt",
 
     /* Magic value only required for setting up p2p block notifications. It is found in the daemon
        source code as the pchMessageStart variable.
-       For example, litecoin mainnet magic: http://git.io/Bi8YFw
-       And for litecoin testnet magic: http://git.io/NXBYJA */
-    "peerMagic": "fbc0b6db", //optional
-    "peerMagicTestnet": "fcc1b7dc" //optional
+       For example, litecoin mainnet magic: https://github.com/neobytes-project/neobytes/blob/v0.12.2.x/src/chainparams.cpp#L118
+       And for litecoin testnet magic: https://github.com/neobytes-project/neobytes/blob/v0.12.2.x/src/chainparams.cpp#L230 */
+    "peerMagic": "456c6c61", //optional
+    "peerMagicTestnet": "536e6f77" //optional
 
     //"txMessages": false, //options - defaults to false
 
@@ -363,17 +362,17 @@ Description of options:
 ````javascript
 {
     "enabled": true, //Set this to false and a pool will not be created from this config file
-    "coin": "litecoin.json", //Reference to coin config file in 'coins' directory
+    "coin": "neobytes.json", //Reference to coin config file in 'coins' directory
 
-    "address": "mi4iBXbBsydtcc5yFmsff2zCFVX4XG7qJc", //Address to where block rewards are given
+    "address": "NhUMhorPCN3A9iRXwYNeev8FvWSm25EAqY", //Address to where block rewards are given
 
     /* Block rewards go to the configured pool wallet address to later be paid out to miners,
        except for a percentage that can go to, for examples, pool operator(s) as pool fees or
        or to donations address. Addresses or hashed public keys can be used. Here is an example
        of rewards going to the main pool op, a pool co-owner, and NOMP donation. */
     "rewardRecipients": {
-        "n37vuNFkXfk15uFnGoVyHZ6PYQxppD3QqK": 1.5, //1.5% goes to pool op
-        "mirj3LtZxbSTharhtXvotqtJXUY7ki5qfx": 0.5, //0.5% goes to a pool co-owner
+        "NQ6Mi4my7vFVTXvhicVSNF2MSRqPdwYAvH": 1.5, //1.5% goes to pool op
+        "NapfMmtmDHruM5DRbrwJWpAPdPTGMVdPZc": 0.5, //0.5% goes to a pool co-owner
 
         /* 0.1% donation to NOMP. This pubkey can accept any type of coin, please leave this in
            your config to help support NOMP development. */
@@ -398,9 +397,9 @@ Description of options:
            be able to confirm blocks or send out payments. */
         "daemon": {
             "host": "127.0.0.1",
-            "port": 19332,
-            "user": "testuser",
-            "password": "testpass"
+            "port": 1427,
+            "user": "neobytesrpc",
+            "password": "password"
         }
     },
 
@@ -430,9 +429,9 @@ Description of options:
     "daemons": [
         {   //Main daemon instance
             "host": "127.0.0.1",
-            "port": 19332,
-            "user": "testuser",
-            "password": "testpass"
+            "port": 1427,
+            "user": "neobytesrpc",
+            "password": "password"
         }
     ],
 
@@ -447,7 +446,7 @@ Description of options:
         "host": "127.0.0.1",
 
         /* Port configured for daemon (this is the actual peer port not RPC port) */
-        "port": 19333,
+        "port": 1427,
 
         /* If your coin daemon is new enough (i.e. not a shitcoin) then it will support a p2p
            feature that prevents the daemon from spamming our peer node with unnecessary
@@ -490,9 +489,9 @@ For more information on these configuration options see the [pool module documen
 ```
 node [path to cli.js] [coin name in config] [block hash symbol]
 ```
-Example: inside `dogecoin.conf` add the line
+Example: inside `neobytes.conf` add the line
 ```
-blocknotify=node /home/nomp/scripts/cli.js blocknotify dogecoin %s
+blocknotify=node /home/nomp/scripts/cli.js blocknotify neobytes %s
 ```
 
 Alternatively, you can use a more efficient block notify script written in pure C. Build and usage instructions
@@ -523,16 +522,10 @@ the `node-stratum-pool` and `node-multi-hashing` modules, and any config files t
 * Run `npm update` to force updating/reinstalling of the dependencies.
 * Compare your `config.json` and `pool_configs/coin.json` configurations to the latest example ones in this repo or the ones in the setup instructions where each config field is explained. You may need to modify or add any new changes.
 
-Donations
----------
-To support development of this project feel free to donate :)
-
-* BTC: `1KRotMnQpxu3sePQnsVLRy3EraRFYfJQFR`
-* LTC: `LKfavSDJmwiFdcgaP1bbu46hhyiWw5oFhE`
-* DOGE: `DBGGVtwAAit1NPZpRm5Nz9VUFErcvVvHYW`
 
 Credits
 -------
+* [Matthew Little / zone117x](https://github.com/zone117x) - developer of NOMP
 * [Jerry Brady / mintyfresh68](https://github.com/bluecircle) - got coin-switching fully working and developed proxy-per-algo feature
 * [Tony Dobbs](http://anthonydobbs.com) - designs for front-end and created the NOMP logo
 * [LucasJones](//github.com/LucasJones) - got p2p block notify working and implemented additional hashing algos
