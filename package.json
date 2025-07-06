@@ -33,23 +33,26 @@
     },
     "dependencies": {
         "stratum-pool": "https://github.com/zone117x/node-stratum-pool.git",
-        "dateformat": "1.0.12",
+        "dateformat": "*",
         "node-json-minify": "*",
-        "redis": "0.12.1",
+        "redis": "*",
         "mysql": "*",
-        "async": "1.5.2",
+        "async": "*",
         "express": "*",
         "body-parser": "*",
         "compression": "*",
         "dot": "*",
         "colors": "*",
-        "node-watch": "0.5.9",
-        "request": "2.69.0",
+        "node-watch": "*",
+        "request": "*",
         "nonce": "*",
-        "bignum": "0.13.1",
+        "bignum": "*",
         "extend": "*"
     },
     "engines": {
         "node": ">=0.10"
+    },
+    "scripts": { 
+         "start": "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/node_modules/stratum-pool/node_modules/equihashverify/build/Release/:$PWD/node_modules/equihashverify/build/Release/ node init.js"
     }
 }
