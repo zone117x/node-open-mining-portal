@@ -32,24 +32,25 @@
         "url": "https://github.com/sikkienl/nomp.git"
     },
     "dependencies": {
-        "stratum-pool": "https://github.com/zone117x/node-stratum-pool.git",
-        "dateformat": "*",
-        "node-json-minify": "*",
-        "redis": "*",
-        "mysql": "*",
-        "async": "*",
-        "express": "*",
-        "body-parser": "*",
-        "compression": "*",
-        "dot": "*",
-        "colors": "*",
-        "node-watch": "*",
-        "request": "*",
-        "nonce": "*",
-        "bignum": "*",
-        "extend": "*"
+        "@bitcoinerlab/secp256k1": "^1.1.1",
+        "async": "^3.2.5",
+        "bitcoinjs-lib": "^6.1.5",
+        "body-parser": "^1.20.2",
+        "bs58check": "^3.0.1",
+        "colors": "^1.4.0",
+        "compression": "^1.7.4",
+        "cross-fetch": "^4.0.0",
+        "dateformat": "^4.6.3",
+        "dot": "^1.1.3",
+        "express": "^4.19.2",
+        "extend": "^3.0.2",
+        "ioredis": "^5.4.1",
+        "multi-hashing": "github:cpuchain/node-multi-hashing#218bfdf38b440d274d2d77f6dff7fd45bae530ab",
+        "node-json-minify": "^3.0.0",
+        "redis": "^3.1.2",
+        "ws": "^8.17.1"
     },
     "engines": {
-        "node": ">=0.10"
+        "node": ">=18.x"
     }
 }
