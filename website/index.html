@@ -2,27 +2,24 @@
 
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
-
-    <link rel="icon" type="image/png" href="/static/favicon.png"/>
-
-    <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
-
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.min.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pure/0.4.2/pure-min.css">
-
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
-
-    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.5/d3.min.js"></script>
-    <script src="/static/nvd3.js"></script>
-    <link rel="stylesheet" href="/static/nvd3.css">
-
+    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/3.0.0/pure-min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pure/3.0.0/grids-responsive-min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.css">
     <script src="/static/main.js"></script>
     <link rel="stylesheet" href="/static/style.css">
-
     <title>NOMP</title>
-
 </head>
 
 <body>
@@ -32,35 +29,41 @@
 
         <a class="pure-menu-heading hot-swapper" href="/"><i class="fa fa-home"></i>&nbsp;NOMP</a>
 
-        <ul>
-            <li class="{{? it.selected === 'getting_started' }}pure-menu-selected{{?}}">
-                <a class="hot-swapper" href="/getting_started">
-                    <i class="fa fa-rocket"></i>&nbsp;
-                    Getting Started
+        <ul class="pure-menu-list">
+            <li class="pure-menu-item">
+                <a class="pure-menu-link" href="/getting_started">
+                    <i class="fas fa-rocket fa-fw"></i>
+                    <span id="getting_started">Getting Started</span>
                 </a>
             </li>
-            <li class="{{? it.selected === 'stats' }}pure-menu-selected{{?}}">
-                <a class="hot-swapper" href="/stats">
-                    <i class="fa fa-bar-chart-o"></i>&nbsp;
-                    Graph Stats
+            <li class="pure-menu-item">
+                <a class="pure-menu-link" href="/stats">
+                    <i class="fas fa-chart-bar fa-fw"></i>
+                    <span id="stats">Pool Stats</span>
                 </a>
             </li>
-            <li class="{{? it.selected === 'tbs' }}pure-menu-selected{{?}}">
-                <a class="hot-swapper" href="/tbs">
-                    <i class="fa fa-table"></i>&nbsp;
-                    Tab Stats
+            <li class="pure-menu-item">
+                <a class="pure-menu-link" href="/tbs">
+                    <i class="fas fa-table fa-fw"></i>
+                    <span id="tbs">Tab Stats</span>
                 </a>
             </li>
-            <li class="{{? it.selected === 'workers' }}pure-menu-selected{{?}}">
-                <a class="hot-swapper" href="/workers">
-                    <i class="fa fa-cogs"></i>&nbsp;
-                    Workers Stats
+            <li class="pure-menu-item">
+                <a class="pure-menu-link" href="/payments">
+                    <i class="fas fa-money-bill fa-fw"></i>
+                    <span id="payments">Payments</span>
                 </a>
             </li>
-            <li class="{{? it.selected === 'api' }}pure-menu-selected{{?}}">
-                <a class="hot-swapper" href="/api">
-                    <i class="fa fa-code"></i>&nbsp;
-                    API
+            <li class="pure-menu-item">
+                <a class="pure-menu-link" href="/workers">
+                    <i class="fas fa-cogs fa-fw"></i>
+                    <span id="workers">Workers Stats</span>
+                </a>
+            </li>
+            <li class="pure-menu-item">
+                <a class="pure-menu-link" href="/api">
+                    <i class="fas fa-code fa-fw"></i>
+                    <span id="api">API</span>
                 </a>
             </li>
         </ul>
@@ -73,10 +76,8 @@
 
 
 <footer>
-
     <div>
-        This site is powered by the open source&nbsp;<a target="_blank" href="https://github.com/sikkienl/nomp/">NOMP</a></br>
-        project created by Matthew Little and is licensed under the&nbsp;<a href="http://www.gnu.org/licenses/gpl-2.0.html">GPL</a>
+        This site is powered by the open source&nbsp;<a target="_blank" href="https://github.com/sikkienl/nomp/">NOMP</a>&nbsp;project
     </div>
     <div>
         <i class="fa fa-heart"></i>&nbsp; Support this project by donating&nbsp;<i class="fa fa-btc"></i>&nbsp;BTC: 3DsBzM57xN2yDpRETKLk21GvWixQjM9eBY

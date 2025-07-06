@@ -1,5 +1,4 @@
 $(function(){
-
     var hotSwap = function(page, pushSate){
         if (pushSate) history.pushState(null, null, '/' + page);
         $('.pure-menu-selected').removeClass('pure-menu-selected');
@@ -25,6 +24,8 @@ $(function(){
         }, 0);
     });
 
-    window.statsSource = new EventSource("/api/live_stats");
-
+    window.statsSource = new WebSocket('/api/ws_stats');
+    window.statsSource.addEventListener('close', function() {
+        window.statsSource = new WebSocket('/api/ws_stats');
+    });
 });

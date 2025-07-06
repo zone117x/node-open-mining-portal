@@ -10,7 +10,7 @@ html{
 body{
     display: flex;
     flex-direction: column;
-    max-width: 1160px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 

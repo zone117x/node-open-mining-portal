@@ -183,34 +183,6 @@
 <div id="holder">
 
     <div id="menu">
-
-        {{? (function(){
-                if (!it.portalConfig.switching) return false;
-                for (var p in it.portalConfig.switching){
-                    if (it.portalConfig.switching[p].enabled)
-                        return true;
-                }
-                return false;
-            })()
-        }}
-        <div class="menuHeader">Coin-Switching Ports</div>
-        {{?}}
-
-        <div class="menuList">
-        {{ for (var p in it.portalConfig.switching){
-            if (!it.portalConfig.switching[p].enabled) continue;
-            var info = {
-                algo: p,
-                ports: {},
-                host: it.portalConfig.website.stratumHost
-            };
-            info.ports[it.portalConfig.switching[p].port] = {diff: it.portalConfig.switching[p].diff};
-            info = JSON.stringify(info).replace(/"/g, '&quot;');
-        }}
-            <a href="#" class="poolOption" data-info="{{=info}}">{{=p}}</a>
-        {{ } }}
-        </div>
-
         <div class="menuHeader">Coins</div>
         <div class="menuList" id="coinList">
             {{ for(var pool in it.poolsConfigs) {
@@ -221,7 +193,7 @@
                     host: it.portalConfig.website.stratumHost
                 }).replace(/"/g, '&quot;');
             }}
-            <a href="#" class="poolOption" data-info="{{=info}}">{{=pool}}</a>
+            <a href="#" class="poolOption" data-info="{{=info}}">{{=it.poolsConfigs[pool].coin.fullName}}</a>
             {{ } }}
         </div>
     </div>
@@ -307,12 +279,6 @@
         event.preventDefault();
         $('#coinInfoBackground,#coinInfo').addClass('hidden');
         $('#coinInfoBackground').css('opacity', 0.0);
-        return false;
-    });
-
-    $('#nompAppDownload').click(function(event){
-        event.preventDefault();
-        alert('NOMP App development still in progress...');
         return false;
     });
 </script>

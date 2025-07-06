@@ -10,7 +10,7 @@
     },
 
     "defaultPoolConfigs": {
-        "blockRefreshInterval": 1000,
+        "blockRefreshInterval": 500,
         "jobRebroadcastTimeout": 55,
         "connectionTimeout": 600,
         "emitInvalidBlockHashes": false,
@@ -40,7 +40,7 @@
             "hashrateWindow": 300
         },
         "adminCenter": {
-            "enabled": false,
+            "enabled": true,
             "password": "password"
         }
     },

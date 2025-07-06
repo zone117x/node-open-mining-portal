@@ -1,10 +1,46 @@
-<div>
-    API Docs here
+<style>
+    #topPool {
+        padding-top: 18px;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
 
-<ul>
-<li>/stats - raw json statistic</li>
-<li>/pool_stats - historical time per pool json </li>
-<li>/live_stats - live stats </li>
+    .poolWrapper {
+        border: solid 1px #c7c7c7;
+        border-radius: 5px;
+        padding: 5px;
+        margin-bottom: 18px;
+    }
 
-</ul>
+    .poolLabel {
+        font-size: 1.2em;
+        text-align: center;
+        padding: 4px;
+    }
+
+    .poolApi {
+        background: #eee;
+        border: solid 1px #c7c7c7;
+        font-size: 1.2em;
+        text-align: left;
+        padding: 4px;
+    }
+</style>
+
+<div id="topPool">
+    <div class="poolWrapper">
+        <div class="poolLabel">
+            Pool API
+        </div>
+        <div class="poolApi">
+            <div><a href="/api/stats">/api/stats</a> - global pool stats</div>
+            <div><a href="/api/blocks">/api/blocks</a> global block stats</div>
+            <div><a href="/api/all_stats">/api/all_stats</a> - historical stats</div>
+            <div><a href="/api/pool_stats">/api/pool_stats</a> - hashrate stats</div>
+            <div><a href="/api/payments">/api/payments</a> - payment history</div>
+            <div><a href="/api/worker_stats">/api/worker_stats?coin="cpuchain"&address="address"</a> - historical time per pool json </div>
+            <div><a href="/api/ws_stats">/api/ws_stats</a> - ws live stats </div>
+            <div><a href="/api/live_stats">/api/live_stats</a> - live stats (deprecated, use websocket) </div>
+        </div>
+    </div>
 </div>

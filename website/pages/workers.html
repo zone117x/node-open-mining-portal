@@ -1,66 +1,100 @@
 <style>
-
-    #topCharts {
-        padding: 18px;
+    #bottomNotes {
+        display: block;
+        padding-left: 18px;
+        padding-right: 18px;
+        padding-bottom: 18px;
     }
 
-    #topCharts > div > div > svg {
+    #topPool {
+        padding-top: 18px;
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    #topPool>div>div>svg {
         display: block;
         height: 280px;
     }
 
-    .chartWrapper {
+    .poolWrapper {
         border: solid 1px #c7c7c7;
         border-radius: 5px;
         padding: 5px;
         margin-bottom: 18px;
     }
 
-    .chartLabel {
+    .poolLabel {
         font-size: 1.2em;
         text-align: center;
         padding: 4px;
     }
 
-    .chartHolder {
-
-    }
+    .poolMinerTable {}
 
     table {
         width: 100%;
     }
-
 </style>
-
-
-<div id="topCharts">
-
-{{ for(var pool in it.stats.pools) { }}
-
-    <div class="chartWrapper">
-        <div class="chartLabel">{{=it.stats.pools[pool].name}}</div>
-        <div class="chartHolder">
+<script type="text/javascript">
+    function searchKeyPress(e) {
+        // look for window.event in case event isn't passed in
+        e = e || window.event;
+        if (e.keyCode == 13) {
+            document.getElementById('btnSearch').click();
+            return false;
+        }
+        return true;
+    }
+    $(document).ready(function () {
+        $('.btn-lg').click(function () {
+            window.location = `workers/${$('.input-lg').attr('coin')}/${$('.input-lg').val()}`;
+        });
+    });
+</script>
+{{ function capitalizeFirstLetter(t){return t.charAt(0).toUpperCase()+t.slice(1)} }}
+{{ var i=0; for(var pool in it.stats.pools) { }}
+<div id="topPool">
+    <div class="poolWrapper">
+        <div class="poolLabel">
+            <span style="float:right; margin-bottom: 8px;">
+                <small>Miner Lookup:
+                    <input type="text" class="form-control input-lg" onkeypress="return searchKeyPress(event);" coin="{{=(it.stats.pools[pool].name)}}">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default btn-lg" type="button">Lookup</button>
+                    </span>
+                </small>
+            </span>
+            {{=(it.stats.pools[pool].fullName)}} Top Miners &nbsp;&nbsp;
+            <small><i class="fas fa-users fa-fw"></i> <span
+                    id="statsMiners{{=pool}}">{{=it.stats.pools[pool].minerCount}}</span> Miners &nbsp;&nbsp;
+                <i class="fas fa-gears fa-fw"></i> <span
+                    id="statsWorkers{{=pool}}">{{=it.stats.pools[pool].workerCount}}</span> Workers &nbsp;&nbsp;
+                <i class="fas fa-chart-bar fa-fw"></i> <span
+                    id="statsWorkers{{=pool}}">{{=it.stats.pools[pool].shareCount}}</span> Shares </small>
+        </div>
+        <div class="poolMinerTable">
             <table class="pure-table">
                 <thead>
-                <tr>
-                    <th>Address</th>
-                    <th>Shares</th>
-                    <th>Invalid shares</th>
-                    <th>Efficiency</th>
-                    <th>Hashrate</th>
-                </tr>
-                </thead>
-                {{ for(var worker in it.stats.pools[pool].workers) { }}
-                   {{var workerstat = it.stats.pools[pool].workers[worker];}}
-                    <tr class="pure-table-odd">
-                        <td>{{=worker}}</td> 
-                        <td>{{=Math.round(workerstat.shares * 100) / 100}}</td>
-                        <td>{{=Math.round(workerstat.invalidshares * 100) / 100}}</td>
-                        <td>{{? workerstat.shares > 0}} {{=Math.floor(10000 * workerstat.shares / (workerstat.shares + workerstat.invalidshares)) / 100}}% {{??}} 0% {{?}}</td>
-                        <td>{{=workerstat.hashrateString}}</td>
+                    <tr>
+                        <th>Address</th>
+                        <th>Shares</th>
+                        <th>Efficiency</th>
+                        <th>Hashrate</th>
                     </tr>
+                </thead>
+                {{ for(var worker in it.stats.pools[pool].miners) { }}
+                {{var workerstat = it.stats.pools[pool].miners[worker];}}
+                <tr class="pure-table-odd">
+                    <td><a href="/workers/{{=(it.stats.pools[pool].name)}}/{{=worker.split('.')[0]}}">{{=worker}}</a></td>
+                    <td>{{=Math.round(workerstat.currRoundShares * 100) / 100}}</td>
+                    <td>{{? workerstat.shares > 0}} {{=Math.floor(10000 * workerstat.shares / (workerstat.shares +
+                        workerstat.invalidshares)) / 100}}% {{??}} 0% {{?}}</td>
+                    <td>{{=workerstat.hashrateString}}</td>
+                </tr>
                 {{ } }}
             </table>
         </div>
     </div>
+</div>
 {{ } }}

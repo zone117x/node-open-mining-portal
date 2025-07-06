@@ -1,38 +1,26 @@
-
-var fs = require('fs');
-var path = require('path');
-
-var async = require('async');
-var watch = require('node-watch');
-var redis = require('redis');
+const http = require('http');
+const fsPromise = require('fs/promises');
 
 var dot = require('dot');
 var express = require('express');
 var bodyParser = require('body-parser');
 var compress = require('compression');
-
-var Stratum = require('stratum-pool');
-var util = require('stratum-pool/lib/util.js');
-
-var api = require('./api.js');
-
+const redis = require('redis');
+const { Server: WebSocketServer } = require('ws');
 
 module.exports = function(logger){
-
     dot.templateSettings.strip = false;
 
-    var portalConfig = JSON.parse(process.env.portalConfig);
-    var poolConfigs = JSON.parse(process.env.pools);
+    const portalConfig = JSON.parse(process.env.portalConfig);
+    const poolConfigs = JSON.parse(process.env.pools);
+    const forkId = process.env.forkId;
 
-    var websiteConfig = portalConfig.website;
+    const redisClient = redis.createClient(portalConfig.redis.port, portalConfig.redis.host);
 
-    var portalApi = new api(logger, portalConfig, poolConfigs);
-    var portalStats = portalApi.stats;
+    const logSystem = 'Website';
+    const logSubCat = `Thread ${parseInt(forkId) + 1}`;
 
-    var logSystem = 'Website';
-
-
-    var pageFiles = {
+    const pageFiles = {
         'index.html': 'index',
         'home.html': '',
         'getting_started.html': 'getting_started',
@@ -40,251 +28,397 @@ module.exports = function(logger){
         'tbs.html': 'tbs',
         'workers.html': 'workers',
         'api.html': 'api',
-        'admin.html': 'admin',
-        'mining_key.html': 'mining_key'
+        'miner_stats.html': 'miner_stats',
+        'payments.html': 'payments'
     };
 
-    var pageTemplates = {};
+    const pageIds = Object.keys(pageFiles).reduce((acc, cur) => {
+        acc[pageFiles[cur]] = cur;
+        return acc;
+    }, {});
 
-    var pageProcessed = {};
-    var indexesProcessed = {};
+    const liveStatConnections = {};
 
-    var keyScriptTemplate = '';
-    var keyScriptProcessed = '';
-
-
-    var processTemplates = function(){
-
-        for (var pageName in pageTemplates){
-            if (pageName === 'index') continue;
-            pageProcessed[pageName] = pageTemplates[pageName]({
-                poolsConfigs: poolConfigs,
-                stats: portalStats.stats,
-                portalConfig: portalConfig
+    process.on('message', (msg) => {
+        switch(msg.type) {
+        case 'stats':
+            Object.keys(liveStatConnections).forEach(uid => {
+                const ws = liveStatConnections[uid];
+                ws.send(msg.stats);
             });
-            indexesProcessed[pageName] = pageTemplates.index({
-                page: pageProcessed[pageName],
-                selected: pageName,
-                stats: portalStats.stats,
-                poolConfigs: poolConfigs,
-                portalConfig: portalConfig
-            });
-        }
-
-        //logger.debug(logSystem, 'Stats', 'Website updated to latest stats');
-    };
-
-
-
-    var readPageFiles = function(files){
-        async.each(files, function(fileName, callback){
-            var filePath = 'website/' + (fileName === 'index.html' ? '' : 'pages/') + fileName;
-            fs.readFile(filePath, 'utf8', function(err, data){
-                var pTemp = dot.template(data);
-                pageTemplates[pageFiles[fileName]] = pTemp
-                callback();
-            });
-        }, function(err){
-            if (err){
-                console.log('error reading files for creating dot templates: '+ JSON.stringify(err));
-                return;
-            }
-            processTemplates();
-        });
-    };
-
-
-    //If an html file was changed reload it
-    watch('website', function(filename){
-        var basename = path.basename(filename);
-        if (basename in pageFiles){
-            console.log(filename);
-            readPageFiles([basename]);
-            logger.debug(logSystem, 'Server', 'Reloaded file ' + basename);
+            break;
         }
     });
 
-    portalStats.getGlobalStats(function(){
-        readPageFiles(Object.keys(pageFiles));
-    });
-
-    var buildUpdatedWebsite = function(){
-        portalStats.getGlobalStats(function(){
-            processTemplates();
-
-            var statData = 'data: ' + JSON.stringify(portalStats.stats) + '\n\n';
-            for (var uid in portalApi.liveStatConnections){
-                var res = portalApi.liveStatConnections[uid];
-                res.write(statData);
-            }
-
+    function getStats() {
+        return new Promise((resolve) => {
+            redisClient.get('statCurrent', (error, result) => {
+                if (error) {
+                    reject(error);
+                } else if (!result) {
+                    resolve({});
+                } else {
+                    resolve(JSON.parse(result));
+                }
+            });
         });
-    };
+    }
 
-    setInterval(buildUpdatedWebsite, websiteConfig.stats.updateInterval * 1000);
+    function getHistory() {
+        return new Promise((resolve, reject) => {
+            const retentionTime = (((Date.now() / 1000) - portalConfig.website.stats.historicalRetention) | 0).toString();
 
+            redisClient.zrangebyscore(['statHistory', retentionTime, '+inf'], (err, replies) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve((replies || []).map(r => JSON.parse(r)).sort((a, b) => a.time - b.time));
+                }
+            });
+        });
+    }
 
-    var buildKeyScriptPage = function(){
-        async.waterfall([
-            function(callback){
-                var client = redis.createClient(portalConfig.redis.port, portalConfig.redis.host);
-                client.hgetall('coinVersionBytes', function(err, coinBytes){
-                    if (err){
-                        client.quit();
-                        return callback('Failed grabbing coin version bytes from redis ' + JSON.stringify(err));
+    async function ApiStats(res) {
+        try {
+            const stats = await getStats();
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(stats));
+        } catch (error) {
+            logger.error(logSystem, 'Stats', logSubCat, 'Error when trying to grab stats');
+            console.log(error);
+            res.status(500).send(error.stack || error.message);
+        }
+    }
+
+    async function ApiHistory(res) {
+        try {
+            const history = await getHistory();
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(history));
+        } catch (error) {
+            logger.error(logSystem, 'Historics', logSubCat, 'Error when trying to grab historical stats');
+            console.log(error);
+            res.status(500).send(error.stack || error.message);
+        }
+    }
+
+    async function ApiMiniHistory(res) {
+        try {
+            const history = await getHistory();
+
+            const miniHistory = history.map(({time, pools}) => {
+                pools = Object.keys(pools).reduce((acc, coin) => {
+                    const pool = pools[coin];
+
+                    acc[coin] = {
+                        hashrate: pool.hashrate,
+                        workerCount: pool.workerCount,
+                        blocks: pool.blocks,
                     }
-                    callback(null, client, coinBytes || {});
-                });
-            },
-            function (client, coinBytes, callback){
-                var enabledCoins = Object.keys(poolConfigs).map(function(c){return c.toLowerCase()});
-                var missingCoins = [];
-                enabledCoins.forEach(function(c){
-                    if (!(c in coinBytes))
-                        missingCoins.push(c);
-                });
-                callback(null, client, coinBytes, missingCoins);
-            },
-            function(client, coinBytes, missingCoins, callback){
-                var coinsForRedis = {};
-                async.each(missingCoins, function(c, cback){
-                    var coinInfo = (function(){
-                        for (var pName in poolConfigs){
-                            if (pName.toLowerCase() === c)
-                                return {
-                                    daemon: poolConfigs[pName].paymentProcessing.daemon,
-                                    address: poolConfigs[pName].address
-                                }
-                        }
-                    })();
-                    var daemon = new Stratum.daemon.interface([coinInfo.daemon], function(severity, message){
-                        logger[severity](logSystem, c, message);
-                    });
-                    daemon.cmd('dumpprivkey', [coinInfo.address], function(result){
-                        if (result[0].error){
-                            logger.error(logSystem, c, 'Could not dumpprivkey for ' + c + ' ' + JSON.stringify(result[0].error));
-                            cback();
-                            return;
-                        }
 
-                        var vBytePub = util.getVersionByte(coinInfo.address)[0];
-                        var vBytePriv = util.getVersionByte(result[0].response)[0];
+                    return acc;
+                }, {});
 
-                        coinBytes[c] = vBytePub.toString() + ',' + vBytePriv.toString();
-                        coinsForRedis[c] = coinBytes[c];
-                        cback();
-                    });
-                }, function(err){
-                    callback(null, client, coinBytes, coinsForRedis);
-                });
-            },
-            function(client, coinBytes, coinsForRedis, callback){
-                if (Object.keys(coinsForRedis).length > 0){
-                    client.hmset('coinVersionBytes', coinsForRedis, function(err){
-                        if (err)
-                            logger.error(logSystem, 'Init', 'Failed inserting coin byte version into redis ' + JSON.stringify(err));
-                        client.quit();
-                    });
+                return {
+                    time,
+                    pools
                 }
-                else{
-                    client.quit();
+            });
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(miniHistory));
+        } catch (error) {
+            logger.error(logSystem, 'Historics', logSubCat, 'Error when trying to grab historical stats');
+            console.log(error);
+            res.status(500).send(error.stack || error.message);
+        }
+    }
+
+    async function ApiBlocks(res) {
+        try {
+            const stats = await getStats();
+
+            const blocks = Object.keys(stats.pools)
+                .map(coin => [
+                    ...stats.pools[coin].pendingBlocks,
+                    ...stats.pools[coin].confirmedBlocks
+                ])
+                .flat();
+
+            const allBlocks = blocks.reduce((acc, block) => {
+                acc[`${block.coin}-${block.height}`] = block.serialized;
+                return acc;
+            }, {});
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(allBlocks));
+        } catch (error) {
+            res.status(500).send(error.stack || error.message);
+        }
+    }
+
+    async function ApiPayments(res) {
+        try {
+            const stats = await getStats();
+
+            const payments = Object.keys(stats.pools).map((coin) => {
+                const coinStats = stats.pools[coin];
+
+                return {
+                    name: coinStats.name,
+                    payments: coinStats.payments
                 }
-                callback(null, coinBytes);
-            }
-        ], function(err, coinBytes){
-            if (err){
-                logger.error(logSystem, 'Init', err);
-                return;
-            }
-            try{
-                keyScriptTemplate = dot.template(fs.readFileSync('website/key.html', {encoding: 'utf8'}));
-                keyScriptProcessed = keyScriptTemplate({coins: coinBytes});
-            }
-            catch(e){
-                logger.error(logSystem, 'Init', 'Failed to read key.html file');
-            }
-        });
+            });
 
-    };
-    buildKeyScriptPage();
-
-    var getPage = function(pageId){
-        if (pageId in pageProcessed){
-            var requestedPage = pageProcessed[pageId];
-            return requestedPage;
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(payments));
+        } catch (error) {
+            res.status(500).send(error.stack || error.message);
         }
-    };
+    }
 
-    var route = function(req, res, next){
-        var pageId = req.params.page || '';
-        if (pageId in indexesProcessed){
-            res.header('Content-Type', 'text/html');
-            res.end(indexesProcessed[pageId]);
+    async function ApiWorkers(req, res) {
+        try {
+            // todo: address validation function here
+            const { coin, address } = req.query;
+
+            const [stats, historicStats] = await Promise.all([
+                getStats(),
+                getHistory()
+            ]);
+
+            const coinStats = stats.pools[coin] || {};
+            const minerStats = coinStats?.miners?.[address] || {};
+
+            const workers = coinStats.workers
+                ? Object.keys(coinStats.workers)
+                    .filter(workerId => workerId.split('.')[0] === address)
+                    .reduce((acc, workerId) => {
+                        acc[workerId] = coinStats.workers[workerId];
+                        return acc;
+                    }, {})
+                : {};
+
+            const history = historicStats
+                .map(portalStats => Object.values(portalStats.pools[coin]?.workers || {}))
+                .flat()
+                .filter(w => w.address === address)
+                .reduce((acc, worker) => {
+                    if (!acc[worker.name]) {
+                        acc[worker.name] = [];
+                    }
+
+                    acc[worker.name].push({
+                        time: worker.time,
+                        hashrate: worker.hashrate,
+                    });
+
+                    return acc;
+                }, {});
+
+            const payments = (coinStats.payments || []).filter(payment => {
+                return Object.keys(payment.amounts).includes(address);
+            });
+
+            const miner = {
+                miner: address,
+                totalHash: minerStats.hashrate || 0,
+                totalShares: minerStats.shares || 0,
+                networkSols: coinStats.hashrate || 0,
+                immature: minerStats.immature || 0,
+                balance: minerStats.balance || 0,
+                paid: minerStats.paid || 0,
+                workers,
+                history,
+                payments
+            };
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(miner));
+        } catch (error) {
+            res.status(500).send(error.stack || error.message);
         }
-        else
+    }
+
+    function handleApiRequest(req, res, next) {
+        switch(req.params.method){
+        case 'stats':
+            ApiStats(res);
+            return;
+        case 'all_stats':
+            ApiHistory(res);
+            return;
+        case 'pool_stats':
+            ApiMiniHistory(res);
+            return;
+        case 'blocks':
+            ApiBlocks(res);
+            return;
+        case 'payments':
+            ApiPayments(res);
+            return;
+        case 'worker_stats':
+            ApiWorkers(req, res);
+            return;
+        case 'live_stats':
+            res.status(404).send('Endpoint deprecated, use websocket connection with /api/ws_stats');
+            return;
+        default:
             next();
+        }
+    }
 
-    };
+    async function renderTemplate(pageId) {
+        const fileName = pageIds[pageId];
+        const filePath = `website/${fileName === 'index.html' ? '' : 'pages/'}${fileName}`;
+        const fileData = await fsPromise.readFile(filePath, { encoding: 'utf8' });
+        return dot.template(fileData);
+    }
 
+    async function renderPage(pageId, additional = {}) {
+        const [indexTemplate, template, stats] = await Promise.all([
+            renderTemplate('index'),
+            renderTemplate(pageId),
+            getStats()
+        ]);
+        const page = template({
+            poolsConfigs: poolConfigs,
+            stats,
+            portalConfig,
+            ...additional,
+        });
+        return indexTemplate({
+            page,
+            selected: pageId,
+            stats,
+            poolConfigs: poolConfigs,
+            portalConfig,
+        });
+    }
 
+    async function getPage(pageId, res, next) {
+        if (!pageIds[pageId]) {
+            next();
+            return;
+        }
 
-    var app = express();
+        try {
+            const [template, stats] = await Promise.all([
+                renderTemplate(pageId),
+                getStats()
+            ]);
 
+            res.end(template({
+                poolsConfigs: poolConfigs,
+                stats,
+                portalConfig,
+            }));
+        } catch (error) {
+            res.status(500).send(error.stack || error.message);
+        }
+    }
+
+    async function routeMiners(req, res, next) {
+        const { address, coin } = req.params;
+
+        // todo: address validation function here
+        if (!address || !coin) {
+            next();
+            return;
+        }
+
+        try {
+            const page = await renderPage('miner_stats', {
+                address,
+                coin,
+            });
+
+            res.header('Content-Type', 'text/html');
+            res.end(page);
+        } catch (error) {
+            res.status(500).send(error.stack || error.message);
+        }
+    }
+
+    async function route(pageId, res, next) {
+        if (!pageIds[pageId] || pageId === 'index') {
+            next();
+            return;
+        }
+
+        try {
+            const page = await renderPage(pageId);
+
+            res.header('Content-Type', 'text/html');
+            res.end(page);
+        } catch (error) {
+            res.status(500).send(error.stack || error.message);
+        }
+    }
+
+    const app = express();
 
     app.use(bodyParser.json());
 
-    app.get('/get_page', function(req, res, next){
-        var requestedPage = getPage(req.query.id);
-        if (requestedPage){
-            res.end(requestedPage);
-            return;
-        }
-        next();
+    app.get('/api/:method', (req, res, next) => {
+        handleApiRequest(req, res, next);
     });
 
-    app.get('/key.html', function(req, res, next){
-        res.end(keyScriptProcessed);
+    app.get('/get_page', (req, res, next) => {
+        getPage(req.query.id, res, next);
     });
 
-    app.get('/:page', route);
-    app.get('/', route);
-
-    app.get('/api/:method', function(req, res, next){
-        portalApi.handleApiRequest(req, res, next);
+    app.get('/workers/:coin/:address', (req, res, next) => {
+        routeMiners(req, res, next);
     });
 
-    app.post('/api/admin/:method', function(req, res, next){
-        if (portalConfig.website
-            && portalConfig.website.adminCenter
-            && portalConfig.website.adminCenter.enabled){
-            if (portalConfig.website.adminCenter.password === req.body.password)
-                portalApi.handleAdminApiRequest(req, res, next);
-            else
-                res.send(401, JSON.stringify({error: 'Incorrect Password'}));
+    app.get('/:page', (req, res, next) => {
+        route(req.params.page || '', res, next);
+    });
 
-        }
-        else
-            next();
-
+    app.get('/', (req, res, next) => {
+        route(req.params.page || '', res, next);
     });
 
     app.use(compress());
+
     app.use('/static', express.static('website/static'));
 
     app.use(function(err, req, res, next){
         console.error(err.stack);
-        res.send(500, 'Something broke!');
+        res.status(500).send('Something broke!');
+    });
+
+    // Wrap again with http.server to share port with WebSocket
+    app.server = http.createServer(app);
+
+    const wss = new WebSocketServer({
+        server: app.server,
+        path: '/api/ws_stats',
+        // 10KB
+        maxPayload: 10000
+    });
+
+    wss.on('connection', (ws) => {
+        const uid = Math.random().toString();
+        ws.on('close', () => {
+            delete liveStatConnections[uid];
+        });
+        liveStatConnections[uid] = ws;
+    });
+
+    wss.on('listening', () => {
+        logger.debug(logSystem, 'Server', logSubCat, 'Websokcet server listening...');
     });
 
     try {
-        app.listen(portalConfig.website.port, portalConfig.website.host, function () {
-            logger.debug(logSystem, 'Server', 'Website started on ' + portalConfig.website.host + ':' + portalConfig.website.port);
+        app.server.listen(portalConfig.website.port, portalConfig.website.host, function () {
+            logger.debug(logSystem, 'Server', logSubCat, 'Website started on ' + portalConfig.website.host + ':' + portalConfig.website.port);
         });
-    }
-    catch(e){
-        logger.error(logSystem, 'Server', 'Could not start website on ' + portalConfig.website.host + ':' + portalConfig.website.port
+    } catch (e) {
+        logger.error(logSystem, 'Server', logSubCat, 'Could not start website on ' + portalConfig.website.host + ':' + portalConfig.website.port
             +  ' - its either in use or you do not have permission');
     }
-
-
 };
