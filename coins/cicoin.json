@@ -1,0 +1,21 @@
+{
+    "name": "Cicoin",
+    "symbol": "CICX",
+    "algorithm": "x11",
+    "peerMagic": "43494358",
+    "wallet": "https://taobot.org/",
+    "explorer": "https://explorer.taobot.org/",
+    "explorerGetBlockJSON": "https://explorer.taobot.org/api/getblock?txid=",
+    "explorerGetBlock": "https://explorer.taobot.org/block/",
+    "explorerGetTX": "https://explorer.taobot.org/tx/",
+    "blockTime": 6,
+    "blockChange": 1,
+    "mainnet": {
+        "bech32": "ci",
+        "bip32": {
+            "public": "0488B21E"
+        },
+        "pubKeyHash": "1c",
+        "scriptHash": "4b"
+    }
+}

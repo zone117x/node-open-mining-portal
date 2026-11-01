@@ -1,0 +1,21 @@
+{
+    "name": "Nusacoin",
+    "symbol": "NUX",
+    "algorithm": "x11",
+    "peerMagic": "4E555341",
+    "wallet": "https://taobot.org/",
+    "explorer": "https://explorer.taobot.org/",
+    "explorerGetBlockJSON": "https://explorer.taobot.org/api/getblock?txid=",
+    "explorerGetBlock": "https://explorer.taobot.org/block/",
+    "explorerGetTX": "https://explorer.taobot.org/tx/",
+    "blockTime": 6,
+    "blockChange": 1,
+    "mainnet": {
+        "bech32": "nu",
+        "bip32": {
+            "public": "4E555341"
+        },
+        "pubKeyHash": "35",
+        "scriptHash": "4b"
+    }
+}

@@ -1,55 +1,66 @@
 <style>
-    #boxWelcome{
+    #boxWelcome {
         background-color: #0eafc7;
         color: white;
         margin: 18px;
     }
-    #logoImg{
+
+    #logoImg {
         height: 285px;
         margin: 55px;
     }
-    #welcomeText{
+
+    #welcomeText {
         font-size: 2.7em;
         margin: 50px 18px 10px 18px;
     }
-    #welcomeItems{
+
+    #welcomeItems {
         list-style-type: none;
         font-size: 1.3em;
         padding: 0 !important;
         margin: 0 0 0 18px !important;
     }
-    #welcomeItems > li{
+
+    #welcomeItems>li {
         margin: 30px !important;
     }
+
     #boxesLower {
         margin: 0 9px;
     }
-    #boxesLower > div {
+
+    #boxesLower>div {
         display: flex;
     }
-    #boxesLower > div > div {
+
+    #boxesLower>div>div {
         flex: 1 1 auto;
         margin: 0 9px 18px 9px;
         padding: 10px;
         display: flex;
         flex-direction: column;
     }
-    .boxLowerHeader{
+
+    .boxLowerHeader {
         font-size: 1.3em;
         margin: 0 0 5px 10px;
     }
 
 
-    #boxStatsLeft{
+    #boxStatsLeft {
         background-color: #b064e1;
     }
-    #boxStatsRight{
+
+    #boxStatsRight {
         background-color: #10bb9c;
     }
-    .boxStats{
+
+    .boxStats {
         color: white;
     }
-    .boxStatsList{
+
+    .boxStatsList {
         display: flex;
         flex-flow: row wrap;
         justify-content: space-around;
@@ -58,19 +69,20 @@
         flex: 1 1 auto;
         align-content: center;
     }
-    .boxStatsList i.fa{
+
+    .boxStatsList i.fa {
         height: 15px;
         width: 33px;
         text-align: center;
     }
-    .boxStatsList > div{
+
+    .boxStatsList>div {
         padding: 5px 20px;
     }
-    .boxStatsList > div > div{
+
+    .boxStatsList>div>div {
         padding: 3px;
     }
-
-
 </style>
 
 
@@ -79,12 +91,12 @@
         <img id="logoImg" src="/static/logo.svg">
     </div>
     <div class="pure-u-2-3">
-        <div id="welcomeText">Welcome to the future of mining</div>
+        <div id="welcomeText">Welcome to NUSACOIN Mining Pool</div>
         <ul id="welcomeItems">
             <li>Low fees</li>
-            <li>High performance Node.js backend</li>
+            <li>High performance backend</li>
             <li>User friendly mining client</li>
-            <li>Multi-coin / multi-pool</li>
+            <li>Steady Growth</li>
         </ul>
     </div>
 </div>
@@ -98,8 +110,10 @@
                 {{ for(var algo in it.stats.algos) { }}
                 <div>
                     <div><i class="fa fa-flask"></i>{{=algo}}</div>
-                    <div><i class="fa fa-users"></i><span id="statsMiners{{=algo}}">{{=it.stats.algos[algo].workers}}</span> Miners</div>
-                    <div><i class="fa fa-tachometer"></i><span id="statsHashrate{{=algo}}">{{=it.stats.algos[algo].hashrateString}}</span></div>
+                    <div><i class="fa fa-users"></i><span
+                            id="statsMiners{{=algo}}">{{=it.stats.algos[algo].workers}}</span> Miners</div>
+                    <div><i class="fa fa-tachometer"></i><span
+                            id="statsHashrate{{=algo}}">{{=it.stats.algos[algo].hashrateString}}</span></div>
                 </div>
                 {{ } }}
             </div>
@@ -113,8 +127,10 @@
                 {{ for(var pool in it.stats.pools) { }}
                 <div>
                     <div><i class="fa fa-dot-circle-o"></i>{{=pool}}</div>
-                    <div><i class="fa fa-users"></i><span id="statsMiners{{=pool}}">{{=it.stats.pools[pool].workerCount}}</span> Miners</div>
-                    <div><i class="fa fa-tachometer"></i><span id="statsHashrate{{=pool}}">{{=it.stats.pools[pool].hashrateString}}</span></div>
+                    <div><i class="fa fa-users"></i><span
+                            id="statsMiners{{=pool}}">{{=it.stats.pools[pool].workerCount}}</span> Miners</div>
+                    <div><i class="fa fa-tachometer"></i><span
+                            id="statsHashrate{{=pool}}">{{=it.stats.pools[pool].hashrateString}}</span></div>
                 </div>
                 {{ } }}
             </div>
@@ -124,7 +140,7 @@
 </div>
 
 <script>
-    $(function() {
+    $(function () {
         statsSource.addEventListener('message', function (e) {
             var stats = JSON.parse(e.data);
             for (algo in stats.algos) {

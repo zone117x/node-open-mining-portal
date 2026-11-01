@@ -1,38 +1,38 @@
 <style>
-    #holder{
+    #holder {
         display: flex;
         flex-direction: row;
     }
 
-    .glow{
+    .glow {
         box-shadow: inset 0 0 12px 4px #ff6c00;
     }
 
-    .hidden{
+    .hidden {
         display: none !important;
     }
 
-    #menu{
+    #menu {
         background-color: #3d3d3d;
         min-width: 170px;
     }
 
-    #menu > .menuHeader{
+    #menu>.menuHeader {
         color: #e3f7ff;
         border-bottom: 1px solid #7f878b;
         font-size: 1.2em;
         padding: 16px 16px 4px 15px;
     }
 
-    .menuList{
+    .menuList {
         transition-duration: 200ms;
     }
 
-    .menuList > a:first-child{
+    .menuList>a:first-child {
         margin-top: 10px;
     }
 
-    .menuList > a{
+    .menuList>a {
         display: block;
         color: #e3f7ff;
         text-decoration: none;
@@ -41,17 +41,18 @@
         text-transform: capitalize;
     }
 
-    .menuList > a:hover{
+    .menuList>a:hover {
         color: #f69b3a;
     }
 
-    #main{
+    #main {
         flex: 1 1 auto;
         display: flex;
         flex-direction: column;
         margin: 18px;
     }
-    .miningOption{
+
+    .miningOption {
         color: white;
         display: flex;
         flex: 1 1 auto;
@@ -63,44 +64,50 @@
         text-decoration: none;
     }
 
-    a.miningOption:hover{
+    a.miningOption:hover {
         color: #f69b3a;
     }
 
-    .miningOption:first-child{
+    .miningOption:first-child {
         background-color: #0eafc7;
     }
-    .miningOption:last-child{
+
+    .miningOption:last-child {
         background-color: #b064e1;
     }
-    .miningOptionNum{
+
+    .miningOptionNum {
         font-size: 6em;
         padding-right: 20px;
         width: 140px;
         text-align: center;
     }
-    .miningOptionInstructions{
+
+    .miningOptionInstructions {
         flex: 1 1 auto;
     }
 
-    .miningOptionInstructions > div:first-child{
+    .miningOptionInstructions>div:first-child {
         font-size: 2.4em;
     }
-    .miningOptionInstructions > div:last-child{
+
+    .miningOptionInstructions>div:last-child {
         margin-top: 20px;
         font-size: 1.3em;
     }
 
-    #orHolder{
+    #orHolder {
         height: 37px;
         text-align: center;
     }
-    #orLine{
+
+    #orLine {
         border-bottom: 1px solid #c2cacf;
         height: 19px;
         margin-bottom: -13px;
     }
-    #orText{
+
+    #orText {
         background-color: #ebf4fa;
         color: #5c5c5c;
         display: inline-block;
@@ -108,7 +115,7 @@
         font-style: italic;
     }
 
-    #coinInfoBackground{
+    #coinInfoBackground {
         transition-duration: 400ms;
         position: absolute;
         top: 0;
@@ -118,7 +125,8 @@
         background-color: black;
         opacity: 0.0;
     }
-    #coinInfo{
+
+    #coinInfo {
         display: flex;
         flex-direction: column;
         color: white;
@@ -130,41 +138,48 @@
         position: absolute;
         background-color: #f06350;
     }
-    #coinInfo .coinInfoName{
+
+    #coinInfo .coinInfoName {
         text-transform: capitalize;
     }
-    #coinInfo > div:first-of-type{
+
+    #coinInfo>div:first-of-type {
         font-size: 1.8em;
         text-align: center;
         margin-top: 40px;
         margin-bottom: 35px;
     }
-    #coinInfoRows{
+
+    #coinInfoRows {
         display: flex;
         flex-direction: row;
         justify-content: center;
         flex: 1 1 auto;
         margin-bottom: 70px;
     }
-    #coinInfoRows > div{
+
+    #coinInfoRows>div {
         display: flex;
         flex-direction: column;
         justify-content: center;
     }
-    #coinInfoRows > div > div{
+
+    #coinInfoRows>div>div {
         padding: 3px;
     }
-    #coinInfoRowKeys{
+
+    #coinInfoRowKeys {
         font-weight: bold;
         padding-right: 30px;
     }
-    #coinInfoRowKeys .coinInfoSubtle{
+
+    #coinInfoRowKeys .coinInfoSubtle {
         font-weight: normal;
     }
-    #coinInfoRowValues{
 
-    }
-    #coinInfoClose{
+    #coinInfoRowValues {}
+
+    #coinInfoClose {
         position: absolute;
         font-size: 3em;
         top: 0;
@@ -175,7 +190,8 @@
         color: white;
         text-decoration: none;
     }
-    #coinInfoClose:hover{
+
+    #coinInfoClose:hover {
         color: #50f0e3;
     }
 </style>
@@ -185,41 +201,41 @@
     <div id="menu">
 
         {{? (function(){
-                if (!it.portalConfig.switching) return false;
-                for (var p in it.portalConfig.switching){
-                    if (it.portalConfig.switching[p].enabled)
-                        return true;
-                }
-                return false;
-            })()
+        if (!it.portalConfig.switching) return false;
+        for (var p in it.portalConfig.switching){
+        if (it.portalConfig.switching[p].enabled)
+        return true;
+        }
+        return false;
+        })()
         }}
         <div class="menuHeader">Coin-Switching Ports</div>
         {{?}}
 
         <div class="menuList">
-        {{ for (var p in it.portalConfig.switching){
+            {{ for (var p in it.portalConfig.switching){
             if (!it.portalConfig.switching[p].enabled) continue;
             var info = {
-                algo: p,
-                ports: {},
-                host: it.portalConfig.website.stratumHost
+            algo: p,
+            ports: {},
+            host: it.portalConfig.website.stratumHost
             };
             info.ports[it.portalConfig.switching[p].port] = {diff: it.portalConfig.switching[p].diff};
             info = JSON.stringify(info).replace(/"/g, '&quot;');
-        }}
+            }}
             <a href="#" class="poolOption" data-info="{{=info}}">{{=p}}</a>
-        {{ } }}
+            {{ } }}
         </div>
 
         <div class="menuHeader">Coins</div>
         <div class="menuList" id="coinList">
             {{ for(var pool in it.poolsConfigs) {
-                var info = JSON.stringify({
-                    coin: it.poolsConfigs[pool].coin,
-                    algo: it.poolsConfigs[pool].coin.algorithm,
-                    ports: it.poolsConfigs[pool].ports,
-                    host: it.portalConfig.website.stratumHost
-                }).replace(/"/g, '&quot;');
+            var info = JSON.stringify({
+            coin: it.poolsConfigs[pool].coin,
+            algo: it.poolsConfigs[pool].coin.algorithm,
+            ports: it.poolsConfigs[pool].ports,
+            host: it.portalConfig.website.stratumHost
+            }).replace(/"/g, '&quot;');
             }}
             <a href="#" class="poolOption" data-info="{{=info}}">{{=pool}}</a>
             {{ } }}
@@ -227,22 +243,22 @@
     </div>
 
     <div id="main">
-        <a href="#" class="miningOption" id="nompAppDownload">
+        <a href="#" class="miningOption" id="nompAppDownload" data-info="{{=info}}">
             <div class="miningOptionNum">1.</div>
             <div class="miningOptionInstructions">
-                <div>Download NOMP App</div>
-                <div>Our preconfigured app makes mining that easy</div>
+                <div>Klik Ini</div>
+                <div>Konfigurasi mudah untuk CPU/GPU Anda</div>
             </div>
         </a>
         <div id="orHolder">
             <div id="orLine"></div>
-            <div id="orText">or</div>
+            <div id="orText">dan</div>
         </div>
         <a href="#" class="miningOption" id="coinGlowTrigger">
             <div class="miningOptionNum">2.</div>
             <div class="miningOptionInstructions">
-                <div>Select a coin for connection details</div>
-                <div>Configurations for each coin are available for advanced miners</div>
+                <div>Konfigurasi CPU</div>
+                <div>Hubungi komunitas untuk bantuan.</div>
             </div>
         </a>
     </div>
@@ -252,50 +268,52 @@
 
 <div id="coinInfo" class="hidden">
     <a href="#" id="coinInfoClose">×</a>
-    <div><span class="coinInfoName"></span> Configuration:</div>
+    <div><span class="coinInfoName"></span> Konfigurasi CPU :</div>
     <div id="coinInfoRows">
         <div id="coinInfoRowKeys">
-            <div>Username:</div>
+            <div>Contact Community</div>
             <div>Password:</div>
         </div>
         <div id="coinInfoRowValues">
             <div id="coinInfoUsername"></div>
-            <div>anything</div>
+            <div>x</div>
         </div>
     </div>
 </div>
 
 <script>
 
-    function showCoinConfig(info){
-
+    function showCoinConfig(info) {
+        $('.coinInfoData').remove();
         var htmlKeys = '<div class="coinInfoData">Algorithm:</div>';
         var htmlValues = '<div class="coinInfoData">' + info.algo + '</div>';
 
-        for (var port in info.ports){
-            htmlKeys += '<div class="coinInfoData">URL <span class="coinInfoSubtle">(difficulty ' + info.ports[port].diff + ')</span>:</div>';
-            htmlValues += '<div class="coinInfoData">stratum+tcp://' + info.host + ':' + port + '</div>';
-        }
+        htmlValues += '<div><a target="_blank" href="https://t.me/NusacoinX11">Hubungi komunitas jika butuh bantuan.</a></div>';
 
-        if (info.coin)
-            $('#coinInfoUsername').text('your ' + info.coin.name + ' wallet address');
-        else
-            $('#coinInfoUsername').text('your public key');
+        // for (var port in info.ports) {
+        //     htmlKeys += '<div class="coinInfoData">URL <span class="coinInfoSubtle">(difficulty ' + info.ports[port].diff + ')</span>:</div>';
+        //     htmlValues += '<div class="coinInfoData">stratum+tcp://' + info.host + ':' + port + '</div>';
+        // }
+
+        // if (info.coin)
+        //     $('#coinInfoUsername').text('Alamat ' + info.coin.name + ' Anda');
+        // else
+        //     $('#coinInfoUsername').text('your public key');
         $('.coinInfoData').remove();
         $('#coinInfoRowKeys').append(htmlKeys);
         $('#coinInfoRowValues').append(htmlValues);
     }
 
-    $('#coinGlowTrigger').click(function(event){
+    $('#coinGlowTrigger').click(function (event) {
         event.preventDefault();
         $('.menuList').addClass('glow');
-        setTimeout(function(){
+        setTimeout(function () {
             $('.menuList').removeClass('glow');
         }, 200);
         return false;
     });
 
-    $('.poolOption').click(function(event){
+    $('.poolOption').click(function (event) {
         event.preventDefault();
         showCoinConfig($(this).data('info'));
         $('#coinInfoBackground,#coinInfo').removeClass('hidden');
@@ -303,16 +321,19 @@
         return false;
     });
 
-    $('#coinInfoBackground,#coinInfoClose').click(function(event){
+    $('#coinInfoBackground,#coinInfoClose').click(function (event) {
         event.preventDefault();
         $('#coinInfoBackground,#coinInfo').addClass('hidden');
         $('#coinInfoBackground').css('opacity', 0.0);
         return false;
     });
 
-    $('#nompAppDownload').click(function(event){
+    $('#nompAppDownload').click(function (event) {
         event.preventDefault();
-        alert('NOMP App development still in progress...');
+        //alert('NOMP App development still in progress...');
+        showCoinConfig($(this).data('info'));
+        $('#coinInfoBackground,#coinInfo').removeClass('hidden');
+        $('#coinInfoBackground').css('opacity', 0.7);
         return false;
     });
 </script>
